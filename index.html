@@ -39,7 +39,7 @@
 
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
         
-        /* CORREÇÃO DOS TÍTULOS - Removido o space-between para juntar ícone e texto */
+        /* CORREÇÃO DOS TÍTULOS */
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--purple-main); display: flex; align-items: center; gap: 8px; }
 
         .matrix-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2px; background-color: var(--border-color); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
@@ -51,7 +51,7 @@
         input, select { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; }
         input:focus, select:focus { border-color: var(--blue-accent); }
 
-        /* CORREÇÃO PARA TELEMÓVEIS - Evita cortes no layout */
+        /* CORREÇÃO PARA CELULARES - Evita cortes no layout */
         @media (max-width: 600px) {
             .input-inline { flex-direction: column; align-items: stretch; }
             .input-inline > * { width: 100% !important; margin-bottom: 5px; flex: none; }
@@ -256,4 +256,392 @@
             <button class="nav-item" onclick="switchTab(event, 'tab-dashboard')"><span class="material-icons">analytics</span>Mês</button>
             <button class="nav-item" onclick="switchTab(event, 'tab-anual')"><span class="material-icons">calendar_month</span>Anual</button>
             <button class="nav-item" onclick="switchTab(event, 'tab-config')"><span class="material-icons">settings</span>Config</button>
-        </nav
+        </nav>
+    </div>
+
+    <script>
+        // === CONFIGURAÇÃO DO FIREBASE ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJa2FQ7LGJNTIne8iiyRXCr0Og8V1NtVs",
+            authDomain: "finance-pro-v1.firebaseapp.com",
+            projectId: "finance-pro-v1",
+            storageBucket: "finance-pro-v1.firebasestorage.app",
+            messagingSenderId: "866672231232",
+            appId: "1:866672231232:web:1b4401c3123bb42c26b0a5"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // === VARIÁVEIS GLOBAIS ===
+        let currentUser = null;
+        let categoriasAtuais = ["Alimentação", "Transporte", "Lazer", "Educação", "Assinaturas", "Outros"];
+        let assinaturasConfig = [];
+        let mesesDisponiveis = [{ key: "2026-07", label: "Julho / 2026" }];
+        
+        let mesAtualKey = "2026-07";
+        let ordFixas = { col: '', asc: true };
+        let ordDiarios = { col: '', asc: true };
+        let meuGrafico;
+
+        // === SISTEMA DE AUTENTICAÇÃO ===
+        auth.onAuthStateChanged(user => {
+            const loading = document.getElementById('loadingDiv');
+            if(user) {
+                currentUser = user;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                loading.style.display = 'flex';
+                
+                document.getElementById('diarioData').value = new Date().toISOString().split('T')[0];
+                initChart();
+                carregarConfigGlobal(() => {
+                    loading.style.display = 'none';
+                });
+            } else {
+                currentUser = null;
+                document.getElementById('loginScreen').style.display = 'block';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+        });
+
+        function mostrarErroAuth(msg) {
+            const el = document.getElementById('authErro');
+            el.innerText = msg;
+            el.style.display = 'block';
+        }
+
+        function fazerLogin() {
+            const email = document.getElementById('emailInput').value;
+            const senha = document.getElementById('senhaInput').value;
+            if(!email || !senha) return mostrarErroAuth("Preencha e-mail e senha!");
+            auth.signInWithEmailAndPassword(email, senha).catch(err => mostrarErroAuth("Erro: E-mail ou senha incorretos."));
+        }
+
+        function criarConta() {
+            const email = document.getElementById('emailInput').value;
+            const senha = document.getElementById('senhaInput').value;
+            if(!email || !senha) return mostrarErroAuth("Preencha e-mail e senha para criar conta!");
+            if(senha.length < 6) return mostrarErroAuth("A senha deve ter pelo menos 6 caracteres.");
+            auth.createUserWithEmailAndPassword(email, senha).catch(err => mostrarErroAuth("Erro ao criar conta: " + err.message));
+        }
+
+        function fazerLogout() { auth.signOut(); }
+
+        // === FIREBASE: SINCRONIZAÇÃO DE DADOS ===
+        function carregarConfigGlobal(callback) {
+            db.collection('users').doc(currentUser.uid).collection('config').doc('geral').get().then(doc => {
+                if(doc.exists) {
+                    let data = doc.data();
+                    categoriasAtuais = data.categorias || categoriasAtuais;
+                    assinaturasConfig = data.assinaturas || assinaturasConfig;
+                    mesesDisponiveis = data.meses || mesesDisponiveis;
+                }
+                renderizarMeses();
+                renderizarAnosRelatorio();
+                renderizarListasDeCategorias();
+                
+                mesAtualKey = mesesDisponiveis[0].key;
+                document.getElementById('mesSeletor').value = mesAtualKey;
+                carregarMes(mesAtualKey);
+                if(callback) callback();
+            });
+        }
+
+        function salvarConfigGlobal() {
+            if(!currentUser) return;
+            db.collection('users').doc(currentUser.uid).collection('config').doc('geral').set({
+                categorias: categoriasAtuais,
+                assinaturas: assinaturasConfig,
+                meses: mesesDisponiveis
+            }, {merge: true});
+        }
+
+        function carregarMes(anoMes) {
+            if(!currentUser) return;
+            document.getElementById('loadingDiv').style.display = 'flex';
+            
+            db.collection('users').doc(currentUser.uid).collection('meses').doc(anoMes).get().then(doc => {
+                if(doc.exists) {
+                    let data = doc.data();
+                    window.activeFixas = data.fixas || [];
+                    window.activeDiarios = data.diarios || [];
+                    document.getElementById('saldoInput').value = data.saldo || 0;
+                } else {
+                    window.activeFixas = [];
+                    window.activeDiarios = [];
+                    document.getElementById('saldoInput').value = 1990;
+                }
+                calcularEAtualizarVisual();
+                document.getElementById('loadingDiv').style.display = 'none';
+            });
+        }
+
+        function salvarDadosDoMesAtual() {
+            if(!currentUser) return;
+            let dados = {
+                fixas: window.activeFixas,
+                diarios: window.activeDiarios,
+                saldo: parseFloat(document.getElementById('saldoInput').value) || 0
+            };
+            db.collection('users').doc(currentUser.uid).collection('meses').doc(mesAtualKey).set(dados);
+        }
+
+        // === LÓGICA DO APP ===
+        function renderizarMeses() {
+            const seletor = document.getElementById('mesSeletor');
+            seletor.innerHTML = '';
+            mesesDisponiveis.forEach(m => seletor.innerHTML += `<option value="${m.key}">${m.label}</option>`);
+        }
+
+        function renderizarAnosRelatorio() {
+            const anos = [...new Set(mesesDisponiveis.map(m => m.key.split('-')[0]))];
+            const selAno = document.getElementById('anoRelatorio');
+            selAno.innerHTML = '';
+            anos.forEach(ano => selAno.innerHTML += `<option value="${ano}">Resumo de ${ano}</option>`);
+        }
+
+        function addNovoMes() {
+            const inputVal = document.getElementById('novoMesInput').value; 
+            if(!inputVal || mesesDisponiveis.some(m => m.key === inputVal)) return;
+
+            const [ano, mes] = inputVal.split('-');
+            const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const label = `${mesesNomes[parseInt(mes)-1]} / ${ano}`;
+
+            mesesDisponiveis.push({ key: inputVal, label: label });
+            mesesDisponiveis.sort((a, b) => a.key.localeCompare(b.key)); 
+            
+            salvarConfigGlobal();
+            renderizarMeses();
+            renderizarAnosRelatorio();
+            document.getElementById('novoMesInput').value = '';
+            document.getElementById('mesSeletor').value = inputVal;
+            mudarMesOuro();
+        }
+
+        function mudarMesOuro() {
+            mesAtualKey = document.getElementById('mesSeletor').value;
+            carregarMes(mesAtualKey);
+        }
+
+        function salvarSaldoDoMes() {
+            salvarDadosDoMesAtual();
+            calcularEAtualizarVisual();
+        }
+
+        function ordenarTabela(tabela, coluna) {
+            if(tabela === 'fixas') { ordFixas.asc = (ordFixas.col === coluna) ? !ordFixas.asc : true; ordFixas.col = coluna; } 
+            else { ordDiarios.asc = (ordDiarios.col === coluna) ? !ordDiarios.asc : true; ordDiarios.col = coluna; }
+            calcularEAtualizarVisual();
+        }
+
+        function aplicarOrdenacao(array, config) {
+            if(!config.col) return array;
+            let arr = [...array];
+            return arr.sort((a, b) => {
+                let valA = a[config.col]; let valB = b[config.col];
+                if(config.col === 'pago') { valA = a.pago ? 1 : 0; valB = b.pago ? 1 : 0; }
+                if(config.col === 'data') { valA = new Date(valA).getTime(); valB = new Date(valB).getTime(); }
+                if (valA < valB) return config.asc ? -1 : 1;
+                if (valA > valB) return config.asc ? 1 : -1;
+                return 0;
+            });
+        }
+
+        function formatarData(dataISO) {
+            if(!dataISO) return '--/--';
+            const [ano, mes, dia] = dataISO.split('-');
+            return `${dia}/${mes}`;
+        }
+
+        function calcularAlertaVencimento(diaVenc, pago) {
+            if (pago) return { texto: `Dia ${diaVenc}`, cor: '#94a3b8', bg: '#f1f5f9' };
+            const [ano, mes] = mesAtualKey.split('-').map(Number);
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+            const dataVenc = new Date(ano, mes - 1, diaVenc); dataVenc.setHours(0,0,0,0);
+            const diffDias = Math.ceil((dataVenc - hoje) / (1000 * 60 * 60 * 24));
+
+            if (diffDias < 0) return { texto: `Vencido (${Math.abs(diffDias)}d)`, cor: 'white', bg: 'var(--red-danger)' };
+            if (diffDias === 0) return { texto: `Vence Hoje!`, cor: 'white', bg: 'var(--red-danger)' };
+            if (diffDias <= 3) return { texto: `Dia ${diaVenc} (${diffDias}d)`, cor: 'white', bg: 'var(--warning-orange)' };
+            return { texto: `Dia ${diaVenc}`, cor: 'white', bg: 'var(--green-success)' };
+        }
+
+        function calcularEAtualizarVisual() {
+            let orcamento = 0, pago = 0, restante = 0, totalDiarios = 0;
+            let totalPorCategoria = {};
+            categoriasAtuais.forEach(c => totalPorCategoria[c] = 0);
+
+            const tbodyFixas = document.getElementById('listaFixas');
+            tbodyFixas.innerHTML = '';
+            let fixasOrdenadas = aplicarOrdenacao(window.activeFixas, ordFixas);
+            
+            fixasOrdenadas.forEach(c => {
+                orcamento += c.valor;
+                if(c.pago) pago += c.valor; else restante += c.valor;
+                let alerta = calcularAlertaVencimento(c.vencimento, c.pago);
+
+                tbodyFixas.innerHTML += `
+                    <tr>
+                        <td><strong>${c.nome}</strong></td>
+                        <td><span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span></td>
+                        <td>R$ ${c.valor.toFixed(2)}</td>
+                        <td><button class="status-badge ${c.pago?'sim':'nao'}" onclick="togglePagoFixa(${c.id})">${c.pago?'Sim':'Não'}</button></td>
+                        <td style="text-align:right;"><button class="btn-delete" onclick="deletarItemGeral(${c.id}, 'fixa')"><span class="material-icons">delete</span></button></td>
+                    </tr>
+                `;
+            });
+
+            const tbodyDiarios = document.getElementById('listaDiarios');
+            tbodyDiarios.innerHTML = '';
+            let diariosOrdenados = aplicarOrdenacao(window.activeDiarios, ordDiarios);
+
+            diariosOrdenados.forEach(g => {
+                totalDiarios += g.valor;
+                if(totalPorCategoria[g.categoria] !== undefined) totalPorCategoria[g.categoria] += g.valor;
+
+                tbodyDiarios.innerHTML += `
+                    <tr>
+                        <td style="color:var(--text-muted); font-size:0.85rem">${formatarData(g.data)}</td>
+                        <td>
+                            <div style="font-weight: 500">${g.nome}</div>
+                            <div style="color:var(--text-muted); font-size:0.75rem">${g.categoria}</div>
+                        </td>
+                        <td>R$ ${g.valor.toFixed(2)}</td>
+                        <td style="text-align:right;"><button class="btn-delete" onclick="deletarItemGeral(${g.id}, 'diario')"><span class="material-icons">delete</span></button></td>
+                    </tr>
+                `;
+            });
+
+            const saldoInputVal = parseFloat(document.getElementById('saldoInput').value) || 0;
+            let resultadoFinal = saldoInputVal - restante - totalDiarios;
+
+            document.getElementById('mOrcamento').innerText = `R$ ${orcamento.toFixed(2)}`;
+            document.getElementById('mPago').innerText = `R$ ${pago.toFixed(2)}`;
+            document.getElementById('mRestante').innerText = `R$ ${restante.toFixed(2)}`;
+            document.getElementById('mTotalDiarios').innerText = `R$ ${totalDiarios.toFixed(2)}`;
+            const elRes = document.getElementById('mResultado');
+            elRes.innerText = `R$ ${resultadoFinal.toFixed(2)}`;
+            elRes.style.color = resultadoFinal >= 0 ? 'var(--green-success)' : 'var(--red-danger)';
+
+            const divAcumulados = document.getElementById('listaAcumulados');
+            divAcumulados.innerHTML = '';
+            Object.keys(totalPorCategoria).forEach(cat => {
+                if(totalPorCategoria[cat] > 0) {
+                    divAcumulados.innerHTML += `<div class="acumulado-item"><span>${cat}</span><span style="color:var(--purple-main); font-weight:700">R$ ${totalPorCategoria[cat].toFixed(2)}</span></div>`;
+                }
+            });
+
+            // ATUALIZADO: Mostrar o Valor na lista de assinaturas
+            const divSubs = document.getElementById('listaAssinaturasCard');
+            divSubs.innerHTML = '';
+            assinaturasConfig.forEach(s => {
+                let valorFormatado = s.valor ? ` - R$ ${s.valor.toFixed(2)}` : '';
+                divSubs.innerHTML += `<div class="sub-item"><span>🔔 ${s.nome} <strong style="color:var(--purple-main)">${valorFormatado}</strong></span><div style="display:flex; align-items:center; gap:10px;"><span class="sub-date">Dia ${s.vencimento}</span><button class="btn-delete" onclick="deletarAssinatura(${s.id})"><span class="material-icons" style="font-size:1.1rem;">delete</span></button></div></div>`;
+            });
+
+            updateChart(Object.values(totalPorCategoria));
+        }
+
+        function calcularRelatorioAnual() {
+            const anoSelecionado = document.getElementById('anoRelatorio').value;
+            if(!anoSelecionado || !currentUser) return;
+
+            let somaFixasPagas = 0; let somaDiarios = 0; let categoriasAno = {};
+
+            const mesesDoAno = mesesDisponiveis.filter(m => m.key.startsWith(anoSelecionado));
+            
+            let promessas = mesesDoAno.map(mes => {
+                return db.collection('users').doc(currentUser.uid).collection('meses').doc(mes.key).get().then(doc => {
+                    if(doc.exists) {
+                        let data = doc.data();
+                        (data.fixas || []).forEach(f => { if(f.pago) somaFixasPagas += f.valor; });
+                        (data.diarios || []).forEach(d => { somaDiarios += d.valor; categoriasAno[d.categoria] = (categoriasAno[d.categoria] || 0) + d.valor; });
+                    }
+                });
+            });
+
+            Promise.all(promessas).then(() => {
+                document.getElementById('aFixos').innerText = `R$ ${somaFixasPagas.toFixed(2)}`;
+                document.getElementById('aDiarios').innerText = `R$ ${somaDiarios.toFixed(2)}`;
+                document.getElementById('aTotal').innerText = `R$ ${(somaFixasPagas + somaDiarios).toFixed(2)}`;
+
+                const divAcumuladosAno = document.getElementById('listaAcumuladosAno');
+                divAcumuladosAno.innerHTML = '';
+                let catArray = Object.entries(categoriasAno).sort((a,b) => b[1] - a[1]);
+                
+                catArray.forEach(([cat, valor]) => {
+                    divAcumuladosAno.innerHTML += `<div class="acumulado-item"><span>${cat}</span><span style="color:var(--blue-dark); font-weight:700">R$ ${valor.toFixed(2)}</span></div>`;
+                });
+                
+                if(catArray.length === 0) divAcumuladosAno.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center;">Nenhum gasto registado em ${anoSelecionado}.</p>`;
+            });
+        }
+
+        function addContaFixa() {
+            const nome = document.getElementById('fixaNome').value.trim(); const valor = parseFloat(document.getElementById('fixaValor').value); const venc = parseInt(document.getElementById('fixaVenc').value); const cat = document.getElementById('fixaCategoria').value;
+            if(!nome || isNaN(valor) || isNaN(venc)) return;
+            window.activeFixas.push({ id: Date.now(), nome, valor, vencimento: venc, categoria: cat, pago: false });
+            document.getElementById('fixaNome').value = ''; document.getElementById('fixaValor').value = ''; document.getElementById('fixaVenc').value = '';
+            salvarDadosDoMesAtual(); calcularEAtualizarVisual();
+        }
+
+        function addGastoDiario() {
+            const nome = document.getElementById('diarioNome').value.trim(); const valor = parseFloat(document.getElementById('diarioValor').value); const cat = document.getElementById('diarioCategoria').value; let data = document.getElementById('diarioData').value;
+            if(!nome || isNaN(valor)) return;
+            if(!data) data = new Date().toISOString().split('T')[0];
+            window.activeDiarios.push({ id: Date.now(), nome, valor, categoria: cat, data: data });
+            document.getElementById('diarioNome').value = ''; document.getElementById('diarioValor').value = '';
+            salvarDadosDoMesAtual(); calcularEAtualizarVisual();
+        }
+
+        function togglePagoFixa(id) { window.activeFixas = window.activeFixas.map(c => c.id === id ? { ...c, pago: !c.pago } : c); salvarDadosDoMesAtual(); calcularEAtualizarVisual(); }
+        function deletarItemGeral(id, tipo) { if(tipo === 'fixa') window.activeFixas = window.activeFixas.filter(c => c.id !== id); else window.activeDiarios = window.activeDiarios.filter(g => g.id !== id); salvarDadosDoMesAtual(); calcularEAtualizarVisual(); }
+        
+        function deletarAssinatura(id) { assinaturasConfig = assinaturasConfig.filter(s => s.id !== id); salvarConfigGlobal(); calcularEAtualizarVisual(); }
+        function addCategoriaGlobal() { const nome = document.getElementById('novaCatNome').value.trim(); if(!nome || categoriasAtuais.includes(nome)) return; categoriasAtuais.push(nome); salvarConfigGlobal(); document.getElementById('novaCatNome').value = ''; renderizarListasDeCategorias(); calcularEAtualizarVisual(); }
+        
+        // ATUALIZADO: Adicionar Assinatura com Valor
+        function addAssinaturaInformativa() { 
+            const nome = document.getElementById('subNome').value.trim(); 
+            const valor = parseFloat(document.getElementById('subValor').value);
+            const venc = parseInt(document.getElementById('subVenc').value); 
+            if(!nome || isNaN(venc)) return; 
+            assinaturasConfig.push({ id: Date.now(), nome, valor: isNaN(valor) ? 0 : valor, vencimento: venc }); 
+            salvarConfigGlobal(); 
+            document.getElementById('subNome').value = ''; 
+            document.getElementById('subValor').value = ''; 
+            document.getElementById('subVenc').value = ''; 
+            calcularEAtualizarVisual(); 
+        }
+
+        function renderizarListasDeCategorias() {
+            const selFixas = document.getElementById('fixaCategoria'); const selDiarios = document.getElementById('diarioCategoria'); const boxConfig = document.getElementById('listaCategoriasConfig');
+            selFixas.innerHTML = ''; selDiarios.innerHTML = ''; boxConfig.innerHTML = '';
+            categoriasAtuais.forEach(cat => { selFixas.innerHTML += `<option value="${cat}">${cat}</option>`; selDiarios.innerHTML += `<option value="${cat}">${cat}</option>`; boxConfig.innerHTML += `<span style="background:#e2e8f0; padding:4px 10px; border-radius:20px; font-size:0.8rem; font-weight:600;">${cat}</span>`; });
+        }
+
+        function switchTab(event, tabId) {
+            if(window.innerWidth >= 900) return;
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if(tabId === 'tab-anual') calcularRelatorioAnual();
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('chartCategorias').getContext('2d');
+            meuGrafico = new Chart(ctx, {
+                type: 'doughnut',
+                data: { labels: categoriasAtuais, datasets: [{ data: Array(categoriasAtuais.length).fill(0), backgroundColor: ['#2ecc71', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#95a5a6', '#1abc9c', '#e74c3c'], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+        }
+
+        function updateChart(dataArray) { if(!meuGrafico) return; meuGrafico.data.labels = categoriasAtuais; meuGrafico.data.datasets[0].data = dataArray; meuGrafico.update(); }
+    </script>
+</body>
+</html>
