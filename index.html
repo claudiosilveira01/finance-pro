@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
+    <!-- Bibliotecas do Firebase (Versão Compat) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -35,11 +36,17 @@
             body { padding-bottom: 20px; }
             .bottom-nav { display: none !important; }
             .tab-content { display: block !important; }
+            
+            /* Classe para o botão ocultar configurações que só aparece no PC */
+            .desktop-toggle-btn { display: flex !important; margin-bottom: 15px; width: 100%; background-color: #e2e8f0; color: var(--text-main); justify-content: space-between !important; padding: 12px 20px !important; }
+            .desktop-toggle-btn:hover { background-color: #cbd5e1; }
+            #tab-config.desktop-hidden { display: none !important; }
         }
+
+        .desktop-toggle-btn { display: none; } /* Oculto no celular */
 
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
         
-        /* Alinhamento dos ícones junto ao texto do título */
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--purple-main); display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
 
         .matrix-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2px; background-color: var(--border-color); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
@@ -51,7 +58,6 @@
         input, select, textarea { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; }
         input:focus, select:focus, textarea:focus { border-color: var(--blue-accent); }
 
-        /* Ajustes de responsividade para telas de celulares */
         @media (max-width: 600px) {
             .input-inline, .control-row { flex-direction: column; align-items: stretch; }
             .input-inline > *, .control-row > * { width: 100% !important; margin-bottom: 5px; flex: none; }
@@ -89,9 +95,10 @@
         .nav-item .material-icons { font-size: 22px; margin-bottom: 2px; }
 
         @media (max-width: 899px) { .tab-content { display: none; } .tab-content.active { display: block; } }
-        .chart-container { position: relative; margin: auto; height: 180px; width: 180px; }
+        
+        .charts-wrapper { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        .chart-container { position: relative; margin: auto; height: 180px; flex: 1; min-width: 150px; max-width: 250px; }
 
-        /* TELA DE LOGIN */
         #loginScreen { max-width: 400px; margin: 80px auto; padding: 30px; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
         #mainApp { display: none; }
         .loading-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 999; font-weight: bold; color: var(--purple-main);}
@@ -99,6 +106,7 @@
 </head>
 <body>
 
+    <!-- Tela de Login -->
     <div id="loginScreen">
         <h2 style="color: var(--purple-main); margin-bottom: 20px;"><span class="material-icons" style="vertical-align: bottom;">lock</span> Finanças Pro</h2>
         <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Acesse para sincronizar os seus dados</p>
@@ -112,8 +120,10 @@
         <p id="authErro" style="color: var(--red-danger); font-size: 0.85rem; margin-top: 15px; display: none;"></p>
     </div>
 
+    <!-- Indicador de Carregamento -->
     <div class="loading-overlay" id="loadingDiv">A sincronizar com a Nuvem...</div>
 
+    <!-- App Principal -->
     <div id="mainApp">
         <header>
             <h1><span class="material-icons">account_balance_wallet</span> Finanças Pro</h1>
@@ -125,10 +135,16 @@
 
         <div class="main-container">
             <div class="col-left">
+                <!-- Botão Exclusivo para Computador (Oculta Aba Configurações) -->
+                <button class="btn-flat desktop-toggle-btn" onclick="toggleConfigDesktop()" id="btnToggleConfig">
+                    <span style="display:flex; align-items:center; gap:8px;"><span class="material-icons">visibility_off</span> Ocultar Configurações no Painel</span>
+                </button>
+
+                <!-- Aba: Contas Fixas -->
                 <div id="tab-fixas" class="card tab-content active">
                     <div class="card-title"><span class="material-icons">assignment</span> Contas Fixas</div>
                     <div class="input-inline">
-                        <input type="text" id="fixaNome" style="flex:2;" placeholder="Item (Ex: Cursinho)">
+                        <input type="text" id="fixaNome" style="flex:2;" placeholder="Item (Ex: Energia, Mensalidades)">
                         <input type="number" id="fixaValor" style="flex:1;" placeholder="R$">
                         <input type="number" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31">
                         <select id="fixaCategoria" style="flex:1.5;"></select>
@@ -150,10 +166,11 @@
                     </div>
                 </div>
 
+                <!-- Aba: Gastos Diários -->
                 <div id="tab-diarios" class="card tab-content">
                     <div class="card-title"><span class="material-icons">shopping_cart</span> Gastos Diários</div>
                     <div class="input-inline">
-                        <input type="text" id="diarioNome" style="flex:2;" placeholder="Ex: Pão da tarde">
+                        <input type="text" id="diarioNome" style="flex:2;" placeholder="Ex: Lanche, PIX">
                         <input type="date" id="diarioData" style="flex:1.5;">
                         <input type="number" id="diarioValor" style="flex:1;" placeholder="R$">
                         <select id="diarioCategoria" style="flex:1.5;"></select>
@@ -174,6 +191,7 @@
                     </div>
                 </div>
 
+                <!-- Aba: Configurações do Sistema -->
                 <div id="tab-config" class="card tab-content">
                     <div class="card-title"><span class="material-icons">settings</span> Configurações do Sistema</div>
                     
@@ -219,6 +237,14 @@
                         <input type="number" id="subVenc" placeholder="Dia Venc." min="1" max="31" style="flex:1;">
                         <button class="btn-flat" onclick="addAssinaturaInformativa()">Adicionar</button>
                     </div>
+
+                    <!-- NOVO BOTÃO: LIMPAR DADOS -->
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: var(--red-danger);">🗑️ Limpar Dados do Mês</h4>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
+                        Apaga todas as contas fixas e diárias do mês selecionado atualmente.
+                    </p>
+                    <button class="btn-flat" style="background-color: var(--red-danger); width: 100%;" onclick="limparDadosDoMesAtual()">Apagar Tudo deste Mês</button>
                 </div>
             </div>
 
@@ -239,7 +265,11 @@
 
                     <div class="card">
                         <div class="card-title"><span class="material-icons">pie_chart</span> Acumulado por Categoria</div>
-                        <div class="chart-container"><canvas id="chartCategorias"></canvas></div>
+                        <!-- NOVO: Container Duplo para Gráfico de Pizza e de Barras -->
+                        <div class="charts-wrapper">
+                            <div class="chart-container"><canvas id="chartCategorias"></canvas></div>
+                            <div class="chart-container"><canvas id="barChartCategorias"></canvas></div>
+                        </div>
                         <div class="acumulados-list" id="listaAcumulados"></div>
                     </div>
 
@@ -294,14 +324,18 @@
 
         // === VARIÁVEIS GLOBAIS ===
         let currentUser = null;
-        let categoriasAtuais = ["Alimentação", "Transporte", "Lazer", "Educação", "Assinaturas", "Outros"];
+        let categoriasAtuais = ["Alimentação", "Transporte", "Lazer", "Educação", "Assinaturas", "Saúde", "Comunicação", "Tributos", "PIX Terceiros", "Outros"];
         let assinaturasConfig = [];
         let mesesDisponiveis = [{ key: "2026-07", label: "Julho / 2026" }];
         
         let mesAtualKey = "2026-07";
         let ordFixas = { col: '', asc: true };
         let ordDiarios = { col: '', asc: true };
-        let meuGrafico;
+        let meuGraficoPizza;
+        let meuGraficoBarra;
+
+        // Paleta de cores para não faltar cor se tiver muitas categorias
+        const coresCategorias = ['#2ecc71', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#e74c3c', '#1abc9c', '#34495e', '#fd79a8', '#00cec9', '#6c5ce7', '#ff7675'];
 
         // === SISTEMA DE AUTENTICAÇÃO ===
         auth.onAuthStateChanged(user => {
@@ -491,7 +525,48 @@
             });
         }
 
-        // FUNÇÃO ATUALIZADA: Lógica Inteligente de Alertas e Datas Pendentes
+        // NOVO: Função para apagar tudo do mês atual
+        function limparDadosDoMesAtual() {
+            if(!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja apagar TODOS os gastos fixos e diários de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`)) return;
+            
+            window.activeFixas = [];
+            window.activeDiarios = [];
+            salvarDadosDoMesAtual();
+            calcularEAtualizarVisual();
+            alert("Os dados do mês foram apagados com sucesso!");
+        }
+
+        // NOVO: Ocultar Configurações no Computador
+        function toggleConfigDesktop() {
+            const configTab = document.getElementById('tab-config');
+            const btn = document.getElementById('btnToggleConfig');
+            
+            if (configTab.classList.contains('desktop-hidden')) {
+                configTab.classList.remove('desktop-hidden');
+                btn.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><span class="material-icons">visibility_off</span> Ocultar Configurações no Painel</span>';
+            } else {
+                configTab.classList.add('desktop-hidden');
+                btn.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><span class="material-icons">visibility</span> Mostrar Configurações no Painel</span>';
+            }
+        }
+
+        // FUNÇÃO: Ícones Inteligentes de Categoria
+        function obterIconeCategoria(cat) {
+            const iconesBase = {
+                "Alimentação": "restaurant",
+                "Transporte": "directions_car",
+                "Lazer": "sports_esports",
+                "Educação": "school",
+                "Assinaturas": "subscriptions",
+                "Saúde": "health_and_safety",
+                "Comunicação": "wifi",
+                "Tributos": "account_balance",
+                "PIX Terceiros": "send",
+                "Outros": "more_horiz"
+            };
+            return iconesBase[cat] || "label";
+        }
+
         function calcularAlertaVencimento(diaVenc, pago) {
             if (pago) return { texto: `Dia ${diaVenc}`, cor: '#94a3b8', bg: '#f1f5f9' };
 
@@ -516,7 +591,6 @@
             return { texto: `Dia ${diaVenc}`, cor: 'white', bg: 'var(--green-success)' };
         }
 
-        // NOVA FUNÇÃO: Processamento de Gastos via Arquivo / Texto CSV
         function importarGastosCSV() {
             const texto = document.getElementById('csvImportText').value.trim();
             if(!texto) return alert("Por favor, cole os dados para a importação!");
@@ -645,11 +719,22 @@
             elRes.innerText = `R$ ${resultadoFinal.toFixed(2)}`;
             elRes.style.color = resultadoFinal >= 0 ? 'var(--green-success)' : 'var(--red-danger)';
 
+            // ATUALIZADO COM ÍCONES NO CARD DE ACUMULADOS
             const divAcumulados = document.getElementById('listaAcumulados');
             divAcumulados.innerHTML = '';
-            Object.keys(totalPorCategoria).forEach(cat => {
-                if(totalPorCategoria[cat] > 0) {
-                    divAcumulados.innerHTML += `<div class="acumulado-item"><span>${cat}</span><span style="color:var(--purple-main); font-weight:700">R$ ${totalPorCategoria[cat].toFixed(2)}</span></div>`;
+            
+            // Ordenar categorias pelo valor (Maior para Menor)
+            let catArray = Object.entries(totalPorCategoria).sort((a,b) => b[1] - a[1]);
+            catArray.forEach(([cat, valor]) => {
+                if(valor > 0) {
+                    let icone = obterIconeCategoria(cat);
+                    divAcumulados.innerHTML += `
+                        <div class="acumulado-item">
+                            <span style="display:flex; align-items:center; gap:8px;">
+                                <span class="material-icons" style="font-size:18px; color:var(--text-muted);">${icone}</span> ${cat}
+                            </span>
+                            <span style="color:var(--purple-main); font-weight:700">R$ ${valor.toFixed(2)}</span>
+                        </div>`;
                 }
             });
 
@@ -660,7 +745,9 @@
                 divSubs.innerHTML += `<div class="sub-item"><span>🔔 ${s.nome} <strong style="color:var(--purple-main)">${valorFormatado}</strong></span><div style="display:flex; align-items:center; gap:10px;"><span class="sub-date">Dia ${s.vencimento}</span><button class="btn-delete" onclick="deletarAssinatura(${s.id})"><span class="material-icons" style="font-size:1.1rem;">delete</span></button></div></div>`;
             });
 
-            updateChart(Object.values(totalPorCategoria));
+            // Passa os valores atualizados na ordem original das labels do gráfico
+            let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
+            updateChart(chartDataArray);
         }
 
         function calcularRelatorioAnual() {
@@ -693,7 +780,14 @@
                 let catArray = Object.entries(categoriasAno).sort((a,b) => b[1] - a[1]);
                 
                 catArray.forEach(([cat, valor]) => {
-                    divAcumuladosAno.innerHTML += `<div class="acumulado-item"><span>${cat}</span><span style="color:var(--blue-dark); font-weight:700">R$ ${valor.toFixed(2)}</span></div>`;
+                    let icone = obterIconeCategoria(cat);
+                    divAcumuladosAno.innerHTML += `
+                        <div class="acumulado-item">
+                            <span style="display:flex; align-items:center; gap:8px;">
+                                <span class="material-icons" style="font-size:18px; color:var(--text-muted);">${icone}</span> ${cat}
+                            </span>
+                            <span style="color:var(--blue-dark); font-weight:700">R$ ${valor.toFixed(2)}</span>
+                        </div>`;
                 });
                 
                 if(catArray.length === 0) divAcumuladosAno.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center;">Nenhum gasto registrado em ${anoSelecionado}.</p>`;
@@ -740,10 +834,12 @@
             const selFixas = document.getElementById('fixaCategoria'); const selDiarios = document.getElementById('diarioCategoria'); const boxConfig = document.getElementById('listaCategoriasConfig');
             selFixas.innerHTML = ''; selDiarios.innerHTML = ''; boxConfig.innerHTML = '';
             categoriasAtuais.forEach(cat => { selFixas.innerHTML += `<option value="${cat}">${cat}</option>`; selDiarios.innerHTML += `<option value="${cat}">${cat}</option>`; boxConfig.innerHTML += `<span style="background:#e2e8f0; padding:4px 10px; border-radius:20px; font-size:0.8rem; font-weight:600;">${cat}</span>`; });
+            if(meuGraficoPizza) meuGraficoPizza.data.labels = categoriasAtuais;
+            if(meuGraficoBarra) meuGraficoBarra.data.labels = categoriasAtuais;
         }
 
         function switchTab(event, tabId) {
-            if(window.innerWidth >= 900) return;
+            if(window.innerWidth >= 900) return; // No PC a navegação inferior não faz nada
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
@@ -751,16 +847,42 @@
             if(tabId === 'tab-anual') calcularRelatorioAnual();
         }
 
+        // INICIALIZAÇÃO DE GRÁFICOS (PIZZA + BARRA)
         function initChart() {
-            const ctx = document.getElementById('chartCategorias').getContext('2d');
-            meuGrafico = new Chart(ctx, {
+            // Gráfico 1: Pizza
+            const ctxPizza = document.getElementById('chartCategorias').getContext('2d');
+            meuGraficoPizza = new Chart(ctxPizza, {
                 type: 'doughnut',
-                data: { labels: categoriasAtuais, datasets: [{ data: Array(categoriasAtuais.length).fill(0), backgroundColor: ['#2ecc71', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#95a5a6', '#1abc9c', '#e74c3c'], borderWidth: 0 }] },
+                data: { labels: categoriasAtuais, datasets: [{ data: Array(categoriasAtuais.length).fill(0), backgroundColor: coresCategorias, borderWidth: 0 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            // Gráfico 2: Barra Vertical
+            const ctxBar = document.getElementById('barChartCategorias').getContext('2d');
+            meuGraficoBarra = new Chart(ctxBar, {
+                type: 'bar',
+                data: { labels: categoriasAtuais, datasets: [{ label: 'Gasto', data: Array(categoriasAtuais.length).fill(0), backgroundColor: coresCategorias, borderRadius: 6 }] },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { display: false, beginAtZero: true },
+                        x: { ticks: { display: false }, grid: { display: false } } // Oculta os textos da barra para ficar clean
+                    }
+                }
             });
         }
 
-        function updateChart(dataArray) { if(!meuGrafico) return; meuGrafico.data.labels = categoriasAtuais; meuGrafico.data.datasets[0].data = dataArray; meuGrafico.update(); }
+        function updateChart(dataArray) { 
+            if(meuGraficoPizza) {
+                meuGraficoPizza.data.datasets[0].data = dataArray; 
+                meuGraficoPizza.update(); 
+            }
+            if(meuGraficoBarra) {
+                meuGraficoBarra.data.datasets[0].data = dataArray; 
+                meuGraficoBarra.update(); 
+            }
+        }
     </script>
 </body>
 </html>
