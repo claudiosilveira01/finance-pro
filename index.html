@@ -8,7 +8,6 @@
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
-    <!-- Bibliotecas do Firebase -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -20,17 +19,33 @@
             --blue-dark: #1e40af; --green-success: #27ae60; --red-danger: #e74c3c;
             --warning-orange: #f39c12; --bg-light: #f8fafc; --card-bg: #ffffff;
             --text-main: #1e293b; --text-muted: #64748b; --border-color: #e2e8f0;
+            
+            /* Cores de Destaque Adaptativas */
+            --text-highlight: #431c5d;
+            --text-highlight-alt: #1e40af;
+            --bg-blue-light: #eff6ff;
+            --badge-paid-bg: #f1f5f9;
+            --badge-paid-text: #64748b;
+            --calendar-invert: 0; /* Ícone de calendário escuro */
         }
 
         /* Variáveis Modo Escuro */
         body.dark-mode {
             --bg-light: #0f172a;
             --card-bg: #1e293b;
-            --text-main: #f1f5f9;
+            --text-main: #f8fafc;
             --text-muted: #94a3b8;
             --border-color: #334155;
             --purple-main: #582082;
             --purple-light: #6b21a8;
+            
+            /* Destaques Claros para o Modo Escuro brilhar */
+            --text-highlight: #d8b4fe; /* Lilás Claro */
+            --text-highlight-alt: #93c5fd; /* Azul Celeste */
+            --bg-blue-light: rgba(37, 99, 235, 0.15);
+            --badge-paid-bg: #334155;
+            --badge-paid-text: #cbd5e1;
+            --calendar-invert: 1; /* Inverte o ícone do calendário para branco */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -49,7 +64,6 @@
             .bottom-nav { display: none !important; }
             .tab-content { display: block !important; }
             
-            /* Botão discreto para PC */
             .desktop-toggle-btn { 
                 display: flex !important; 
                 margin-top: 15px; 
@@ -70,7 +84,7 @@
 
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; transition: 0.3s; }
         
-        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--purple-main); display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-highlight); display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
 
         .matrix-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2px; background-color: var(--border-color); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
         .matrix-label { background-color: var(--purple-main); color: white; padding: 12px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; }
@@ -80,6 +94,10 @@
         .input-inline, .control-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
         input, select, textarea { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; transition: 0.3s; }
         input:focus, select:focus, textarea:focus { border-color: var(--blue-accent); }
+        
+        /* Ajuste do ícone do calendário e Placeholders (textos de fundo) para o Modo Escuro */
+        ::-webkit-calendar-picker-indicator { filter: invert(var(--calendar-invert)); cursor: pointer; }
+        ::placeholder { color: var(--text-muted); opacity: 0.7; font-weight: 400; }
 
         @media (max-width: 600px) {
             .input-inline, .control-row { flex-direction: column; align-items: stretch; }
@@ -114,7 +132,7 @@
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; padding: 8px 10px; z-index: 100; transition: 0.3s; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; color: var(--text-muted); background: none; border: none; cursor: pointer; font-weight: 500; flex: 1; }
-        .nav-item.active { color: var(--purple-main); font-weight: 700; }
+        .nav-item.active { color: var(--text-highlight); font-weight: 700; }
         .nav-item .material-icons { font-size: 22px; margin-bottom: 2px; }
 
         @media (max-width: 899px) { .tab-content { display: none; } .tab-content.active { display: block; } }
@@ -129,9 +147,8 @@
 </head>
 <body>
 
-    <!-- Tela de Login -->
     <div id="loginScreen">
-        <h2 style="color: var(--purple-main); margin-bottom: 20px;"><span class="material-icons" style="vertical-align: bottom;">lock</span> Finanças Pro</h2>
+        <h2 style="color: var(--text-highlight); margin-bottom: 20px;"><span class="material-icons" style="vertical-align: bottom;">lock</span> Finanças Pro</h2>
         <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Acesse para sincronizar os seus dados</p>
         
         <input type="email" id="emailInput" placeholder="O seu E-mail" style="width: 100%; margin-bottom: 15px;">
@@ -143,10 +160,8 @@
         <p id="authErro" style="color: var(--red-danger); font-size: 0.85rem; margin-top: 15px; display: none;"></p>
     </div>
 
-    <!-- Indicador de Carregamento -->
     <div class="loading-overlay" id="loadingDiv">A sincronizar com a Nuvem...</div>
 
-    <!-- App Principal -->
     <div id="mainApp">
         <header>
             <h1><span class="material-icons">account_balance_wallet</span> Finanças Pro</h1>
@@ -158,7 +173,6 @@
 
         <div class="main-container">
             <div class="col-left">
-                <!-- Aba: Contas Fixas -->
                 <div id="tab-fixas" class="card tab-content active">
                     <div class="card-title"><span class="material-icons">assignment</span> Contas Fixas</div>
                     <div class="input-inline">
@@ -184,7 +198,6 @@
                     </div>
                 </div>
 
-                <!-- Aba: Gastos Diários -->
                 <div id="tab-diarios" class="card tab-content">
                     <div class="card-title"><span class="material-icons">shopping_cart</span> Gastos Diários</div>
                     <div class="input-inline">
@@ -209,11 +222,9 @@
                     </div>
                 </div>
 
-                <!-- Aba: Configurações do Sistema -->
                 <div id="tab-config" class="card tab-content">
                     <div class="card-title"><span class="material-icons">settings</span> Configurações do Sistema</div>
                     
-                    <!-- NOVO: Aparência (Modo Escuro) -->
                     <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🎨 Aparência do Aplicativo</h4>
                     <button class="btn-flat" style="background-color: var(--border-color); color: var(--text-main); width: 100%; justify-content: center;" onclick="toggleDarkMode()">
                         <span class="material-icons" id="iconTheme">dark_mode</span> <span id="textTheme">Ativar Modo Escuro</span>
@@ -264,7 +275,6 @@
                         <button class="btn-flat" onclick="addAssinaturaInformativa()">Adicionar</button>
                     </div>
 
-                    <!-- DIVIDIDO: Botões de Limpar Dados -->
                     <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
                     <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: var(--red-danger);">🗑️ Limpar Dados do Mês</h4>
                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
@@ -287,7 +297,7 @@
                             <div class="matrix-label">RESTANTE CONTAS</div><div class="matrix-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</div>
                             <div class="matrix-label">TOTAL DIÁRIOS</div><div class="matrix-value" id="mTotalDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
                             <div class="matrix-label" style="background-color: var(--blue-accent);">SALDO ATUAL</div>
-                            <div class="matrix-value" style="background-color: rgba(37, 99, 235, 0.1);"><input type="number" id="saldoInput" onblur="salvarSaldoDoMes()"></div>
+                            <div class="matrix-value" style="background-color: var(--bg-blue-light);"><input type="number" id="saldoInput" onblur="salvarSaldoDoMes()"></div>
                             <div class="matrix-label">FALTA / SOBRA</div><div class="matrix-value" id="mResultado" style="font-size: 1.2rem;">R$ 0,00</div>
                         </div>
                     </div>
@@ -315,15 +325,14 @@
                             <button class="btn-flat" onclick="calcularRelatorioAnual()"><span class="material-icons">refresh</span></button>
                         </div>
                         <div class="matrix-grid" style="margin-bottom: 20px;">
-                            <div class="matrix-label">GASTOS FIXOS (PAGOS)</div><div class="matrix-value" id="aFixos" style="color: var(--purple-main);">R$ 0,00</div>
+                            <div class="matrix-label">GASTOS FIXOS (PAGOS)</div><div class="matrix-value" id="aFixos" style="color: var(--text-highlight);">R$ 0,00</div>
                             <div class="matrix-label">GASTOS DIÁRIOS (TOTAIS)</div><div class="matrix-value" id="aDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
                             <div class="matrix-label" style="background-color: var(--blue-dark);">TOTAL GASTO NO ANO</div><div class="matrix-value" id="aTotal" style="font-size: 1.2rem; font-weight: 800;">R$ 0,00</div>
                         </div>
-                        <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);">Distribuição por Categorias</h4>
+                        <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--text-highlight);">Distribuição por Categorias</h4>
                         <div class="acumulados-list" id="listaAcumuladosAno"></div>
                     </div>
 
-                    <!-- Botão Ocultar Configurações no PC posicionado de forma discreta -->
                     <button class="btn-flat desktop-toggle-btn" onclick="toggleConfigDesktop()" id="btnToggleConfig">
                         <span style="display:flex; align-items:center; gap:8px;"><span class="material-icons">visibility_off</span> Ocultar Configurações no Painel</span>
                     </button>
@@ -341,7 +350,7 @@
     </div>
 
     <script>
-        // === CONTROLE MODO ESCURO (Carregamento Imediato) ===
+        // === CONTROLE MODO ESCURO ===
         function checkTheme() {
             if(localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');
@@ -439,7 +448,7 @@
 
         function fazerLogout() { auth.signOut(); }
 
-        // === FIREBASE: SINCRONIZAÇÃO DE DADOS ===
+        // === FIREBASE: SINCRONIZAÇÃO ===
         function carregarConfigGlobal(callback) {
             db.collection('users').doc(currentUser.uid).collection('config').doc('geral').get().then(doc => {
                 if(doc.exists) {
@@ -498,7 +507,6 @@
             db.collection('users').doc(currentUser.uid).collection('meses').doc(mesAtualKey).set(dados);
         }
 
-        // === LÓGICA DO OPERACIONAL ===
         function renderizarMeses() {
             const seletor = document.getElementById('mesSeletor');
             const copiaSeletor = document.getElementById('mesCopiaSeletor');
@@ -583,7 +591,6 @@
             });
         }
 
-        // FUNÇÕES DIVIDIDAS: APAGAR DADOS DO MÊS
         function limparFixasDoMesAtual() {
             if(!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja apagar TODAS as contas fixas de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`)) return;
             window.activeFixas = [];
@@ -598,7 +605,6 @@
             calcularEAtualizarVisual();
         }
 
-        // OCULTAR CONFIGURAÇÕES NO PC
         function toggleConfigDesktop() {
             const configTab = document.getElementById('tab-config');
             const btn = document.getElementById('btnToggleConfig');
@@ -629,7 +635,7 @@
         }
 
         function calcularAlertaVencimento(diaVenc, pago) {
-            if (pago) return { texto: `Dia ${diaVenc}`, cor: '#94a3b8', bg: '#f1f5f9' };
+            if (pago) return { texto: `Dia ${diaVenc}`, cor: 'var(--badge-paid-text)', bg: 'var(--badge-paid-bg)' };
 
             const [ano, mes] = mesAtualKey.split('-').map(Number);
             const hoje = new Date(); hoje.setHours(0,0,0,0);
@@ -769,7 +775,6 @@
                 `;
             });
 
-            // ATUALIZADO: Falta/Sobra leva em consideração APENAS Saldo e Restante Fixo.
             const saldoInputVal = parseFloat(document.getElementById('saldoInput').value) || 0;
             let resultadoFinal = saldoInputVal - restante;
 
@@ -793,7 +798,7 @@
                             <span style="display:flex; align-items:center; gap:8px;">
                                 <span class="material-icons" style="font-size:18px; color:var(--text-muted);">${icone}</span> ${cat}
                             </span>
-                            <span style="color:var(--purple-main); font-weight:700">R$ ${valor.toFixed(2)}</span>
+                            <span style="color:var(--text-highlight); font-weight:700">R$ ${valor.toFixed(2)}</span>
                         </div>`;
                 }
             });
@@ -802,7 +807,7 @@
             divSubs.innerHTML = '';
             assinaturasConfig.forEach(s => {
                 let valorFormatado = s.valor ? ` - R$ ${s.valor.toFixed(2)}` : '';
-                divSubs.innerHTML += `<div class="sub-item"><span>🔔 ${s.nome} <strong style="color:var(--purple-main)">${valorFormatado}</strong></span><div style="display:flex; align-items:center; gap:10px;"><span class="sub-date">Dia ${s.vencimento}</span><button class="btn-delete" onclick="deletarAssinatura(${s.id})"><span class="material-icons" style="font-size:1.1rem;">delete</span></button></div></div>`;
+                divSubs.innerHTML += `<div class="sub-item"><span>🔔 ${s.nome} <strong style="color:var(--text-highlight)">${valorFormatado}</strong></span><div style="display:flex; align-items:center; gap:10px;"><span class="sub-date">Dia ${s.vencimento}</span><button class="btn-delete" onclick="deletarAssinatura(${s.id})"><span class="material-icons" style="font-size:1.1rem;">delete</span></button></div></div>`;
             });
 
             let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
@@ -845,7 +850,7 @@
                             <span style="display:flex; align-items:center; gap:8px;">
                                 <span class="material-icons" style="font-size:18px; color:var(--text-muted);">${icone}</span> ${cat}
                             </span>
-                            <span style="color:var(--blue-dark); font-weight:700">R$ ${valor.toFixed(2)}</span>
+                            <span style="color:var(--text-highlight-alt); font-weight:700">R$ ${valor.toFixed(2)}</span>
                         </div>`;
                 });
                 
