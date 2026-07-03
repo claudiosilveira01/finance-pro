@@ -39,7 +39,6 @@
 
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
         
-        /* CORREÇÃO DOS TÍTULOS */
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--purple-main); display: flex; align-items: center; gap: 8px; }
 
         .matrix-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2px; background-color: var(--border-color); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
@@ -47,18 +46,18 @@
         .matrix-value { background-color: white; padding: 12px; font-weight: 700; font-size: 1.1rem; text-align: right; }
         .matrix-value input { width: 100%; border: none; text-align: right; font-weight: 700; font-size: 1.1rem; color: var(--text-main); outline: none; }
 
-        .input-inline { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        .input-inline, .control-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
         input, select { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; }
         input:focus, select:focus { border-color: var(--blue-accent); }
 
-        /* CORREÇÃO PARA CELULARES - Evita cortes no layout */
+        /* RESPONSIVIDADE PARA CELULARES */
         @media (max-width: 600px) {
-            .input-inline { flex-direction: column; align-items: stretch; }
-            .input-inline > * { width: 100% !important; margin-bottom: 5px; flex: none; }
+            .input-inline, .control-row { flex-direction: column; align-items: stretch; }
+            .input-inline > *, .control-row > * { width: 100% !important; margin-bottom: 5px; flex: none; }
             .btn-flat { margin-top: 5px; }
         }
 
-        .btn-flat { background-color: var(--blue-accent); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-flat { background-color: var(--blue-accent); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap;}
         .btn-flat:hover { background-color: var(--blue-dark); }
 
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
@@ -177,25 +176,33 @@
                 <div id="tab-config" class="card tab-content">
                     <div class="card-title"><span class="material-icons">settings</span> Configurações do Sistema</div>
                     
-                    <h4 style="margin: 10px 0 5px 0; font-size: 0.9rem;">🗓️ Adicionar Novo Mês</h4>
-                    <div class="input-inline">
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🗓️ Adicionar Novo Mês</h4>
+                    <div class="control-row">
                         <input type="month" id="novoMesInput">
-                        <button class="btn-flat" onclick="addNovoMes()">Adicionar</button>
+                        <button class="btn-flat" onclick="addNovoMes()">Adicionar Mês</button>
                     </div>
 
                     <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
-                    <h4 style="margin: 10px 0 5px 0; font-size: 0.9rem;">🏷️ Nova Categoria</h4>
-                    <div class="input-inline">
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🔄 Copiar Contas Fixas de Outro Mês</h4>
+                    <div class="control-row">
+                        <select id="mesCopiaSeletor"></select>
+                        <button class="btn-flat" style="background-color: var(--warning-orange);" onclick="copiarContasFixas()">Copiar para o Mês Atual</button>
+                    </div>
+
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🏷️ Nova Categoria</h4>
+                    <div class="control-row">
                         <input type="text" id="novaCatNome" placeholder="Nome da Categoria">
-                        <button class="btn-flat" onclick="addCategoriaGlobal()">Salvar</button>
+                        <button class="btn-flat" onclick="addCategoriaGlobal()">Salvar Categoria</button>
                     </div>
                     <div id="listaCategoriasConfig" style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:20px;"></div>
 
                     <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
-                    <h4 style="margin: 10px 0 5px 0; font-size: 0.9rem;">🔔 Controle de Assinaturas (Informativo)</h4>
-                    <div class="input-inline">
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🔔 Controle de Assinaturas</h4>
+                    <div class="control-row">
                         <input type="text" id="subNome" placeholder="Ex: Netflix" style="flex:2;">
                         <input type="number" id="subValor" placeholder="Valor (R$)" style="flex:1.5;">
                         <input type="number" id="subVenc" placeholder="Dia Venc." min="1" max="31" style="flex:1;">
@@ -226,7 +233,7 @@
                     </div>
 
                     <div class="card">
-                        <div class="card-title"><span class="material-icons">credit_card</span> Controle de Assinaturas</div>
+                        <div class="card-title"><span class="material-icons">credit_card</span> Suas Assinaturas</div>
                         <div id="listaAssinaturasCard"></div>
                     </div>
                 </div>
@@ -391,8 +398,14 @@
         // === LÓGICA DO APP ===
         function renderizarMeses() {
             const seletor = document.getElementById('mesSeletor');
+            const copiaSeletor = document.getElementById('mesCopiaSeletor');
             seletor.innerHTML = '';
-            mesesDisponiveis.forEach(m => seletor.innerHTML += `<option value="${m.key}">${m.label}</option>`);
+            if(copiaSeletor) copiaSeletor.innerHTML = '<option value="">Selecione um mês...</option>';
+            
+            mesesDisponiveis.forEach(m => {
+                seletor.innerHTML += `<option value="${m.key}">${m.label}</option>`;
+                if(copiaSeletor) copiaSeletor.innerHTML += `<option value="${m.key}">${m.label}</option>`;
+            });
         }
 
         function renderizarAnosRelatorio() {
@@ -424,6 +437,48 @@
         function mudarMesOuro() {
             mesAtualKey = document.getElementById('mesSeletor').value;
             carregarMes(mesAtualKey);
+        }
+
+        // === NOVA FUNÇÃO: COPIAR CONTAS ===
+        function copiarContasFixas() {
+            const mesOrigemKey = document.getElementById('mesCopiaSeletor').value;
+            if(!mesOrigemKey) return alert("Selecione um mês de origem primeiro!");
+            if(mesOrigemKey === mesAtualKey) return alert("Você já está gerindo este mesmo mês!");
+            
+            if(!confirm("Isto vai importar todas as contas fixas de " + mesOrigemKey + " para o mês atual (" + mesAtualKey + "). O status de pagamento delas será resetado para 'Não'. Deseja continuar?")) return;
+
+            document.getElementById('loadingDiv').style.display = 'flex';
+            
+            db.collection('users').doc(currentUser.uid).collection('meses').doc(mesOrigemKey).get().then(doc => {
+                if(doc.exists) {
+                    let data = doc.data();
+                    let fixasOrigem = data.fixas || [];
+                    
+                    if(fixasOrigem.length === 0) {
+                        alert("Não foram encontradas contas fixas no mês selecionado.");
+                    } else {
+                        fixasOrigem.forEach(f => {
+                            window.activeFixas.push({
+                                id: Date.now() + Math.floor(Math.random() * 1000), 
+                                nome: f.nome,
+                                valor: f.valor,
+                                vencimento: f.vencimento,
+                                categoria: f.categoria,
+                                pago: false // Zera o pagamento para o novo mês
+                            });
+                        });
+                        salvarDadosDoMesAtual();
+                        calcularEAtualizarVisual();
+                        alert("Contas copiadas com sucesso!");
+                    }
+                } else {
+                    alert("Dados do mês de origem não encontrados.");
+                }
+                document.getElementById('loadingDiv').style.display = 'none';
+            }).catch(err => {
+                alert("Erro ao copiar: " + err.message);
+                document.getElementById('loadingDiv').style.display = 'none';
+            });
         }
 
         function salvarSaldoDoMes() {
@@ -488,6 +543,7 @@
     // 5. Caso normal (faltam mais de 3 dias)
     return { texto: `Dia ${diaVenc}`, cor: 'white', bg: 'var(--green-success)' };
 }
+
         function calcularEAtualizarVisual() {
             let orcamento = 0, pago = 0, restante = 0, totalDiarios = 0;
             let totalPorCategoria = {};
@@ -553,7 +609,6 @@
                 }
             });
 
-            // ATUALIZADO: Mostrar o Valor na lista de assinaturas
             const divSubs = document.getElementById('listaAssinaturasCard');
             divSubs.innerHTML = '';
             assinaturasConfig.forEach(s => {
@@ -595,7 +650,7 @@
                     divAcumuladosAno.innerHTML += `<div class="acumulado-item"><span>${cat}</span><span style="color:var(--blue-dark); font-weight:700">R$ ${valor.toFixed(2)}</span></div>`;
                 });
                 
-                if(catArray.length === 0) divAcumuladosAno.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center;">Nenhum gasto registado em ${anoSelecionado}.</p>`;
+                if(catArray.length === 0) divAcumuladosAno.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center;">Nenhum gasto registrado em ${anoSelecionado}.</p>`;
             });
         }
 
@@ -622,7 +677,6 @@
         function deletarAssinatura(id) { assinaturasConfig = assinaturasConfig.filter(s => s.id !== id); salvarConfigGlobal(); calcularEAtualizarVisual(); }
         function addCategoriaGlobal() { const nome = document.getElementById('novaCatNome').value.trim(); if(!nome || categoriasAtuais.includes(nome)) return; categoriasAtuais.push(nome); salvarConfigGlobal(); document.getElementById('novaCatNome').value = ''; renderizarListasDeCategorias(); calcularEAtualizarVisual(); }
         
-        // ATUALIZADO: Adicionar Assinatura com Valor
         function addAssinaturaInformativa() { 
             const nome = document.getElementById('subNome').value.trim(); 
             const valor = parseFloat(document.getElementById('subValor').value);
