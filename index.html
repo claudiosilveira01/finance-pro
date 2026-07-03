@@ -1,446 +1,259 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finanças Pro - Dashboard</title>
-    <!-- Incluir Material Icons para os ícones -->
+    <title>Finanças Inteligente Nuvem</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
     <style>
-        /* =========================================
-           Estilos Globais e Reset
-           ========================================= */
-        * {
-            box-sizing: border-box; /* Evita que o padding quebre a largura dos elementos */
+        :root {
+            --purple-main: #431c5d; --purple-light: #511878; --blue-accent: #2563eb;
+            --blue-dark: #1e40af; --green-success: #27ae60; --red-danger: #e74c3c;
+            --warning-orange: #f39c12; --bg-light: #f8fafc; --card-bg: #ffffff;
+            --text-main: #1e293b; --text-muted: #64748b; --border-color: #e2e8f0;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            padding: 15px;
-            background-color: #f8f9fa;
-            color: #333;
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-main); padding-bottom: 70px; }
+
+        header { background-color: var(--purple-main); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        header h1 { font-size: clamp(1.1rem, 4vw, 1.5rem); font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        
+        .select-mes { background: var(--purple-light); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 6px; font-weight: 600; outline: none; cursor: pointer; }
+
+        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: 1fr; gap: 20px; }
+
+        @media (min-width: 900px) {
+            .main-container { grid-template-columns: 1.3fr 1fr; }
+            body { padding-bottom: 20px; }
+            .bottom-nav { display: none !important; }
+            .tab-content { display: block !important; }
         }
 
-        /* Contêiner Principal */
-        .dashboard-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px;
-            max-width: 1200px;
-            margin: 0 auto;
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
+        
+        /* CORREÇÃO DOS TÍTULOS - Removido o space-between para juntar ícone e texto */
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--purple-main); display: flex; align-items: center; gap: 8px; }
+
+        .matrix-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2px; background-color: var(--border-color); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
+        .matrix-label { background-color: var(--purple-main); color: white; padding: 12px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; }
+        .matrix-value { background-color: white; padding: 12px; font-weight: 700; font-size: 1.1rem; text-align: right; }
+        .matrix-value input { width: 100%; border: none; text-align: right; font-weight: 700; font-size: 1.1rem; color: var(--text-main); outline: none; }
+
+        .input-inline { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; }
+        input, select { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; }
+        input:focus, select:focus { border-color: var(--blue-accent); }
+
+        /* CORREÇÃO PARA TELEMÓVEIS - Evita cortes no layout */
+        @media (max-width: 600px) {
+            .input-inline { flex-direction: column; align-items: stretch; }
+            .input-inline > * { width: 100% !important; margin-bottom: 5px; flex: none; }
+            .btn-flat { margin-top: 5px; }
         }
 
-        /* =========================================
-           Estilos Gerais do Card
-           ========================================= */
-        .card {
-            background-color: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
+        .btn-flat { background-color: var(--blue-accent); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; }
+        .btn-flat:hover { background-color: var(--blue-dark); }
 
-        .card-header {
-            padding: 15px 20px;
-            background-color: #f1f3f5;
-            border-bottom: 1px solid #e9ecef;
-            display: flex;
-            align-items: center;
-            justify-content: flex-start;
-            gap: 12px;
-        }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.95rem; min-width: 400px; }
+        th { background-color: var(--purple-light); color: white; padding: 10px; font-weight: 500; white-space: nowrap; }
+        th.sortable { cursor: pointer; user-select: none; transition: background 0.2s; }
+        th.sortable:hover { background-color: var(--purple-main); }
+        th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+        th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+        td { padding: 10px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
 
-        .card-header span {
-            font-size: 24px;
-            color: #2c3e50;
-        }
+        .status-badge { padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer; width: 75px; text-align: center; color: white; }
+        .status-badge.sim { background-color: var(--green-success); }
+        .status-badge.nao { background-color: var(--red-danger); }
 
-        .card-header h2 {
-            margin: 0;
-            font-size: 18px;
-            font-weight: 600;
-            color: #2c3e50;
-        }
+        .vencimento-tag { font-weight: 600; font-size: 0.85rem; padding: 4px 8px; border-radius: 4px; display: inline-block; white-space: nowrap; }
+        .btn-delete { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display:flex; align-items:center; padding: 4px; }
+        .btn-delete:hover { color: var(--red-danger); }
 
-        .card-body {
-            padding: 20px;
-            flex-grow: 1;
-        }
+        .acumulados-list { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .acumulado-item { display: flex; justify-content: space-between; padding: 8px 12px; background: var(--bg-light); border-radius: 6px; font-size: 0.9rem; font-weight: 500; }
+        .sub-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+        .sub-date { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; background: #edf2f7; padding: 4px 8px; border-radius: 6px; }
 
-        /* =========================================
-           Inputs e Botões
-           ========================================= */
-        .input-group, .control-row {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-            gap: 10px;
-        }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: white; border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; padding: 8px 10px; z-index: 100; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; color: var(--text-muted); background: none; border: none; cursor: pointer; font-weight: 500; flex: 1; }
+        .nav-item.active { color: var(--purple-main); font-weight: 700; }
+        .nav-item .material-icons { font-size: 22px; margin-bottom: 2px; }
 
-        input[type="text"], input[type="date"], select, input[type="number"] {
-            padding: 10px 12px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-size: 14px;
-            color: #495057;
-            background-color: #fff;
-            flex-grow: 1;
-            width: 100%;
-        }
+        @media (max-width: 899px) { .tab-content { display: none; } .tab-content.active { display: block; } }
+        .chart-container { position: relative; margin: auto; height: 180px; width: 180px; }
 
-        button.btn-add, button.btn-save {
-            padding: 10px 16px;
-            border: none;
-            border-radius: 4px;
-            font-size: 14px;
-            font-weight: 600;
-            cursor: pointer;
-            color: #fff;
-            background-color: #3498db; 
-            transition: background 0.2s;
-            white-space: nowrap;
-        }
-
-        button.btn-add:hover, button.btn-save:hover {
-            background-color: #2980b9;
-        }
-
-        /* =========================================
-           Tabelas
-           ========================================= */
-        .table-container {
-            margin-top: 15px;
-            width: 100%;
-        }
-
-        .data-table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }
-
-        .data-table th, .data-table td {
-            text-align: left;
-            padding: 12px 10px;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .data-table th {
-            background-color: #5d3f8a; 
-            color: #fff;
-            font-weight: 500;
-            white-space: nowrap;
-        }
-
-        .data-table tr.paid { background-color: #d1f7d1; }
-
-        .status-badge {
-            padding: 4px 10px;
-            border-radius: 4px;
-            font-weight: 500;
-            color: #fff;
-            text-transform: uppercase;
-            font-size: 11px;
-            display: inline-block;
-            text-align: center;
-        }
-
-        .status-paid { background-color: #27ae60; }
-        .status-unpaid { background-color: #e74c3c; }
-        .data-table span.material-icons { font-size: 20px; color: #6c757d; cursor: pointer; }
-
-        /* =========================================
-           Painel de Controle e Gráficos
-           ========================================= */
-        .control-grid {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 15px;
-            align-items: center;
-            font-size: 15px;
-            font-weight: 500;
-            margin-top: 10px;
-        }
-
-        .control-label { color: #6c757d; }
-        .control-value { text-align: right; font-size: 16px; font-weight: 600; }
-
-        .value-red { color: #e74c3c; }
-        .value-green { color: #27ae60; }
-        .value-orange { color: #f39c12; }
-
-        .chart-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 250px;
-            margin-top: 10px;
-        }
-
-        .chart-visual {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            border: 25px solid #fff;
-            box-shadow: 0 0 0 25px #27ae60; 
-            position: relative;
-        }
-
-        .chart-legend {
-            margin-top: 30px;
-            width: 100%;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 14px;
-        }
-
-        .chart-item { display: flex; align-items: center; gap: 8px; }
-        .legend-color { width: 12px; height: 12px; border-radius: 50%; background-color: #27ae60; }
-
-        /* =========================================
-           RESPONSIVIDADE (Design para Celulares)
-           ========================================= */
-        @media (max-width: 768px) {
-            .dashboard-container {
-                grid-template-columns: 1fr; /* 1 card por linha no celular */
-                gap: 15px;
-            }
-
-            .input-group, .control-row {
-                flex-direction: column; /* Empilha os inputs */
-                align-items: stretch;
-            }
-
-            button.btn-add, button.btn-save {
-                width: 100%; /* Botões ocupam a largura toda no celular */
-                padding: 12px;
-            }
-
-            /* Permite scroll horizontal nas tabelas sem quebrar o layout do app */
-            .table-container {
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-                margin-top: 10px;
-                border: 1px solid #e9ecef;
-                border-radius: 4px;
-            }
-
-            .data-table {
-                min-width: 450px; /* Garante que a tabela tenha espaço para não espremer os dados */
-            }
-        }
+        /* TELA DE LOGIN */
+        #loginScreen { max-width: 400px; margin: 80px auto; padding: 30px; background: white; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; }
+        #mainApp { display: none; }
+        .loading-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(255,255,255,0.8); display: none; justify-content: center; align-items: center; z-index: 999; font-weight: bold; color: var(--purple-main);}
     </style>
 </head>
 <body>
 
-    <div class="dashboard-container">
+    <div id="loginScreen">
+        <h2 style="color: var(--purple-main); margin-bottom: 20px;"><span class="material-icons" style="vertical-align: bottom;">lock</span> Finanças Pro</h2>
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Acesse para sincronizar os seus dados</p>
+        
+        <input type="email" id="emailInput" placeholder="O seu E-mail" style="width: 100%; margin-bottom: 15px;">
+        <input type="password" id="senhaInput" placeholder="A sua Senha" style="width: 100%; margin-bottom: 15px;">
+        
+        <button onclick="fazerLogin()" class="btn-flat" style="width: 100%; margin-bottom: 10px; padding: 12px;">Entrar</button>
+        <button onclick="criarConta()" class="btn-flat" style="width: 100%; background-color: var(--purple-light); padding: 12px;">Criar Conta Grátis</button>
+        
+        <p id="authErro" style="color: var(--red-danger); font-size: 0.85rem; margin-top: 15px; display: none;"></p>
+    </div>
 
-        <!-- Card: Contas Fixas -->
-        <div class="card">
-            <div class="card-header">
-                <span class="material-icons">card_membership</span>
-                <h2>Contas Fixas</h2>
+    <div class="loading-overlay" id="loadingDiv">A sincronizar com a Nuvem...</div>
+
+    <div id="mainApp">
+        <header>
+            <h1><span class="material-icons">account_balance_wallet</span> Finanças Pro</h1>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <select id="mesSeletor" class="select-mes" onchange="mudarMesOuro()"></select>
+                <button class="btn-flat" style="background:var(--red-danger); padding:6px 10px;" onclick="fazerLogout()" title="Sair"><span class="material-icons" style="font-size:18px;">logout</span></button>
             </div>
-            <div class="card-body">
-                <div class="input-group">
-                    <input type="text" placeholder="Item (Ex: Cursinho)">
-                    <input type="number" placeholder="R$ 0,00" step="0.01">
-                    <input type="date" placeholder="Dia Vencimento">
-                    <select>
-                        <option value="assunto">Assinaturas</option>
-                    </select>
-                    <button class="btn-add">Adicionar</button>
+        </header>
+
+        <div class="main-container">
+            <div class="col-left">
+                <div id="tab-fixas" class="card tab-content active">
+                    <div class="card-title"><span class="material-icons">assignment</span> Contas Fixas</div>
+                    <div class="input-inline">
+                        <input type="text" id="fixaNome" style="flex:2;" placeholder="Item (Ex: Cursinho)">
+                        <input type="number" id="fixaValor" style="flex:1;" placeholder="R$">
+                        <input type="number" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31">
+                        <select id="fixaCategoria" style="flex:1.5;"></select>
+                        <button class="btn-flat" onclick="addContaFixa()"><span class="material-icons">add</span></button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'vencimento')">Venc. ↕️</th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'valor')">Valor ↕️</th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'pago')">Pago? ↕️</th>
+                                    <th style="width: 40px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaFixas"></tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Item</th>
-                                <th>Venc.</th>
-                                <th>Valor</th>
-                                <th>Pago?</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr class="unpaid">
-                                <td>Cartão Nubank</td>
-                                <td style="color: #27ae60; font-weight: 500;">Dia 6</td>
-                                <td>R$ 300,00</td>
-                                <td><span class="status-badge status-unpaid">Não</span></td>
-                                <td><span class="material-icons">delete_forever</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card: Painel de Controle -->
-        <div class="card">
-            <div class="card-header">
-                <span class="material-icons">dashboard</span>
-                <h2>Painel de Controle</h2>
-            </div>
-            <div class="card-body">
-                <div class="control-grid">
-                    <div class="control-label">ORÇAMENTO FIXO</div>
-                    <div class="control-value">R$ 300.00</div>
-
-                    <div class="control-label">PAGO</div>
-                    <div class="control-value value-green">R$ 0.00</div>
-
-                    <div class="control-label">RESTANTE CONTAS</div>
-                    <div class="control-value value-red">R$ 300.00</div>
-
-                    <div class="control-label">TOTAL DIÁRIOS</div>
-                    <div class="control-value value-orange">R$ 33.40</div>
-
-                    <div class="control-label">SALDO ATUAL</div>
-                    <div class="control-value">1990</div>
-
-                    <div class="control-label">FALTA / SOBRA</div>
-                    <div class="control-value value-green">R$ 1656.60</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card: Gastos Diários -->
-        <div class="card">
-            <div class="card-header">
-                <span class="material-icons">shopping_cart</span>
-                <h2>Gastos Diários</h2>
-            </div>
-            <div class="card-body">
-                <div class="input-group">
-                    <input type="text" placeholder="Ex: Pão da tarde">
-                    <input type="date" value="2024-03-07">
-                    <input type="number" placeholder="R$ 0,00" step="0.01">
-                    <select>
-                        <option value="alimentacao">Alimentação</option>
-                    </select>
-                    <button class="btn-add">Adicionar</button>
+                <div id="tab-diarios" class="card tab-content">
+                    <div class="card-title"><span class="material-icons">shopping_cart</span> Gastos Diários</div>
+                    <div class="input-inline">
+                        <input type="text" id="diarioNome" style="flex:2;" placeholder="Ex: Pão da tarde">
+                        <input type="date" id="diarioData" style="flex:1.5;">
+                        <input type="number" id="diarioValor" style="flex:1;" placeholder="R$">
+                        <select id="diarioCategoria" style="flex:1.5;"></select>
+                        <button class="btn-flat" onclick="addGastoDiario()"><span class="material-icons">add</span></button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="ordenarTabela('diarios', 'data')">Data ↕️</th>
+                                    <th>Item</th>
+                                    <th class="sortable" onclick="ordenarTabela('diarios', 'valor')">Valor ↕️</th>
+                                    <th style="width: 40px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaDiarios"></tbody>
+                        </table>
+                    </div>
                 </div>
 
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Data</th>
-                                <th>Item</th>
-                                <th>Valor</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>03/07</td>
-                                <td>
-                                    <strong>Pão da Tarde</strong><br>
-                                    <span style="font-size: 11px; color: #6c757d;">Alimentação</span>
-                                </td>
-                                <td>R$ 13.40</td>
-                                <td><span class="material-icons">delete_forever</span></td>
-                            </tr>
-                            <tr>
-                                <td>03/07</td>
-                                <td>
-                                    <strong>Gasolina</strong><br>
-                                    <span style="font-size: 11px; color: #6c757d;">Alimentação</span>
-                                </td>
-                                <td>R$ 20.00</td>
-                                <td><span class="material-icons">delete_forever</span></td>
-                            </tr>
-                        </tbody>
-                    </table>
+                <div id="tab-config" class="card tab-content">
+                    <div class="card-title"><span class="material-icons">settings</span> Configurações do Sistema</div>
+                    
+                    <h4 style="margin: 10px 0 5px 0; font-size: 0.9rem;">🗓️ Adicionar Novo Mês</h4>
+                    <div class="input-inline">
+                        <input type="month" id="novoMesInput">
+                        <button class="btn-flat" onclick="addNovoMes()">Adicionar</button>
+                    </div>
+
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+                    <h4 style="margin: 10px 0 5px 0; font-size: 0.9rem;">🏷️ Nova Categoria</h4>
+                    <div class="input-inline">
+                        <input type="text" id="novaCatNome" placeholder="Nome da Categoria">
+                        <button class="btn-flat" onclick="addCategoriaGlobal()">Salvar</button>
+                    </div>
+                    <div id="listaCategoriasConfig" style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:20px;"></div>
+
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+                    <h4 style="margin: 10px 0 5px 0; font-size: 0.9rem;">🔔 Controle de Assinaturas (Informativo)</h4>
+                    <div class="input-inline">
+                        <input type="text" id="subNome" placeholder="Ex: Netflix" style="flex:2;">
+                        <input type="number" id="subValor" placeholder="Valor (R$)" style="flex:1.5;">
+                        <input type="number" id="subVenc" placeholder="Dia Venc." min="1" max="31" style="flex:1;">
+                        <button class="btn-flat" onclick="addAssinaturaInformativa()">Adicionar</button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Card: Acumulado por Categoria -->
-        <div class="card">
-            <div class="card-header">
-                <span class="material-icons">pie_chart</span>
-                <h2>Acumulado por Categoria</h2>
-            </div>
-            <div class="card-body">
-                <div class="chart-container">
-                    <div class="chart-visual"></div>
-                    <div class="chart-legend">
-                        <div class="chart-item">
-                            <div class="legend-color"></div>
-                            Alimentação
+            <div class="col-right">
+                <div id="tab-dashboard" class="tab-content">
+                    <div class="card">
+                        <div class="card-title"><span class="material-icons">calculate</span> Painel de Controle</div>
+                        <div class="matrix-grid">
+                            <div class="matrix-label">ORÇAMENTO FIXO</div><div class="matrix-value" id="mOrcamento">R$ 0,00</div>
+                            <div class="matrix-label">PAGO</div><div class="matrix-value" id="mPago" style="color: var(--green-success);">R$ 0,00</div>
+                            <div class="matrix-label">RESTANTE CONTAS</div><div class="matrix-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</div>
+                            <div class="matrix-label">TOTAL DIÁRIOS</div><div class="matrix-value" id="mTotalDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
+                            <div class="matrix-label" style="background-color: var(--blue-accent);">SALDO ATUAL</div>
+                            <div class="matrix-value" style="background-color: #eff6ff;"><input type="number" id="saldoInput" onblur="salvarSaldoDoMes()"></div>
+                            <div class="matrix-label">FALTA / SOBRA</div><div class="matrix-value" id="mResultado" style="font-size: 1.2rem;">R$ 0,00</div>
                         </div>
-                        <div class="chart-value">R$ 33.40</div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title"><span class="material-icons">pie_chart</span> Acumulado por Categoria</div>
+                        <div class="chart-container"><canvas id="chartCategorias"></canvas></div>
+                        <div class="acumulados-list" id="listaAcumulados"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title"><span class="material-icons">credit_card</span> Controle de Assinaturas</div>
+                        <div id="listaAssinaturasCard"></div>
+                    </div>
+                </div>
+
+                <div id="tab-anual" class="tab-content">
+                    <div class="card">
+                        <div class="card-title"><span class="material-icons">calendar_month</span> Relatório Anual</div>
+                        <div class="input-inline" style="margin-bottom: 20px;">
+                            <select id="anoRelatorio" style="flex: 2;" onchange="calcularRelatorioAnual()"></select>
+                            <button class="btn-flat" onclick="calcularRelatorioAnual()"><span class="material-icons">refresh</span></button>
+                        </div>
+                        <div class="matrix-grid" style="margin-bottom: 20px;">
+                            <div class="matrix-label">GASTOS FIXOS (PAGOS)</div><div class="matrix-value" id="aFixos" style="color: var(--purple-main);">R$ 0,00</div>
+                            <div class="matrix-label">GASTOS DIÁRIOS (TOTAIS)</div><div class="matrix-value" id="aDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
+                            <div class="matrix-label" style="background-color: var(--blue-dark);">TOTAL GASTO NO ANO</div><div class="matrix-value" id="aTotal" style="font-size: 1.2rem; font-weight: 800;">R$ 0,00</div>
+                        </div>
+                        <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);">Distribuição por Categorias</h4>
+                        <div class="acumulados-list" id="listaAcumuladosAno"></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Card: Configurações do Sistema -->
-        <div class="card">
-            <div class="card-header">
-                <span class="material-icons">settings</span>
-                <h2>Configurações do Sistema</h2>
-            </div>
-            <div class="card-body">
-                <div class="control-row">
-                    <input type="text" placeholder="---------- de ----">
-                    <button class="btn-save">Adicionar Mês</button>
-                </div>
-                <div class="control-row">
-                    <input type="text" placeholder="Nome da Categoria">
-                    <button class="btn-save">Salvar Categoria</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Card: Controle de Assinaturas (ATUALIZADO COM VALOR) -->
-        <div class="card">
-            <div class="card-header">
-                <span class="material-icons">credit_card</span>
-                <h2>Controle de Assinaturas (Informativo)</h2>
-            </div>
-            <div class="card-body">
-                <div class="control-row">
-                    <input type="text" placeholder="Ex: Netflix">
-                    <input type="number" placeholder="Valor (R$)" step="0.01">
-                    <input type="text" placeholder="Dia Venc.">
-                    <button class="btn-add">Adicionar</button>
-                </div>
-            </div>
-        </div>
-
-    </div>
-
-    <!-- SCRIPT FIREBASE -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-        import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
-        import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
-
-        // Configuração do Firebase
-        const firebaseConfig = {
-            apiKey: "AIzaSyBJa2FQ7LGJNTIne8iiyRXCr0Og8V1NtVs",
-            authDomain: "finance-pro-v1.firebaseapp.com",
-            projectId: "finance-pro-v1",
-            storageBucket: "finance-pro-v1.firebasestorage.app",
-            messagingSenderId: "866672231232",
-            appId: "1:866672231232:web:1b4401c3123bb42c26b0a5"
-        };
-
-        // Inicializar Firebase
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        console.log("Firebase conectado com sucesso!");
-    </script>
-</body>
-</html>
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchTab(event, 'tab-fixas')"><span class="material-icons">assignment</span>Contas</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-diarios')"><span class="material-icons">shopping_cart</span>Diários</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-dashboard')"><span class="material-icons">analytics</span>Mês</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-anual')"><span class="material-icons">calendar_month</span>Anual</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-config')"><span class="material-icons">settings</span>Config</button>
+        </nav
