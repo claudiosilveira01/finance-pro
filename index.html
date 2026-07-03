@@ -39,7 +39,8 @@
 
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; }
         
-        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--purple-main); display: flex; align-items: center; gap: 8px; }
+        /* Alinhamento dos ícones junto ao texto do título */
+        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--purple-main); display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
 
         .matrix-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2px; background-color: var(--border-color); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
         .matrix-label { background-color: var(--purple-main); color: white; padding: 12px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; }
@@ -47,10 +48,10 @@
         .matrix-value input { width: 100%; border: none; text-align: right; font-weight: 700; font-size: 1.1rem; color: var(--text-main); outline: none; }
 
         .input-inline, .control-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
-        input, select { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; }
-        input:focus, select:focus { border-color: var(--blue-accent); }
+        input, select, textarea { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; }
+        input:focus, select:focus, textarea:focus { border-color: var(--blue-accent); }
 
-        /* RESPONSIVIDADE PARA CELULARES */
+        /* Ajustes de responsividade para telas de celulares */
         @media (max-width: 600px) {
             .input-inline, .control-row { flex-direction: column; align-items: stretch; }
             .input-inline > *, .control-row > * { width: 100% !important; margin-bottom: 5px; flex: none; }
@@ -192,6 +193,16 @@
 
                     <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">📥 Importar Lista de Gastos Diários (CSV)</h4>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
+                        Cole os dados organizados por vírgula: <b>Nome, Valor, Categoria, Data (AAAA-MM-DD)</b><br>
+                        Exemplo: <i>Gasolina, 50.00, Transporte, 2026-07-03</i>
+                    </p>
+                    <textarea id="csvImportText" style="width:100%; height:110px; margin-bottom:10px; font-size:0.85rem;" placeholder="Cole as suas linhas do Excel ou bloco de notas aqui..."></textarea>
+                    <button class="btn-flat" style="background-color: var(--green-success);" onclick="importarGastosCSV()">Processar Importação</button>
+
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
                     <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🏷️ Nova Categoria</h4>
                     <div class="control-row">
                         <input type="text" id="novaCatNome" placeholder="Nome da Categoria">
@@ -201,7 +212,7 @@
 
                     <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
-                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🔔 Controle de Assinaturas</h4>
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🔔 Controle de Assinaturas (Informativo)</h4>
                     <div class="control-row">
                         <input type="text" id="subNome" placeholder="Ex: Netflix" style="flex:2;">
                         <input type="number" id="subValor" placeholder="Valor (R$)" style="flex:1.5;">
@@ -395,7 +406,7 @@
             db.collection('users').doc(currentUser.uid).collection('meses').doc(mesAtualKey).set(dados);
         }
 
-        // === LÓGICA DO APP ===
+        // === LÓGICA DO OPERACIONAL ===
         function renderizarMeses() {
             const seletor = document.getElementById('mesSeletor');
             const copiaSeletor = document.getElementById('mesCopiaSeletor');
@@ -439,13 +450,12 @@
             carregarMes(mesAtualKey);
         }
 
-        // === NOVA FUNÇÃO: COPIAR CONTAS ===
         function copiarContasFixas() {
             const mesOrigemKey = document.getElementById('mesCopiaSeletor').value;
             if(!mesOrigemKey) return alert("Selecione um mês de origem primeiro!");
-            if(mesOrigemKey === mesAtualKey) return alert("Você já está gerindo este mesmo mês!");
+            if(mesOrigemKey === mesAtualKey) return alert("Você já está na aba do mesmo mês!");
             
-            if(!confirm("Isto vai importar todas as contas fixas de " + mesOrigemKey + " para o mês atual (" + mesAtualKey + "). O status de pagamento delas será resetado para 'Não'. Deseja continuar?")) return;
+            if(!confirm("Deseja copiar as contas fixas de " + mesOrigemKey + " para o mês atual (" + mesAtualKey + ")? O status de pagamento será redefinido para 'Não'.")) return;
 
             document.getElementById('loadingDiv').style.display = 'flex';
             
@@ -455,7 +465,7 @@
                     let fixasOrigem = data.fixas || [];
                     
                     if(fixasOrigem.length === 0) {
-                        alert("Não foram encontradas contas fixas no mês selecionado.");
+                        alert("Nenhuma conta fixa localizada no mês de origem.");
                     } else {
                         fixasOrigem.forEach(f => {
                             window.activeFixas.push({
@@ -464,21 +474,88 @@
                                 valor: f.valor,
                                 vencimento: f.vencimento,
                                 categoria: f.categoria,
-                                pago: false // Zera o pagamento para o novo mês
+                                pago: false
                             });
                         });
                         salvarDadosDoMesAtual();
                         calcularEAtualizarVisual();
-                        alert("Contas copiadas com sucesso!");
+                        alert("Contas fixas copiadas com sucesso!");
                     }
                 } else {
-                    alert("Dados do mês de origem não encontrados.");
+                    alert("Dados indisponíveis para o mês de origem.");
                 }
                 document.getElementById('loadingDiv').style.display = 'none';
             }).catch(err => {
-                alert("Erro ao copiar: " + err.message);
+                alert("Erro operacional: " + err.message);
                 document.getElementById('loadingDiv').style.display = 'none';
             });
+        }
+
+        // FUNÇÃO ATUALIZADA: Lógica Inteligente de Alertas e Datas Pendentes
+        function calcularAlertaVencimento(diaVenc, pago) {
+            if (pago) return { texto: `Dia ${diaVenc}`, cor: '#94a3b8', bg: '#f1f5f9' };
+
+            const [ano, mes] = mesAtualKey.split('-').map(Number);
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+            
+            const dataVenc = new Date(ano, mes - 1, diaVenc); 
+            dataVenc.setHours(0,0,0,0);
+            
+            const diffTime = dataVenc - hoje;
+            const diffDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDias < 0) {
+                return { texto: `Vencido (${Math.abs(diffDias)}d)`, cor: 'white', bg: 'var(--red-danger)' };
+            }
+            if (diffDias === 0) {
+                return { texto: `Vence Hoje!`, cor: 'white', bg: 'var(--red-danger)' };
+            }
+            if (diffDias <= 3) {
+                return { texto: `Dia ${diaVenc} (${diffDias}d)`, cor: 'white', bg: 'var(--warning-orange)' };
+            }
+            return { texto: `Dia ${diaVenc}`, cor: 'white', bg: 'var(--green-success)' };
+        }
+
+        // NOVA FUNÇÃO: Processamento de Gastos via Arquivo / Texto CSV
+        function importarGastosCSV() {
+            const texto = document.getElementById('csvImportText').value.trim();
+            if(!texto) return alert("Por favor, cole os dados para a importação!");
+
+            const linhas = texto.split('\n');
+            let novosGastos = [];
+            let dataPadrao = new Date().toISOString().split('T')[0];
+
+            linhas.forEach(linha => {
+                if(!linha.trim()) return;
+                const partes = linha.split(',');
+                
+                if(partes.length >= 2) {
+                    const nome = partes[0].trim();
+                    const valor = parseFloat(partes[1].trim());
+                    const cat = partes[2] ? partes[2].trim() : "Outros";
+                    const data = partes[3] ? partes[3].trim() : dataPadrao;
+
+                    if(nome && !isNaN(valor)) {
+                        novosGastos.push({
+                            id: Date.now() + Math.random(),
+                            nome: nome,
+                            valor: valor,
+                            categoria: categoriasAtuais.includes(cat) ? cat : "Outros",
+                            data: data
+                        });
+                    }
+                }
+            });
+
+            if(novosGastos.length > 0) {
+                window.activeDiarios.push(...novosGastos);
+                salvarDadosDoMesAtual();
+                calcularEAtualizarVisual();
+                document.getElementById('csvImportText').value = '';
+                alert(novosGastos.length + " lançamentos diários importados com sucesso!");
+            } else {
+                alert("Nenhum dado válido pôde ser processado. Verifique a formatação do exemplo.");
+            }
         }
 
         function salvarSaldoDoMes() {
@@ -510,39 +587,6 @@
             const [ano, mes, dia] = dataISO.split('-');
             return `${dia}/${mes}`;
         }
-
-        function calcularAlertaVencimento(diaVenc, pago) {
-    // 1. Se estiver pago, o alerta não importa, deixa cinza
-    if (pago) return { texto: `Dia ${diaVenc}`, cor: '#94a3b8', bg: '#f1f5f9' };
-
-    const [ano, mes] = mesAtualKey.split('-').map(Number);
-    const hoje = new Date(); hoje.setHours(0,0,0,0);
-    
-    // Cria a data de vencimento do mês atual
-    const dataVenc = new Date(ano, mes - 1, diaVenc); 
-    dataVenc.setHours(0,0,0,0);
-    
-    const diffTime = dataVenc - hoje;
-    const diffDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    // 2. Se a data de vencimento for menor que hoje (e não está pago), está Vencido!
-    if (diffDias < 0) {
-        return { texto: `Vencido (${Math.abs(diffDias)}d)`, cor: 'white', bg: 'var(--red-danger)' };
-    }
-    
-    // 3. Se for hoje
-    if (diffDias === 0) {
-        return { texto: `Vence Hoje!`, cor: 'white', bg: 'var(--red-danger)' };
-    }
-    
-    // 4. Se faltam até 3 dias para vencer
-    if (diffDias <= 3) {
-        return { texto: `Dia ${diaVenc} (${diffDias}d)`, cor: 'white', bg: 'var(--warning-orange)' };
-    }
-    
-    // 5. Caso normal (faltam mais de 3 dias)
-    return { texto: `Dia ${diaVenc}`, cor: 'white', bg: 'var(--green-success)' };
-}
 
         function calcularEAtualizarVisual() {
             let orcamento = 0, pago = 0, restante = 0, totalDiarios = 0;
@@ -624,7 +668,6 @@
             if(!anoSelecionado || !currentUser) return;
 
             let somaFixasPagas = 0; let somaDiarios = 0; let categoriasAno = {};
-
             const mesesDoAno = mesesDisponiveis.filter(m => m.key.startsWith(anoSelecionado));
             
             let promessas = mesesDoAno.map(mes => {
@@ -632,7 +675,10 @@
                     if(doc.exists) {
                         let data = doc.data();
                         (data.fixas || []).forEach(f => { if(f.pago) somaFixasPagas += f.valor; });
-                        (data.diarios || []).forEach(d => { somaDiarios += d.valor; categoriasAno[d.categoria] = (categoriasAno[d.categoria] || 0) + d.valor; });
+                        (data.diarios || []).forEach(d => { 
+                            somaDiarios += d.valor; 
+                            categoriasAno[d.categoria] = (categoriasAno[d.categoria] || 0) + d.valor; 
+                        });
                     }
                 });
             });
