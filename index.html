@@ -457,18 +457,37 @@
         }
 
         function calcularAlertaVencimento(diaVenc, pago) {
-            if (pago) return { texto: `Dia ${diaVenc}`, cor: '#94a3b8', bg: '#f1f5f9' };
-            const [ano, mes] = mesAtualKey.split('-').map(Number);
-            const hoje = new Date(); hoje.setHours(0,0,0,0);
-            const dataVenc = new Date(ano, mes - 1, diaVenc); dataVenc.setHours(0,0,0,0);
-            const diffDias = Math.ceil((dataVenc - hoje) / (1000 * 60 * 60 * 24));
+    // 1. Se estiver pago, o alerta não importa, deixa cinza
+    if (pago) return { texto: `Dia ${diaVenc}`, cor: '#94a3b8', bg: '#f1f5f9' };
 
-            if (diffDias < 0) return { texto: `Vencido (${Math.abs(diffDias)}d)`, cor: 'white', bg: 'var(--red-danger)' };
-            if (diffDias === 0) return { texto: `Vence Hoje!`, cor: 'white', bg: 'var(--red-danger)' };
-            if (diffDias <= 3) return { texto: `Dia ${diaVenc} (${diffDias}d)`, cor: 'white', bg: 'var(--warning-orange)' };
-            return { texto: `Dia ${diaVenc}`, cor: 'white', bg: 'var(--green-success)' };
-        }
+    const [ano, mes] = mesAtualKey.split('-').map(Number);
+    const hoje = new Date(); hoje.setHours(0,0,0,0);
+    
+    // Cria a data de vencimento do mês atual
+    const dataVenc = new Date(ano, mes - 1, diaVenc); 
+    dataVenc.setHours(0,0,0,0);
+    
+    const diffTime = dataVenc - hoje;
+    const diffDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
+    // 2. Se a data de vencimento for menor que hoje (e não está pago), está Vencido!
+    if (diffDias < 0) {
+        return { texto: `Vencido (${Math.abs(diffDias)}d)`, cor: 'white', bg: 'var(--red-danger)' };
+    }
+    
+    // 3. Se for hoje
+    if (diffDias === 0) {
+        return { texto: `Vence Hoje!`, cor: 'white', bg: 'var(--red-danger)' };
+    }
+    
+    // 4. Se faltam até 3 dias para vencer
+    if (diffDias <= 3) {
+        return { texto: `Dia ${diaVenc} (${diffDias}d)`, cor: 'white', bg: 'var(--warning-orange)' };
+    }
+    
+    // 5. Caso normal (faltam mais de 3 dias)
+    return { texto: `Dia ${diaVenc}`, cor: 'white', bg: 'var(--green-success)' };
+}
         function calcularEAtualizarVisual() {
             let orcamento = 0, pago = 0, restante = 0, totalDiarios = 0;
             let totalPorCategoria = {};
