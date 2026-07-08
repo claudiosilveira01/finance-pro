@@ -26,7 +26,7 @@
             --bg-blue-light: #eff6ff;
             --badge-paid-bg: #f1f5f9;
             --badge-paid-text: #64748b;
-            --calendar-invert: 0; 
+            --calendar-invert: 0; /* Ícone de calendário escuro */
         }
 
         /* Variáveis Modo Escuro */
@@ -40,12 +40,12 @@
             --purple-light: #6b21a8;
             
             /* Destaques Claros para o Modo Escuro brilhar */
-            --text-highlight: #d8b4fe; 
-            --text-highlight-alt: #93c5fd; 
+            --text-highlight: #d8b4fe; /* Lilás Claro */
+            --text-highlight-alt: #93c5fd; /* Azul Celeste */
             --bg-blue-light: rgba(37, 99, 235, 0.15);
             --badge-paid-bg: #334155;
             --badge-paid-text: #cbd5e1;
-            --calendar-invert: 1; 
+            --calendar-invert: 1; /* Inverte o ícone do calendário para branco */
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -95,6 +95,7 @@
         input, select, textarea { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; transition: 0.3s; }
         input:focus, select:focus, textarea:focus { border-color: var(--blue-accent); }
         
+        /* Ajuste do ícone do calendário e Placeholders (textos de fundo) para o Modo Escuro */
         ::-webkit-calendar-picker-indicator { filter: invert(var(--calendar-invert)); cursor: pointer; }
         ::placeholder { color: var(--text-muted); opacity: 0.7; font-weight: 400; }
 
@@ -121,12 +122,14 @@
         .status-badge.nao { background-color: var(--red-danger); }
 
         .vencimento-tag { font-weight: 600; font-size: 0.85rem; padding: 4px 8px; border-radius: 4px; display: inline-block; white-space: nowrap; }
-        .btn-delete { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display:flex; align-items:center; padding: 4px; }
+        .btn-action { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display:flex; align-items:center; padding: 4px; }
+        .btn-action:hover { color: var(--blue-accent); }
         .btn-delete:hover { color: var(--red-danger); }
 
         .acumulados-list { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
         .acumulado-item { display: flex; justify-content: space-between; padding: 8px 12px; background: var(--bg-light); border-radius: 6px; font-size: 0.9rem; font-weight: 500; transition: 0.3s; }
         .sub-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+        .sub-date { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; background: var(--border-color); padding: 4px 8px; border-radius: 6px; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; padding: 8px 10px; z-index: 100; transition: 0.3s; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; color: var(--text-muted); background: none; border: none; cursor: pointer; font-weight: 500; flex: 1; }
@@ -178,7 +181,8 @@
                         <input type="number" id="fixaValor" style="flex:1;" placeholder="R$">
                         <input type="number" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31">
                         <select id="fixaCategoria" style="flex:1.5;"></select>
-                        <button class="btn-flat" onclick="addContaFixa()"><span class="material-icons">add</span></button>
+                        <button class="btn-flat" id="btnSalvarFixa" onclick="salvarContaFixa()"><span class="material-icons">add</span></button>
+                        <button class="btn-flat" id="btnCancelarEdicaoFixa" onclick="cancelarEdicaoFixa()" style="display: none; background-color: var(--text-muted);"><span class="material-icons">close</span></button>
                     </div>
                     <div class="table-responsive">
                         <table>
@@ -188,7 +192,7 @@
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'vencimento')">Venc. ↕️</th>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'valor')">Valor ↕️</th>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'pago')">Pago? ↕️</th>
-                                    <th style="width: 40px;"></th>
+                                    <th style="width: 80px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="listaFixas"></tbody>
@@ -398,6 +402,7 @@
         let ordDiarios = { col: '', asc: true };
         let meuGraficoPizza;
         let meuGraficoBarra;
+        let idEditandoFixa = null;
 
         const coresCategorias = ['#2ecc71', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#e74c3c', '#1abc9c', '#34495e', '#fd79a8', '#00cec9', '#6c5ce7', '#ff7675'];
 
@@ -747,7 +752,12 @@
                         <td><span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span></td>
                         <td>R$ ${c.valor.toFixed(2)}</td>
                         <td><button class="status-badge ${c.pago?'sim':'nao'}" onclick="togglePagoFixa(${c.id})">${c.pago?'Sim':'Não'}</button></td>
-                        <td style="text-align:right;"><button class="btn-delete" onclick="deletarItemGeral(${c.id}, 'fixa')"><span class="material-icons">delete</span></button></td>
+                        <td style="text-align:right;">
+                            <div style="display:flex; justify-content: flex-end; gap: 5px;">
+                                <button class="btn-action" onclick="editarContaFixa(${c.id})" title="Editar"><span class="material-icons" style="font-size: 18px;">edit</span></button>
+                                <button class="btn-action btn-delete" onclick="deletarItemGeral(${c.id}, 'fixa')" title="Excluir"><span class="material-icons" style="font-size: 18px;">delete</span></button>
+                            </div>
+                        </td>
                     </tr>
                 `;
             });
@@ -768,7 +778,7 @@
                             <div style="color:var(--text-muted); font-size:0.75rem">${g.categoria}</div>
                         </td>
                         <td>R$ ${g.valor.toFixed(2)}</td>
-                        <td style="text-align:right;"><button class="btn-delete" onclick="deletarItemGeral(${g.id}, 'diario')"><span class="material-icons">delete</span></button></td>
+                        <td style="text-align:right;"><button class="btn-action btn-delete" onclick="deletarItemGeral(${g.id}, 'diario')"><span class="material-icons">delete</span></button></td>
                     </tr>
                 `;
             });
@@ -805,8 +815,8 @@
             divSubs.innerHTML = '';
             assinaturasConfig.forEach(s => {
                 let valorFormatado = s.valor ? ` - R$ ${s.valor.toFixed(2)}` : '';
-                let alerta = calcularAlertaVencimento(s.vencimento, false); // Aplicação do alerta de 5 dias
-                divSubs.innerHTML += `<div class="sub-item"><span>🔔 ${s.nome} <strong style="color:var(--text-highlight)">${valorFormatado}</strong></span><div style="display:flex; align-items:center; gap:10px;"><span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span><button class="btn-delete" onclick="deletarAssinatura(${s.id})"><span class="material-icons" style="font-size:1.1rem;">delete</span></button></div></div>`;
+                let alerta = calcularAlertaVencimento(s.vencimento, false); 
+                divSubs.innerHTML += `<div class="sub-item"><span>🔔 ${s.nome} <strong style="color:var(--text-highlight)">${valorFormatado}</strong></span><div style="display:flex; align-items:center; gap:10px;"><span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span><button class="btn-action btn-delete" onclick="deletarAssinatura(${s.id})"><span class="material-icons" style="font-size:1.1rem;">delete</span></button></div></div>`;
             });
 
             let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
@@ -857,12 +867,64 @@
             });
         }
 
-        function addContaFixa() {
-            const nome = document.getElementById('fixaNome').value.trim(); const valor = parseFloat(document.getElementById('fixaValor').value); const venc = parseInt(document.getElementById('fixaVenc').value); const cat = document.getElementById('fixaCategoria').value;
+        // SALVAR OU ATUALIZAR CONTA FIXA
+        function salvarContaFixa() {
+            const nome = document.getElementById('fixaNome').value.trim(); 
+            const valor = parseFloat(document.getElementById('fixaValor').value); 
+            const venc = parseInt(document.getElementById('fixaVenc').value); 
+            const cat = document.getElementById('fixaCategoria').value;
+            
             if(!nome || isNaN(valor) || isNaN(venc)) return;
-            window.activeFixas.push({ id: Date.now(), nome, valor, vencimento: venc, categoria: cat, pago: false });
-            document.getElementById('fixaNome').value = ''; document.getElementById('fixaValor').value = ''; document.getElementById('fixaVenc').value = '';
-            salvarDadosDoMesAtual(); calcularEAtualizarVisual();
+            
+            if (idEditandoFixa !== null) {
+                // Atualiza a conta existente
+                window.activeFixas = window.activeFixas.map(c => 
+                    c.id === idEditandoFixa ? { ...c, nome: nome, valor: valor, vencimento: venc, categoria: cat } : c
+                );
+                idEditandoFixa = null;
+                document.getElementById('btnSalvarFixa').innerHTML = '<span class="material-icons">add</span>';
+                document.getElementById('btnCancelarEdicaoFixa').style.display = 'none';
+            } else {
+                // Adiciona nova
+                window.activeFixas.push({ id: Date.now(), nome, valor, vencimento: venc, categoria: cat, pago: false });
+            }
+            
+            document.getElementById('fixaNome').value = ''; 
+            document.getElementById('fixaValor').value = ''; 
+            document.getElementById('fixaVenc').value = '';
+            
+            salvarDadosDoMesAtual(); 
+            calcularEAtualizarVisual();
+        }
+
+        // EDITAR CONTA FIXA
+        function editarContaFixa(id) {
+            const conta = window.activeFixas.find(c => c.id === id);
+            if (!conta) return;
+
+            // Preenche os campos de input com os dados da conta
+            document.getElementById('fixaNome').value = conta.nome;
+            document.getElementById('fixaValor').value = conta.valor;
+            document.getElementById('fixaVenc').value = conta.vencimento;
+            document.getElementById('fixaCategoria').value = conta.categoria;
+            
+            // Muda o estado do botão
+            idEditandoFixa = id;
+            document.getElementById('btnSalvarFixa').innerHTML = '<span class="material-icons">check</span>';
+            document.getElementById('btnCancelarEdicaoFixa').style.display = 'flex';
+            
+            // Rola a tela para o topo suavemente (útil no celular)
+            document.getElementById('tab-fixas').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // CANCELAR EDIÇÃO
+        function cancelarEdicaoFixa() {
+            idEditandoFixa = null;
+            document.getElementById('fixaNome').value = ''; 
+            document.getElementById('fixaValor').value = ''; 
+            document.getElementById('fixaVenc').value = '';
+            document.getElementById('btnSalvarFixa').innerHTML = '<span class="material-icons">add</span>';
+            document.getElementById('btnCancelarEdicaoFixa').style.display = 'none';
         }
 
         function addGastoDiario() {
