@@ -1,14 +1,24 @@
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finanças Inteligente Nuvem</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 
-    <!-- Bibliotecas do Firebase -->
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
-@@ -20,17 +19,33 @@
---blue-dark: #1e40af; --green-success: #27ae60; --red-danger: #e74c3c;
---warning-orange: #f39c12; --bg-light: #f8fafc; --card-bg: #ffffff;
---text-main: #1e293b; --text-muted: #64748b; --border-color: #e2e8f0;
+    <style>
+        :root {
+            /* Cores Modo Claro (Padrão) */
+            --purple-main: #431c5d; --purple-light: #511878; --blue-accent: #2563eb;
+            --blue-dark: #1e40af; --green-success: #27ae60; --red-danger: #e74c3c;
+            --warning-orange: #f39c12; --bg-light: #f8fafc; --card-bg: #ffffff;
+            --text-main: #1e293b; --text-muted: #64748b; --border-color: #e2e8f0;
             
             /* Cores de Destaque Adaptativas */
             --text-highlight: #431c5d;
@@ -16,234 +26,923 @@
             --bg-blue-light: #eff6ff;
             --badge-paid-bg: #f1f5f9;
             --badge-paid-text: #64748b;
-            --calendar-invert: 0; /* Ícone de calendário escuro */
-}
+            --calendar-invert: 0; 
+        }
 
-/* Variáveis Modo Escuro */
-body.dark-mode {
---bg-light: #0f172a;
---card-bg: #1e293b;
-            --text-main: #f1f5f9;
+        /* Variáveis Modo Escuro */
+        body.dark-mode {
+            --bg-light: #0f172a;
+            --card-bg: #1e293b;
             --text-main: #f8fafc;
---text-muted: #94a3b8;
---border-color: #334155;
---purple-main: #582082;
---purple-light: #6b21a8;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --purple-main: #582082;
+            --purple-light: #6b21a8;
             
             /* Destaques Claros para o Modo Escuro brilhar */
-            --text-highlight: #d8b4fe; /* Lilás Claro */
-            --text-highlight-alt: #93c5fd; /* Azul Celeste */
+            --text-highlight: #d8b4fe; 
+            --text-highlight-alt: #93c5fd; 
             --bg-blue-light: rgba(37, 99, 235, 0.15);
             --badge-paid-bg: #334155;
             --badge-paid-text: #cbd5e1;
-            --calendar-invert: 1; /* Inverte o ícone do calendário para branco */
-}
+            --calendar-invert: 1; 
+        }
 
-* { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-@@ -49,7 +64,6 @@
-.bottom-nav { display: none !important; }
-.tab-content { display: block !important; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-light); color: var(--text-main); padding-bottom: 70px; transition: background 0.3s, color 0.3s; }
 
-            /* Botão discreto para PC */
-.desktop-toggle-btn { 
-display: flex !important; 
-margin-top: 15px; 
-@@ -70,7 +84,7 @@
+        header { background-color: var(--purple-main); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+        header h1 { font-size: clamp(1.1rem, 4vw, 1.5rem); font-weight: 700; display: flex; align-items: center; gap: 10px; }
+        
+        .select-mes { background: var(--purple-light); color: white; border: 1px solid rgba(255,255,255,0.2); padding: 8px 12px; border-radius: 6px; font-weight: 600; outline: none; cursor: pointer; }
 
-.card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; transition: 0.3s; }
+        .main-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: 1fr; gap: 20px; }
 
-        .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--purple-main); display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
+        @media (min-width: 900px) {
+            .main-container { grid-template-columns: 1.3fr 1fr; }
+            body { padding-bottom: 20px; }
+            .bottom-nav { display: none !important; }
+            .tab-content { display: block !important; }
+            
+            .desktop-toggle-btn { 
+                display: flex !important; 
+                margin-top: 15px; 
+                width: 100%; 
+                background-color: transparent; 
+                color: var(--text-muted); 
+                border: 1px solid var(--border-color);
+                justify-content: center !important; 
+                padding: 10px 15px !important;
+                font-size: 0.85rem;
+                transition: 0.2s;
+            }
+            .desktop-toggle-btn:hover { background-color: var(--border-color); color: var(--text-main); }
+            #tab-config.desktop-hidden { display: none !important; }
+        }
+
+        .desktop-toggle-btn { display: none; }
+
+        .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; transition: 0.3s; }
+        
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-highlight); display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
 
-.matrix-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2px; background-color: var(--border-color); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
-.matrix-label { background-color: var(--purple-main); color: white; padding: 12px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; }
-@@ -80,6 +94,10 @@
-.input-inline, .control-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
-input, select, textarea { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; transition: 0.3s; }
-input:focus, select:focus, textarea:focus { border-color: var(--blue-accent); }
+        .matrix-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2px; background-color: var(--border-color); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
+        .matrix-label { background-color: var(--purple-main); color: white; padding: 12px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; }
+        .matrix-value { background-color: var(--card-bg); color: var(--text-main); padding: 12px; font-weight: 700; font-size: 1.1rem; text-align: right; }
+        .matrix-value input { width: 100%; border: none; background-color: transparent; text-align: right; font-weight: 700; font-size: 1.1rem; color: var(--text-main); outline: none; }
+
+        .input-inline, .control-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
+        input, select, textarea { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; transition: 0.3s; }
+        input:focus, select:focus, textarea:focus { border-color: var(--blue-accent); }
         
-        /* Ajuste do ícone do calendário e Placeholders (textos de fundo) para o Modo Escuro */
         ::-webkit-calendar-picker-indicator { filter: invert(var(--calendar-invert)); cursor: pointer; }
         ::placeholder { color: var(--text-muted); opacity: 0.7; font-weight: 400; }
 
-@media (max-width: 600px) {
-.input-inline, .control-row { flex-direction: column; align-items: stretch; }
-@@ -114,7 +132,7 @@
+        @media (max-width: 600px) {
+            .input-inline, .control-row { flex-direction: column; align-items: stretch; }
+            .input-inline > *, .control-row > * { width: 100% !important; margin-bottom: 5px; flex: none; }
+            .btn-flat { margin-top: 5px; }
+        }
 
-.bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; padding: 8px 10px; z-index: 100; transition: 0.3s; }
-.nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; color: var(--text-muted); background: none; border: none; cursor: pointer; font-weight: 500; flex: 1; }
-        .nav-item.active { color: var(--purple-main); font-weight: 700; }
+        .btn-flat { background-color: var(--blue-accent); color: white; border: none; padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; transition: 0.2s;}
+        .btn-flat:hover { filter: brightness(1.1); }
+
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.95rem; min-width: 400px; }
+        th { background-color: var(--purple-light); color: white; padding: 10px; font-weight: 500; white-space: nowrap; }
+        th.sortable { cursor: pointer; user-select: none; transition: background 0.2s; }
+        th.sortable:hover { background-color: var(--purple-main); }
+        th:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+        th:last-child { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+        td { padding: 10px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+
+        .status-badge { padding: 6px 12px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; border: none; cursor: pointer; width: 75px; text-align: center; color: white; }
+        .status-badge.sim { background-color: var(--green-success); }
+        .status-badge.nao { background-color: var(--red-danger); }
+
+        .vencimento-tag { font-weight: 600; font-size: 0.85rem; padding: 4px 8px; border-radius: 4px; display: inline-block; white-space: nowrap; }
+        .btn-delete { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display:flex; align-items:center; padding: 4px; }
+        .btn-delete:hover { color: var(--red-danger); }
+
+        .acumulados-list { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
+        .acumulado-item { display: flex; justify-content: space-between; padding: 8px 12px; background: var(--bg-light); border-radius: 6px; font-size: 0.9rem; font-weight: 500; transition: 0.3s; }
+        .sub-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; padding: 8px 10px; z-index: 100; transition: 0.3s; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; color: var(--text-muted); background: none; border: none; cursor: pointer; font-weight: 500; flex: 1; }
         .nav-item.active { color: var(--text-highlight); font-weight: 700; }
-.nav-item .material-icons { font-size: 22px; margin-bottom: 2px; }
+        .nav-item .material-icons { font-size: 22px; margin-bottom: 2px; }
 
-@media (max-width: 899px) { .tab-content { display: none; } .tab-content.active { display: block; } }
-@@ -129,9 +147,8 @@
+        @media (max-width: 899px) { .tab-content { display: none; } .tab-content.active { display: block; } }
+        
+        .charts-wrapper { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
+        .chart-container { position: relative; margin: auto; height: 180px; flex: 1; min-width: 150px; max-width: 250px; }
+
+        #loginScreen { max-width: 400px; margin: 80px auto; padding: 30px; background: var(--card-bg); border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); text-align: center; transition: 0.3s; }
+        #mainApp { display: none; }
+        .loading-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 999; font-weight: bold; color: white;}
+    </style>
 </head>
 <body>
 
-    <!-- Tela de Login -->
-<div id="loginScreen">
-        <h2 style="color: var(--purple-main); margin-bottom: 20px;"><span class="material-icons" style="vertical-align: bottom;">lock</span> Finanças Pro</h2>
+    <div id="loginScreen">
         <h2 style="color: var(--text-highlight); margin-bottom: 20px;"><span class="material-icons" style="vertical-align: bottom;">lock</span> Finanças Pro</h2>
-<p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Acesse para sincronizar os seus dados</p>
+        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Acesse para sincronizar os seus dados</p>
+        
+        <input type="email" id="emailInput" placeholder="O seu E-mail" style="width: 100%; margin-bottom: 15px;">
+        <input type="password" id="senhaInput" placeholder="A sua Senha" style="width: 100%; margin-bottom: 15px;">
+        
+        <button onclick="fazerLogin()" class="btn-flat" style="width: 100%; margin-bottom: 10px; padding: 12px;">Entrar</button>
+        <button onclick="criarConta()" class="btn-flat" style="width: 100%; background-color: var(--purple-light); padding: 12px;">Criar Conta Grátis</button>
+        
+        <p id="authErro" style="color: var(--red-danger); font-size: 0.85rem; margin-top: 15px; display: none;"></p>
+    </div>
 
-<input type="email" id="emailInput" placeholder="O seu E-mail" style="width: 100%; margin-bottom: 15px;">
-@@ -143,10 +160,8 @@ <h2 style="color: var(--purple-main); margin-bottom: 20px;"><span class="materia
-<p id="authErro" style="color: var(--red-danger); font-size: 0.85rem; margin-top: 15px; display: none;"></p>
-</div>
+    <div class="loading-overlay" id="loadingDiv">A sincronizar com a Nuvem...</div>
 
-    <!-- Indicador de Carregamento -->
-<div class="loading-overlay" id="loadingDiv">A sincronizar com a Nuvem...</div>
+    <div id="mainApp">
+        <header>
+            <h1><span class="material-icons">account_balance_wallet</span> Finanças Pro</h1>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <select id="mesSeletor" class="select-mes" onchange="mudarMesOuro()"></select>
+                <button class="btn-flat" style="background:var(--red-danger); padding:6px 10px;" onclick="fazerLogout()" title="Sair"><span class="material-icons" style="font-size:18px;">logout</span></button>
+            </div>
+        </header>
 
-    <!-- App Principal -->
-<div id="mainApp">
-<header>
-<h1><span class="material-icons">account_balance_wallet</span> Finanças Pro</h1>
-@@ -158,7 +173,6 @@ <h1><span class="material-icons">account_balance_wallet</span> Finanças Pro</h1
+        <div class="main-container">
+            <div class="col-left">
+                <div id="tab-fixas" class="card tab-content active">
+                    <div class="card-title"><span class="material-icons">assignment</span> Contas Fixas</div>
+                    <div class="input-inline">
+                        <input type="text" id="fixaNome" style="flex:2;" placeholder="Item (Ex: Energia, Mensalidades)">
+                        <input type="number" id="fixaValor" style="flex:1;" placeholder="R$">
+                        <input type="number" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31">
+                        <select id="fixaCategoria" style="flex:1.5;"></select>
+                        <button class="btn-flat" onclick="addContaFixa()"><span class="material-icons">add</span></button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'vencimento')">Venc. ↕️</th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'valor')">Valor ↕️</th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'pago')">Pago? ↕️</th>
+                                    <th style="width: 40px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaFixas"></tbody>
+                        </table>
+                    </div>
+                </div>
 
-<div class="main-container">
-<div class="col-left">
-                <!-- Aba: Contas Fixas -->
-<div id="tab-fixas" class="card tab-content active">
-<div class="card-title"><span class="material-icons">assignment</span> Contas Fixas</div>
-<div class="input-inline">
-@@ -184,7 +198,6 @@ <h1><span class="material-icons">account_balance_wallet</span> Finanças Pro</h1
-</div>
-</div>
+                <div id="tab-diarios" class="card tab-content">
+                    <div class="card-title"><span class="material-icons">shopping_cart</span> Gastos Diários</div>
+                    <div class="input-inline">
+                        <input type="text" id="diarioNome" style="flex:2;" placeholder="Ex: Lanche, PIX">
+                        <input type="date" id="diarioData" style="flex:1.5;">
+                        <input type="number" id="diarioValor" style="flex:1;" placeholder="R$">
+                        <select id="diarioCategoria" style="flex:1.5;"></select>
+                        <button class="btn-flat" onclick="addGastoDiario()"><span class="material-icons">add</span></button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="ordenarTabela('diarios', 'data')">Data ↕️</th>
+                                    <th>Item</th>
+                                    <th class="sortable" onclick="ordenarTabela('diarios', 'valor')">Valor ↕️</th>
+                                    <th style="width: 40px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaDiarios"></tbody>
+                        </table>
+                    </div>
+                </div>
 
-                <!-- Aba: Gastos Diários -->
-<div id="tab-diarios" class="card tab-content">
-<div class="card-title"><span class="material-icons">shopping_cart</span> Gastos Diários</div>
-<div class="input-inline">
-@@ -209,11 +222,9 @@ <h1><span class="material-icons">account_balance_wallet</span> Finanças Pro</h1
-</div>
-</div>
+                <div id="tab-config" class="card tab-content">
+                    <div class="card-title"><span class="material-icons">settings</span> Configurações do Sistema</div>
+                    
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🎨 Aparência do Aplicativo</h4>
+                    <button class="btn-flat" style="background-color: var(--border-color); color: var(--text-main); width: 100%; justify-content: center;" onclick="toggleDarkMode()">
+                        <span class="material-icons" id="iconTheme">dark_mode</span> <span id="textTheme">Ativar Modo Escuro</span>
+                    </button>
 
-                <!-- Aba: Configurações do Sistema -->
-<div id="tab-config" class="card tab-content">
-<div class="card-title"><span class="material-icons">settings</span> Configurações do Sistema</div>
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
-                    <!-- NOVO: Aparência (Modo Escuro) -->
-<h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🎨 Aparência do Aplicativo</h4>
-<button class="btn-flat" style="background-color: var(--border-color); color: var(--text-main); width: 100%; justify-content: center;" onclick="toggleDarkMode()">
-<span class="material-icons" id="iconTheme">dark_mode</span> <span id="textTheme">Ativar Modo Escuro</span>
-@@ -264,7 +275,6 @@ <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🔔 Controle de Assinaturas (
-<button class="btn-flat" onclick="addAssinaturaInformativa()">Adicionar</button>
-</div>
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🗓️ Adicionar Novo Mês</h4>
+                    <div class="control-row">
+                        <input type="month" id="novoMesInput">
+                        <button class="btn-flat" onclick="addNovoMes()">Adicionar Mês</button>
+                    </div>
 
-                    <!-- DIVIDIDO: Botões de Limpar Dados -->
-<hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
-<h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: var(--red-danger);">🗑️ Limpar Dados do Mês</h4>
-<p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
-@@ -287,7 +297,7 @@ <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: var(--red-danger);">🗑
-<div class="matrix-label">RESTANTE CONTAS</div><div class="matrix-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</div>
-<div class="matrix-label">TOTAL DIÁRIOS</div><div class="matrix-value" id="mTotalDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
-<div class="matrix-label" style="background-color: var(--blue-accent);">SALDO ATUAL</div>
-                            <div class="matrix-value" style="background-color: rgba(37, 99, 235, 0.1);"><input type="number" id="saldoInput" onblur="salvarSaldoDoMes()"></div>
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🔄 Copiar Contas Fixas de Outro Mês</h4>
+                    <div class="control-row">
+                        <select id="mesCopiaSeletor"></select>
+                        <button class="btn-flat" style="background-color: var(--warning-orange);" onclick="copiarContasFixas()">Copiar para o Mês Atual</button>
+                    </div>
+
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">📥 Importar Lista de Gastos Diários (CSV)</h4>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
+                        Cole os dados organizados por vírgula: <b>Nome, Valor, Categoria, Data (AAAA-MM-DD)</b><br>
+                        Exemplo: <i>Gasolina, 50.00, Transporte, 2026-07-03</i>
+                    </p>
+                    <textarea id="csvImportText" style="width:100%; height:110px; margin-bottom:10px; font-size:0.85rem;" placeholder="Cole as suas linhas do Excel ou bloco de notas aqui..."></textarea>
+                    <button class="btn-flat" style="background-color: var(--green-success);" onclick="importarGastosCSV()">Processar Importação</button>
+
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🏷️ Nova Categoria</h4>
+                    <div class="control-row">
+                        <input type="text" id="novaCatNome" placeholder="Nome da Categoria">
+                        <button class="btn-flat" onclick="addCategoriaGlobal()">Salvar Categoria</button>
+                    </div>
+                    <div id="listaCategoriasConfig" style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:20px;"></div>
+
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🔔 Controle de Assinaturas (Informativo)</h4>
+                    <div class="control-row">
+                        <input type="text" id="subNome" placeholder="Ex: Netflix" style="flex:2;">
+                        <input type="number" id="subValor" placeholder="Valor (R$)" style="flex:1.5;">
+                        <input type="number" id="subVenc" placeholder="Dia Venc." min="1" max="31" style="flex:1;">
+                        <button class="btn-flat" onclick="addAssinaturaInformativa()">Adicionar</button>
+                    </div>
+
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: var(--red-danger);">🗑️ Limpar Dados do Mês</h4>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
+                        Apague os dados permanentemente do mês selecionado.
+                    </p>
+                    <div class="control-row">
+                        <button class="btn-flat" style="background-color: transparent; border: 1px solid var(--red-danger); color: var(--red-danger); flex: 1;" onclick="limparFixasDoMesAtual()">Apagar Fixas</button>
+                        <button class="btn-flat" style="background-color: var(--red-danger); flex: 1;" onclick="limparDiariosDoMesAtual()">Apagar Diários</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-right">
+                <div id="tab-dashboard" class="tab-content">
+                    <div class="card">
+                        <div class="card-title"><span class="material-icons">calculate</span> Painel de Controle</div>
+                        <div class="matrix-grid">
+                            <div class="matrix-label">ORÇAMENTO FIXO</div><div class="matrix-value" id="mOrcamento">R$ 0,00</div>
+                            <div class="matrix-label">PAGO</div><div class="matrix-value" id="mPago" style="color: var(--green-success);">R$ 0,00</div>
+                            <div class="matrix-label">RESTANTE CONTAS</div><div class="matrix-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</div>
+                            <div class="matrix-label">TOTAL DIÁRIOS</div><div class="matrix-value" id="mTotalDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
+                            <div class="matrix-label" style="background-color: var(--blue-accent);">SALDO ATUAL</div>
                             <div class="matrix-value" style="background-color: var(--bg-blue-light);"><input type="number" id="saldoInput" onblur="salvarSaldoDoMes()"></div>
-<div class="matrix-label">FALTA / SOBRA</div><div class="matrix-value" id="mResultado" style="font-size: 1.2rem;">R$ 0,00</div>
-</div>
-</div>
-@@ -315,15 +325,14 @@ <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: var(--red-danger);">🗑
-<button class="btn-flat" onclick="calcularRelatorioAnual()"><span class="material-icons">refresh</span></button>
-</div>
-<div class="matrix-grid" style="margin-bottom: 20px;">
-                            <div class="matrix-label">GASTOS FIXOS (PAGOS)</div><div class="matrix-value" id="aFixos" style="color: var(--purple-main);">R$ 0,00</div>
+                            <div class="matrix-label">FALTA / SOBRA</div><div class="matrix-value" id="mResultado" style="font-size: 1.2rem;">R$ 0,00</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title"><span class="material-icons">pie_chart</span> Acumulado por Categoria</div>
+                        <div class="charts-wrapper">
+                            <div class="chart-container"><canvas id="chartCategorias"></canvas></div>
+                            <div class="chart-container"><canvas id="barChartCategorias"></canvas></div>
+                        </div>
+                        <div class="acumulados-list" id="listaAcumulados"></div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-title"><span class="material-icons">credit_card</span> Suas Assinaturas</div>
+                        <div id="listaAssinaturasCard"></div>
+                    </div>
+                </div>
+
+                <div id="tab-anual" class="tab-content">
+                    <div class="card">
+                        <div class="card-title"><span class="material-icons">calendar_month</span> Relatório Anual</div>
+                        <div class="input-inline" style="margin-bottom: 20px;">
+                            <select id="anoRelatorio" style="flex: 2;" onchange="calcularRelatorioAnual()"></select>
+                            <button class="btn-flat" onclick="calcularRelatorioAnual()"><span class="material-icons">refresh</span></button>
+                        </div>
+                        <div class="matrix-grid" style="margin-bottom: 20px;">
                             <div class="matrix-label">GASTOS FIXOS (PAGOS)</div><div class="matrix-value" id="aFixos" style="color: var(--text-highlight);">R$ 0,00</div>
-<div class="matrix-label">GASTOS DIÁRIOS (TOTAIS)</div><div class="matrix-value" id="aDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
-<div class="matrix-label" style="background-color: var(--blue-dark);">TOTAL GASTO NO ANO</div><div class="matrix-value" id="aTotal" style="font-size: 1.2rem; font-weight: 800;">R$ 0,00</div>
-</div>
-                        <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);">Distribuição por Categorias</h4>
+                            <div class="matrix-label">GASTOS DIÁRIOS (TOTAIS)</div><div class="matrix-value" id="aDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
+                            <div class="matrix-label" style="background-color: var(--blue-dark);">TOTAL GASTO NO ANO</div><div class="matrix-value" id="aTotal" style="font-size: 1.2rem; font-weight: 800;">R$ 0,00</div>
+                        </div>
                         <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--text-highlight);">Distribuição por Categorias</h4>
-<div class="acumulados-list" id="listaAcumuladosAno"></div>
-</div>
+                        <div class="acumulados-list" id="listaAcumuladosAno"></div>
+                    </div>
 
-                    <!-- Botão Ocultar Configurações no PC posicionado de forma discreta -->
-<button class="btn-flat desktop-toggle-btn" onclick="toggleConfigDesktop()" id="btnToggleConfig">
-<span style="display:flex; align-items:center; gap:8px;"><span class="material-icons">visibility_off</span> Ocultar Configurações no Painel</span>
-</button>
-@@ -341,7 +350,7 @@ <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);
-</div>
+                    <button class="btn-flat desktop-toggle-btn" onclick="toggleConfigDesktop()" id="btnToggleConfig">
+                        <span style="display:flex; align-items:center; gap:8px;"><span class="material-icons">visibility_off</span> Ocultar Configurações no Painel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
 
-<script>
-        // === CONTROLE MODO ESCURO (Carregamento Imediato) ===
+        <nav class="bottom-nav">
+            <button class="nav-item active" onclick="switchTab(event, 'tab-fixas')"><span class="material-icons">assignment</span>Contas</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-diarios')"><span class="material-icons">shopping_cart</span>Diários</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-dashboard')"><span class="material-icons">analytics</span>Mês</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-anual')"><span class="material-icons">calendar_month</span>Anual</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-config')"><span class="material-icons">settings</span>Config</button>
+        </nav>
+    </div>
+
+    <script>
         // === CONTROLE MODO ESCURO ===
-function checkTheme() {
-if(localStorage.getItem('theme') === 'dark') {
-document.body.classList.add('dark-mode');
-@@ -439,7 +448,7 @@ <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);
+        function checkTheme() {
+            if(localStorage.getItem('theme') === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+        }
+        checkTheme();
 
-function fazerLogout() { auth.signOut(); }
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            atualizarBotaoTema();
+        }
 
-        // === FIREBASE: SINCRONIZAÇÃO DE DADOS ===
+        function atualizarBotaoTema() {
+            const isDark = document.body.classList.contains('dark-mode');
+            const icon = document.getElementById('iconTheme');
+            const text = document.getElementById('textTheme');
+            if(icon && text) {
+                icon.innerText = isDark ? 'light_mode' : 'dark_mode';
+                text.innerText = isDark ? 'Voltar para Modo Claro' : 'Ativar Modo Escuro';
+            }
+        }
+
+        // === CONFIGURAÇÃO DO FIREBASE ===
+        const firebaseConfig = {
+            apiKey: "AIzaSyBJa2FQ7LGJNTIne8iiyRXCr0Og8V1NtVs",
+            authDomain: "finance-pro-v1.firebaseapp.com",
+            projectId: "finance-pro-v1",
+            storageBucket: "finance-pro-v1.firebasestorage.app",
+            messagingSenderId: "866672231232",
+            appId: "1:866672231232:web:1b4401c3123bb42c26b0a5"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // === VARIÁVEIS GLOBAIS ===
+        let currentUser = null;
+        let categoriasAtuais = ["Alimentação", "Transporte", "Lazer", "Educação", "Assinaturas", "Saúde", "Comunicação", "Tributos", "PIX Terceiros", "Outros"];
+        let assinaturasConfig = [];
+        let mesesDisponiveis = [{ key: "2026-07", label: "Julho / 2026" }];
+        
+        let mesAtualKey = "2026-07";
+        let ordFixas = { col: '', asc: true };
+        let ordDiarios = { col: '', asc: true };
+        let meuGraficoPizza;
+        let meuGraficoBarra;
+
+        const coresCategorias = ['#2ecc71', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#e74c3c', '#1abc9c', '#34495e', '#fd79a8', '#00cec9', '#6c5ce7', '#ff7675'];
+
+        // === SISTEMA DE AUTENTICAÇÃO ===
+        auth.onAuthStateChanged(user => {
+            const loading = document.getElementById('loadingDiv');
+            if(user) {
+                currentUser = user;
+                document.getElementById('loginScreen').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+                loading.style.display = 'flex';
+                
+                document.getElementById('diarioData').value = new Date().toISOString().split('T')[0];
+                initChart();
+                atualizarBotaoTema();
+                carregarConfigGlobal(() => {
+                    loading.style.display = 'none';
+                });
+            } else {
+                currentUser = null;
+                document.getElementById('loginScreen').style.display = 'block';
+                document.getElementById('mainApp').style.display = 'none';
+            }
+        });
+
+        function mostrarErroAuth(msg) {
+            const el = document.getElementById('authErro');
+            el.innerText = msg;
+            el.style.display = 'block';
+        }
+
+        function fazerLogin() {
+            const email = document.getElementById('emailInput').value;
+            const senha = document.getElementById('senhaInput').value;
+            if(!email || !senha) return mostrarErroAuth("Preencha e-mail e senha!");
+            auth.signInWithEmailAndPassword(email, senha).catch(err => mostrarErroAuth("Erro: E-mail ou senha incorretos."));
+        }
+
+        function criarConta() {
+            const email = document.getElementById('emailInput').value;
+            const senha = document.getElementById('senhaInput').value;
+            if(!email || !senha) return mostrarErroAuth("Preencha e-mail e senha para criar conta!");
+            if(senha.length < 6) return mostrarErroAuth("A senha deve ter pelo menos 6 caracteres.");
+            auth.createUserWithEmailAndPassword(email, senha).catch(err => mostrarErroAuth("Erro ao criar conta: " + err.message));
+        }
+
+        function fazerLogout() { auth.signOut(); }
+
         // === FIREBASE: SINCRONIZAÇÃO ===
-function carregarConfigGlobal(callback) {
-db.collection('users').doc(currentUser.uid).collection('config').doc('geral').get().then(doc => {
-if(doc.exists) {
-@@ -498,7 +507,6 @@ <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);
-db.collection('users').doc(currentUser.uid).collection('meses').doc(mesAtualKey).set(dados);
-}
+        function carregarConfigGlobal(callback) {
+            db.collection('users').doc(currentUser.uid).collection('config').doc('geral').get().then(doc => {
+                if(doc.exists) {
+                    let data = doc.data();
+                    categoriasAtuais = data.categorias || categoriasAtuais;
+                    assinaturasConfig = data.assinaturas || assinaturasConfig;
+                    mesesDisponiveis = data.meses || mesesDisponiveis;
+                }
+                renderizarMeses();
+                renderizarAnosRelatorio();
+                renderizarListasDeCategorias();
+                
+                mesAtualKey = mesesDisponiveis[0].key;
+                document.getElementById('mesSeletor').value = mesAtualKey;
+                carregarMes(mesAtualKey);
+                if(callback) callback();
+            });
+        }
 
-        // === LÓGICA DO OPERACIONAL ===
-function renderizarMeses() {
-const seletor = document.getElementById('mesSeletor');
-const copiaSeletor = document.getElementById('mesCopiaSeletor');
-@@ -583,7 +591,6 @@ <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);
-});
-}
+        function salvarConfigGlobal() {
+            if(!currentUser) return;
+            db.collection('users').doc(currentUser.uid).collection('config').doc('geral').set({
+                categorias: categoriasAtuais,
+                assinaturas: assinaturasConfig,
+                meses: mesesDisponiveis
+            }, {merge: true});
+        }
 
-        // FUNÇÕES DIVIDIDAS: APAGAR DADOS DO MÊS
-function limparFixasDoMesAtual() {
-if(!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja apagar TODAS as contas fixas de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`)) return;
-window.activeFixas = [];
-@@ -598,7 +605,6 @@ <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);
-calcularEAtualizarVisual();
-}
+        function carregarMes(anoMes) {
+            if(!currentUser) return;
+            document.getElementById('loadingDiv').style.display = 'flex';
+            
+            db.collection('users').doc(currentUser.uid).collection('meses').doc(anoMes).get().then(doc => {
+                if(doc.exists) {
+                    let data = doc.data();
+                    window.activeFixas = data.fixas || [];
+                    window.activeDiarios = data.diarios || [];
+                    document.getElementById('saldoInput').value = data.saldo || 0;
+                } else {
+                    window.activeFixas = [];
+                    window.activeDiarios = [];
+                    document.getElementById('saldoInput').value = 1990;
+                }
+                calcularEAtualizarVisual();
+                document.getElementById('loadingDiv').style.display = 'none';
+            });
+        }
 
-        // OCULTAR CONFIGURAÇÕES NO PC
-function toggleConfigDesktop() {
-const configTab = document.getElementById('tab-config');
-const btn = document.getElementById('btnToggleConfig');
-@@ -629,7 +635,7 @@ <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);
-}
+        function salvarDadosDoMesAtual() {
+            if(!currentUser) return;
+            let dados = {
+                fixas: window.activeFixas,
+                diarios: window.activeDiarios,
+                saldo: parseFloat(document.getElementById('saldoInput').value) || 0
+            };
+            db.collection('users').doc(currentUser.uid).collection('meses').doc(mesAtualKey).set(dados);
+        }
 
-function calcularAlertaVencimento(diaVenc, pago) {
-            if (pago) return { texto: `Dia ${diaVenc}`, cor: '#94a3b8', bg: '#f1f5f9' };
+        function renderizarMeses() {
+            const seletor = document.getElementById('mesSeletor');
+            const copiaSeletor = document.getElementById('mesCopiaSeletor');
+            seletor.innerHTML = '';
+            if(copiaSeletor) copiaSeletor.innerHTML = '<option value="">Selecione um mês...</option>';
+            
+            mesesDisponiveis.forEach(m => {
+                seletor.innerHTML += `<option value="${m.key}">${m.label}</option>`;
+                if(copiaSeletor) copiaSeletor.innerHTML += `<option value="${m.key}">${m.label}</option>`;
+            });
+        }
+
+        function renderizarAnosRelatorio() {
+            const anos = [...new Set(mesesDisponiveis.map(m => m.key.split('-')[0]))];
+            const selAno = document.getElementById('anoRelatorio');
+            selAno.innerHTML = '';
+            anos.forEach(ano => selAno.innerHTML += `<option value="${ano}">Resumo de ${ano}</option>`);
+        }
+
+        function addNovoMes() {
+            const inputVal = document.getElementById('novoMesInput').value; 
+            if(!inputVal || mesesDisponiveis.some(m => m.key === inputVal)) return;
+
+            const [ano, mes] = inputVal.split('-');
+            const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const label = `${mesesNomes[parseInt(mes)-1]} / ${ano}`;
+
+            mesesDisponiveis.push({ key: inputVal, label: label });
+            mesesDisponiveis.sort((a, b) => a.key.localeCompare(b.key)); 
+            
+            salvarConfigGlobal();
+            renderizarMeses();
+            renderizarAnosRelatorio();
+            document.getElementById('novoMesInput').value = '';
+            document.getElementById('mesSeletor').value = inputVal;
+            mudarMesOuro();
+        }
+
+        function mudarMesOuro() {
+            mesAtualKey = document.getElementById('mesSeletor').value;
+            carregarMes(mesAtualKey);
+        }
+
+        function copiarContasFixas() {
+            const mesOrigemKey = document.getElementById('mesCopiaSeletor').value;
+            if(!mesOrigemKey) return alert("Selecione um mês de origem primeiro!");
+            if(mesOrigemKey === mesAtualKey) return alert("Você já está na aba do mesmo mês!");
+            
+            if(!confirm("Deseja copiar as contas fixas de " + mesOrigemKey + " para o mês atual (" + mesAtualKey + ")? O status de pagamento será redefinido para 'Não'.")) return;
+
+            document.getElementById('loadingDiv').style.display = 'flex';
+            
+            db.collection('users').doc(currentUser.uid).collection('meses').doc(mesOrigemKey).get().then(doc => {
+                if(doc.exists) {
+                    let data = doc.data();
+                    let fixasOrigem = data.fixas || [];
+                    
+                    if(fixasOrigem.length === 0) {
+                        alert("Nenhuma conta fixa localizada no mês de origem.");
+                    } else {
+                        fixasOrigem.forEach(f => {
+                            window.activeFixas.push({
+                                id: Date.now() + Math.floor(Math.random() * 1000), 
+                                nome: f.nome,
+                                valor: f.valor,
+                                vencimento: f.vencimento,
+                                categoria: f.categoria,
+                                pago: false
+                            });
+                        });
+                        salvarDadosDoMesAtual();
+                        calcularEAtualizarVisual();
+                        alert("Contas fixas copiadas com sucesso!");
+                    }
+                } else {
+                    alert("Dados indisponíveis para o mês de origem.");
+                }
+                document.getElementById('loadingDiv').style.display = 'none';
+            }).catch(err => {
+                alert("Erro operacional: " + err.message);
+                document.getElementById('loadingDiv').style.display = 'none';
+            });
+        }
+
+        function limparFixasDoMesAtual() {
+            if(!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja apagar TODAS as contas fixas de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`)) return;
+            window.activeFixas = [];
+            salvarDadosDoMesAtual();
+            calcularEAtualizarVisual();
+        }
+
+        function limparDiariosDoMesAtual() {
+            if(!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja apagar TODOS os gastos diários de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`)) return;
+            window.activeDiarios = [];
+            salvarDadosDoMesAtual();
+            calcularEAtualizarVisual();
+        }
+
+        function toggleConfigDesktop() {
+            const configTab = document.getElementById('tab-config');
+            const btn = document.getElementById('btnToggleConfig');
+            
+            if (configTab.classList.contains('desktop-hidden')) {
+                configTab.classList.remove('desktop-hidden');
+                btn.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><span class="material-icons">visibility_off</span> Ocultar Configurações no Painel</span>';
+            } else {
+                configTab.classList.add('desktop-hidden');
+                btn.innerHTML = '<span style="display:flex; align-items:center; gap:8px;"><span class="material-icons">visibility</span> Mostrar Configurações no Painel</span>';
+            }
+        }
+
+        function obterIconeCategoria(cat) {
+            const iconesBase = {
+                "Alimentação": "restaurant",
+                "Transporte": "directions_car",
+                "Lazer": "sports_esports",
+                "Educação": "school",
+                "Assinaturas": "subscriptions",
+                "Saúde": "health_and_safety",
+                "Comunicação": "wifi",
+                "Tributos": "account_balance",
+                "PIX Terceiros": "send",
+                "Outros": "more_horiz"
+            };
+            return iconesBase[cat] || "label";
+        }
+
+        function calcularAlertaVencimento(diaVenc, pago) {
             if (pago) return { texto: `Dia ${diaVenc}`, cor: 'var(--badge-paid-text)', bg: 'var(--badge-paid-bg)' };
 
-const [ano, mes] = mesAtualKey.split('-').map(Number);
-const hoje = new Date(); hoje.setHours(0,0,0,0);
-@@ -769,7 +775,6 @@ <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);
-               `;
-});
+            const [ano, mes] = mesAtualKey.split('-').map(Number);
+            const hoje = new Date(); hoje.setHours(0,0,0,0);
+            
+            const dataVenc = new Date(ano, mes - 1, diaVenc); 
+            dataVenc.setHours(0,0,0,0);
+            
+            const diffTime = dataVenc - hoje;
+            const diffDias = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            // ATUALIZADO: Falta/Sobra leva em consideração APENAS Saldo e Restante Fixo.
-const saldoInputVal = parseFloat(document.getElementById('saldoInput').value) || 0;
-let resultadoFinal = saldoInputVal - restante;
+            if (diffDias < 0) {
+                return { texto: `Vencido (${Math.abs(diffDias)}d)`, cor: 'white', bg: 'var(--red-danger)' };
+            }
+            if (diffDias === 0) {
+                return { texto: `Vence Hoje!`, cor: 'white', bg: 'var(--red-danger)' };
+            }
+            if (diffDias <= 5) {
+                return { texto: `Dia ${diaVenc} (${diffDias}d)`, cor: 'white', bg: 'var(--warning-orange)' };
+            }
+            return { texto: `Dia ${diaVenc}`, cor: 'white', bg: 'var(--green-success)' };
+        }
 
-@@ -793,7 +798,7 @@ <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);
-                           <span style="display:flex; align-items:center; gap:8px;">
-                               <span class="material-icons" style="font-size:18px; color:var(--text-muted);">${icone}</span> ${cat}
-                           </span>
-                            <span style="color:var(--purple-main); font-weight:700">R$ ${valor.toFixed(2)}</span>
+        function importarGastosCSV() {
+            const texto = document.getElementById('csvImportText').value.trim();
+            if(!texto) return alert("Por favor, cole os dados para a importação!");
+
+            const linhas = texto.split('\n');
+            let novosGastos = [];
+            let dataPadrao = new Date().toISOString().split('T')[0];
+
+            linhas.forEach(linha => {
+                if(!linha.trim()) return;
+                const partes = linha.split(',');
+                
+                if(partes.length >= 2) {
+                    const nome = partes[0].trim();
+                    const valor = parseFloat(partes[1].trim());
+                    const cat = partes[2] ? partes[2].trim() : "Outros";
+                    const data = partes[3] ? partes[3].trim() : dataPadrao;
+
+                    if(nome && !isNaN(valor)) {
+                        novosGastos.push({
+                            id: Date.now() + Math.random(),
+                            nome: nome,
+                            valor: valor,
+                            categoria: categoriasAtuais.includes(cat) ? cat : "Outros",
+                            data: data
+                        });
+                    }
+                }
+            });
+
+            if(novosGastos.length > 0) {
+                window.activeDiarios.push(...novosGastos);
+                salvarDadosDoMesAtual();
+                calcularEAtualizarVisual();
+                document.getElementById('csvImportText').value = '';
+                alert(novosGastos.length + " lançamentos diários importados com sucesso!");
+            } else {
+                alert("Nenhum dado válido pôde ser processado. Verifique a formatação do exemplo.");
+            }
+        }
+
+        function salvarSaldoDoMes() {
+            salvarDadosDoMesAtual();
+            calcularEAtualizarVisual();
+        }
+
+        function ordenarTabela(tabela, coluna) {
+            if(tabela === 'fixas') { ordFixas.asc = (ordFixas.col === coluna) ? !ordFixas.asc : true; ordFixas.col = coluna; } 
+            else { ordDiarios.asc = (ordDiarios.col === coluna) ? !ordDiarios.asc : true; ordDiarios.col = coluna; }
+            calcularEAtualizarVisual();
+        }
+
+        function aplicarOrdenacao(array, config) {
+            if(!config.col) return array;
+            let arr = [...array];
+            return arr.sort((a, b) => {
+                let valA = a[config.col]; let valB = b[config.col];
+                if(config.col === 'pago') { valA = a.pago ? 1 : 0; valB = b.pago ? 1 : 0; }
+                if(config.col === 'data') { valA = new Date(valA).getTime(); valB = new Date(valB).getTime(); }
+                if (valA < valB) return config.asc ? -1 : 1;
+                if (valA > valB) return config.asc ? 1 : -1;
+                return 0;
+            });
+        }
+
+        function formatarData(dataISO) {
+            if(!dataISO) return '--/--';
+            const [ano, mes, dia] = dataISO.split('-');
+            return `${dia}/${mes}`;
+        }
+
+        function calcularEAtualizarVisual() {
+            let orcamento = 0, pago = 0, restante = 0, totalDiarios = 0;
+            let totalPorCategoria = {};
+            categoriasAtuais.forEach(c => totalPorCategoria[c] = 0);
+
+            const tbodyFixas = document.getElementById('listaFixas');
+            tbodyFixas.innerHTML = '';
+            let fixasOrdenadas = aplicarOrdenacao(window.activeFixas, ordFixas);
+            
+            fixasOrdenadas.forEach(c => {
+                orcamento += c.valor;
+                if(c.pago) pago += c.valor; else restante += c.valor;
+                let alerta = calcularAlertaVencimento(c.vencimento, c.pago);
+
+                tbodyFixas.innerHTML += `
+                    <tr>
+                        <td><strong>${c.nome}</strong></td>
+                        <td><span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span></td>
+                        <td>R$ ${c.valor.toFixed(2)}</td>
+                        <td><button class="status-badge ${c.pago?'sim':'nao'}" onclick="togglePagoFixa(${c.id})">${c.pago?'Sim':'Não'}</button></td>
+                        <td style="text-align:right;"><button class="btn-delete" onclick="deletarItemGeral(${c.id}, 'fixa')"><span class="material-icons">delete</span></button></td>
+                    </tr>
+                `;
+            });
+
+            const tbodyDiarios = document.getElementById('listaDiarios');
+            tbodyDiarios.innerHTML = '';
+            let diariosOrdenados = aplicarOrdenacao(window.activeDiarios, ordDiarios);
+
+            diariosOrdenados.forEach(g => {
+                totalDiarios += g.valor;
+                if(totalPorCategoria[g.categoria] !== undefined) totalPorCategoria[g.categoria] += g.valor;
+
+                tbodyDiarios.innerHTML += `
+                    <tr>
+                        <td style="color:var(--text-muted); font-size:0.85rem">${formatarData(g.data)}</td>
+                        <td>
+                            <div style="font-weight: 500">${g.nome}</div>
+                            <div style="color:var(--text-muted); font-size:0.75rem">${g.categoria}</div>
+                        </td>
+                        <td>R$ ${g.valor.toFixed(2)}</td>
+                        <td style="text-align:right;"><button class="btn-delete" onclick="deletarItemGeral(${g.id}, 'diario')"><span class="material-icons">delete</span></button></td>
+                    </tr>
+                `;
+            });
+
+            const saldoInputVal = parseFloat(document.getElementById('saldoInput').value) || 0;
+            let resultadoFinal = saldoInputVal - restante;
+
+            document.getElementById('mOrcamento').innerText = `R$ ${orcamento.toFixed(2)}`;
+            document.getElementById('mPago').innerText = `R$ ${pago.toFixed(2)}`;
+            document.getElementById('mRestante').innerText = `R$ ${restante.toFixed(2)}`;
+            document.getElementById('mTotalDiarios').innerText = `R$ ${totalDiarios.toFixed(2)}`;
+            const elRes = document.getElementById('mResultado');
+            elRes.innerText = `R$ ${resultadoFinal.toFixed(2)}`;
+            elRes.style.color = resultadoFinal >= 0 ? 'var(--green-success)' : 'var(--red-danger)';
+
+            const divAcumulados = document.getElementById('listaAcumulados');
+            divAcumulados.innerHTML = '';
+            
+            let catArray = Object.entries(totalPorCategoria).sort((a,b) => b[1] - a[1]);
+            catArray.forEach(([cat, valor]) => {
+                if(valor > 0) {
+                    let icone = obterIconeCategoria(cat);
+                    divAcumulados.innerHTML += `
+                        <div class="acumulado-item">
+                            <span style="display:flex; align-items:center; gap:8px;">
+                                <span class="material-icons" style="font-size:18px; color:var(--text-muted);">${icone}</span> ${cat}
+                            </span>
                             <span style="color:var(--text-highlight); font-weight:700">R$ ${valor.toFixed(2)}</span>
-                       </div>`;
-}
-});
-@@ -802,7 +807,7 @@ <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);
-divSubs.innerHTML = '';
-assinaturasConfig.forEach(s => {
-let valorFormatado = s.valor ? ` - R$ ${s.valor.toFixed(2)}` : '';
-                divSubs.innerHTML += `<div class="sub-item"><span>🔔 ${s.nome} <strong style="color:var(--purple-main)">${valorFormatado}</strong></span><div style="display:flex; align-items:center; gap:10px;"><span class="sub-date">Dia ${s.vencimento}</span><button class="btn-delete" onclick="deletarAssinatura(${s.id})"><span class="material-icons" style="font-size:1.1rem;">delete</span></button></div></div>`;
-                divSubs.innerHTML += `<div class="sub-item"><span>🔔 ${s.nome} <strong style="color:var(--text-highlight)">${valorFormatado}</strong></span><div style="display:flex; align-items:center; gap:10px;"><span class="sub-date">Dia ${s.vencimento}</span><button class="btn-delete" onclick="deletarAssinatura(${s.id})"><span class="material-icons" style="font-size:1.1rem;">delete</span></button></div></div>`;
-});
+                        </div>`;
+                }
+            });
 
-let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
-@@ -845,7 +850,7 @@ <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--purple-main);
-                           <span style="display:flex; align-items:center; gap:8px;">
-                               <span class="material-icons" style="font-size:18px; color:var(--text-muted);">${icone}</span> ${cat}
-                           </span>
-                            <span style="color:var(--blue-dark); font-weight:700">R$ ${valor.toFixed(2)}</span>
+            const divSubs = document.getElementById('listaAssinaturasCard');
+            divSubs.innerHTML = '';
+            assinaturasConfig.forEach(s => {
+                let valorFormatado = s.valor ? ` - R$ ${s.valor.toFixed(2)}` : '';
+                let alerta = calcularAlertaVencimento(s.vencimento, false); // Aplicação do alerta de 5 dias
+                divSubs.innerHTML += `<div class="sub-item"><span>🔔 ${s.nome} <strong style="color:var(--text-highlight)">${valorFormatado}</strong></span><div style="display:flex; align-items:center; gap:10px;"><span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span><button class="btn-delete" onclick="deletarAssinatura(${s.id})"><span class="material-icons" style="font-size:1.1rem;">delete</span></button></div></div>`;
+            });
+
+            let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
+            updateChart(chartDataArray);
+        }
+
+        function calcularRelatorioAnual() {
+            const anoSelecionado = document.getElementById('anoRelatorio').value;
+            if(!anoSelecionado || !currentUser) return;
+
+            let somaFixasPagas = 0; let somaDiarios = 0; let categoriasAno = {};
+            const mesesDoAno = mesesDisponiveis.filter(m => m.key.startsWith(anoSelecionado));
+            
+            let promessas = mesesDoAno.map(mes => {
+                return db.collection('users').doc(currentUser.uid).collection('meses').doc(mes.key).get().then(doc => {
+                    if(doc.exists) {
+                        let data = doc.data();
+                        (data.fixas || []).forEach(f => { if(f.pago) somaFixasPagas += f.valor; });
+                        (data.diarios || []).forEach(d => { 
+                            somaDiarios += d.valor; 
+                            categoriasAno[d.categoria] = (categoriasAno[d.categoria] || 0) + d.valor; 
+                        });
+                    }
+                });
+            });
+
+            Promise.all(promessas).then(() => {
+                document.getElementById('aFixos').innerText = `R$ ${somaFixasPagas.toFixed(2)}`;
+                document.getElementById('aDiarios').innerText = `R$ ${somaDiarios.toFixed(2)}`;
+                document.getElementById('aTotal').innerText = `R$ ${(somaFixasPagas + somaDiarios).toFixed(2)}`;
+
+                const divAcumuladosAno = document.getElementById('listaAcumuladosAno');
+                divAcumuladosAno.innerHTML = '';
+                let catArray = Object.entries(categoriasAno).sort((a,b) => b[1] - a[1]);
+                
+                catArray.forEach(([cat, valor]) => {
+                    let icone = obterIconeCategoria(cat);
+                    divAcumuladosAno.innerHTML += `
+                        <div class="acumulado-item">
+                            <span style="display:flex; align-items:center; gap:8px;">
+                                <span class="material-icons" style="font-size:18px; color:var(--text-muted);">${icone}</span> ${cat}
+                            </span>
                             <span style="color:var(--text-highlight-alt); font-weight:700">R$ ${valor.toFixed(2)}</span>
-                       </div>`;
-});
+                        </div>`;
+                });
+                
+                if(catArray.length === 0) divAcumuladosAno.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center;">Nenhum gasto registrado em ${anoSelecionado}.</p>`;
+            });
+        }
+
+        function addContaFixa() {
+            const nome = document.getElementById('fixaNome').value.trim(); const valor = parseFloat(document.getElementById('fixaValor').value); const venc = parseInt(document.getElementById('fixaVenc').value); const cat = document.getElementById('fixaCategoria').value;
+            if(!nome || isNaN(valor) || isNaN(venc)) return;
+            window.activeFixas.push({ id: Date.now(), nome, valor, vencimento: venc, categoria: cat, pago: false });
+            document.getElementById('fixaNome').value = ''; document.getElementById('fixaValor').value = ''; document.getElementById('fixaVenc').value = '';
+            salvarDadosDoMesAtual(); calcularEAtualizarVisual();
+        }
+
+        function addGastoDiario() {
+            const nome = document.getElementById('diarioNome').value.trim(); const valor = parseFloat(document.getElementById('diarioValor').value); const cat = document.getElementById('diarioCategoria').value; let data = document.getElementById('diarioData').value;
+            if(!nome || isNaN(valor)) return;
+            if(!data) data = new Date().toISOString().split('T')[0];
+            window.activeDiarios.push({ id: Date.now(), nome, valor, categoria: cat, data: data });
+            document.getElementById('diarioNome').value = ''; document.getElementById('diarioValor').value = '';
+            salvarDadosDoMesAtual(); calcularEAtualizarVisual();
+        }
+
+        function togglePagoFixa(id) { window.activeFixas = window.activeFixas.map(c => c.id === id ? { ...c, pago: !c.pago } : c); salvarDadosDoMesAtual(); calcularEAtualizarVisual(); }
+        function deletarItemGeral(id, tipo) { if(tipo === 'fixa') window.activeFixas = window.activeFixas.filter(c => c.id !== id); else window.activeDiarios = window.activeDiarios.filter(g => g.id !== id); salvarDadosDoMesAtual(); calcularEAtualizarVisual(); }
+        
+        function deletarAssinatura(id) { assinaturasConfig = assinaturasConfig.filter(s => s.id !== id); salvarConfigGlobal(); calcularEAtualizarVisual(); }
+        function addCategoriaGlobal() { const nome = document.getElementById('novaCatNome').value.trim(); if(!nome || categoriasAtuais.includes(nome)) return; categoriasAtuais.push(nome); salvarConfigGlobal(); document.getElementById('novaCatNome').value = ''; renderizarListasDeCategorias(); calcularEAtualizarVisual(); }
+        
+        function addAssinaturaInformativa() { 
+            const nome = document.getElementById('subNome').value.trim(); 
+            const valor = parseFloat(document.getElementById('subValor').value);
+            const venc = parseInt(document.getElementById('subVenc').value); 
+            if(!nome || isNaN(venc)) return; 
+            assinaturasConfig.push({ id: Date.now(), nome, valor: isNaN(valor) ? 0 : valor, vencimento: venc }); 
+            salvarConfigGlobal(); 
+            document.getElementById('subNome').value = ''; 
+            document.getElementById('subValor').value = ''; 
+            document.getElementById('subVenc').value = ''; 
+            calcularEAtualizarVisual(); 
+        }
+
+        function renderizarListasDeCategorias() {
+            const selFixas = document.getElementById('fixaCategoria'); const selDiarios = document.getElementById('diarioCategoria'); const boxConfig = document.getElementById('listaCategoriasConfig');
+            selFixas.innerHTML = ''; selDiarios.innerHTML = ''; boxConfig.innerHTML = '';
+            categoriasAtuais.forEach(cat => { selFixas.innerHTML += `<option value="${cat}">${cat}</option>`; selDiarios.innerHTML += `<option value="${cat}">${cat}</option>`; boxConfig.innerHTML += `<span style="background:var(--border-color); color:var(--text-main); padding:4px 10px; border-radius:20px; font-size:0.8rem; font-weight:600;">${cat}</span>`; });
+            if(meuGraficoPizza) meuGraficoPizza.data.labels = categoriasAtuais;
+            if(meuGraficoBarra) meuGraficoBarra.data.labels = categoriasAtuais;
+        }
+
+        function switchTab(event, tabId) {
+            if(window.innerWidth >= 900) return;
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            event.currentTarget.classList.add('active');
+            if(tabId === 'tab-anual') calcularRelatorioAnual();
+        }
+
+        function initChart() {
+            const ctxPizza = document.getElementById('chartCategorias').getContext('2d');
+            meuGraficoPizza = new Chart(ctxPizza, {
+                type: 'doughnut',
+                data: { labels: categoriasAtuais, datasets: [{ data: Array(categoriasAtuais.length).fill(0), backgroundColor: coresCategorias, borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+            });
+
+            const ctxBar = document.getElementById('barChartCategorias').getContext('2d');
+            meuGraficoBarra = new Chart(ctxBar, {
+                type: 'bar',
+                data: { labels: categoriasAtuais, datasets: [{ label: 'Gasto', data: Array(categoriasAtuais.length).fill(0), backgroundColor: coresCategorias, borderRadius: 6 }] },
+                options: { 
+                    responsive: true, maintainAspectRatio: false, 
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { display: false, beginAtZero: true },
+                        x: { ticks: { display: false }, grid: { display: false } }
+                    }
+                }
+            });
+        }
+
+        function updateChart(dataArray) { 
+            if(meuGraficoPizza) {
+                meuGraficoPizza.data.datasets[0].data = dataArray; 
+                meuGraficoPizza.update(); 
+            }
+            if(meuGraficoBarra) {
+                meuGraficoBarra.data.datasets[0].data = dataArray; 
+                meuGraficoBarra.update(); 
+            }
+        }
+    </script>
+</body>
+</html>
