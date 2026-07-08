@@ -26,7 +26,7 @@
             --bg-blue-light: #eff6ff;
             --badge-paid-bg: #f1f5f9;
             --badge-paid-text: #64748b;
-            --calendar-invert: 0; /* Ícone de calendário escuro */
+            --calendar-invert: 0;
         }
 
         /* Variáveis Modo Escuro */
@@ -39,13 +39,13 @@
             --purple-main: #582082;
             --purple-light: #6b21a8;
             
-            /* Destaques Claros para o Modo Escuro brilhar */
-            --text-highlight: #d8b4fe; /* Lilás Claro */
-            --text-highlight-alt: #93c5fd; /* Azul Celeste */
+            /* Destaques Claros para o Modo Escuro */
+            --text-highlight: #d8b4fe; 
+            --text-highlight-alt: #93c5fd; 
             --bg-blue-light: rgba(37, 99, 235, 0.15);
             --badge-paid-bg: #334155;
             --badge-paid-text: #cbd5e1;
-            --calendar-invert: 1; /* Inverte o ícone do calendário para branco */
+            --calendar-invert: 1; 
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -95,7 +95,6 @@
         input, select, textarea { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; transition: 0.3s; }
         input:focus, select:focus, textarea:focus { border-color: var(--blue-accent); }
         
-        /* Ajuste do ícone do calendário e Placeholders (textos de fundo) para o Modo Escuro */
         ::-webkit-calendar-picker-indicator { filter: invert(var(--calendar-invert)); cursor: pointer; }
         ::placeholder { color: var(--text-muted); opacity: 0.7; font-weight: 400; }
 
@@ -652,7 +651,7 @@
             if (diffDias === 0) {
                 return { texto: `Vence Hoje!`, cor: 'white', bg: 'var(--red-danger)' };
             }
-            if (diffDias <= 3) {
+            if (diffDias <= 5) {
                 return { texto: `Dia ${diaVenc} (${diffDias}d)`, cor: 'white', bg: 'var(--warning-orange)' };
             }
             return { texto: `Dia ${diaVenc}`, cor: 'white', bg: 'var(--green-success)' };
@@ -775,6 +774,7 @@
                 `;
             });
 
+            // ATUALIZADO: Subtração rigorosa de apenas Saldo Atual - Restante das Contas Fixas
             const saldoInputVal = parseFloat(document.getElementById('saldoInput').value) || 0;
             let resultadoFinal = saldoInputVal - restante;
 
@@ -807,7 +807,8 @@
             divSubs.innerHTML = '';
             assinaturasConfig.forEach(s => {
                 let valorFormatado = s.valor ? ` - R$ ${s.valor.toFixed(2)}` : '';
-                divSubs.innerHTML += `<div class="sub-item"><span>🔔 ${s.nome} <strong style="color:var(--text-highlight)">${valorFormatado}</strong></span><div style="display:flex; align-items:center; gap:10px;"><span class="sub-date">Dia ${s.vencimento}</span><button class="btn-delete" onclick="deletarAssinatura(${s.id})"><span class="material-icons" style="font-size:1.1rem;">delete</span></button></div></div>`;
+                let alerta = calcularAlertaVencimento(s.vencimento, false); 
+                divSubs.innerHTML += `<div class="sub-item"><span>🔔 ${s.nome} <strong style="color:var(--text-highlight)">${valorFormatado}</strong></span><div style="display:flex; align-items:center; gap:10px;"><span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span><button class="btn-delete" onclick="deletarAssinatura(${s.id})"><span class="material-icons" style="font-size:1.1rem;">delete</span></button></div></div>`;
             });
 
             let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
