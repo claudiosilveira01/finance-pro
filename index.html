@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Finanças Inteligente Nuvem</title>
+    <title>Planner Financeiro</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -26,7 +28,7 @@
             --bg-blue-light: #eff6ff;
             --badge-paid-bg: #f1f5f9;
             --badge-paid-text: #64748b;
-            --calendar-invert: 0; /* Ícone de calendário escuro */
+            --calendar-invert: 0; 
         }
 
         /* Variáveis Modo Escuro */
@@ -40,12 +42,12 @@
             --purple-light: #6b21a8;
             
             /* Destaques Claros para o Modo Escuro brilhar */
-            --text-highlight: #d8b4fe; /* Lilás Claro */
-            --text-highlight-alt: #93c5fd; /* Azul Celeste */
+            --text-highlight: #d8b4fe; 
+            --text-highlight-alt: #93c5fd; 
             --bg-blue-light: rgba(37, 99, 235, 0.15);
             --badge-paid-bg: #334155;
             --badge-paid-text: #cbd5e1;
-            --calendar-invert: 1; /* Inverte o ícone do calendário para branco */
+            --calendar-invert: 1; 
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -95,7 +97,6 @@
         input, select, textarea { padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; transition: 0.3s; }
         input:focus, select:focus, textarea:focus { border-color: var(--blue-accent); }
         
-        /* Ajuste do ícone do calendário e Placeholders (textos de fundo) para o Modo Escuro */
         ::-webkit-calendar-picker-indicator { filter: invert(var(--calendar-invert)); cursor: pointer; }
         ::placeholder { color: var(--text-muted); opacity: 0.7; font-weight: 400; }
 
@@ -129,7 +130,6 @@
         .acumulados-list { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
         .acumulado-item { display: flex; justify-content: space-between; padding: 8px 12px; background: var(--bg-light); border-radius: 6px; font-size: 0.9rem; font-weight: 500; transition: 0.3s; }
         .sub-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
-        .sub-date { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; background: var(--border-color); padding: 4px 8px; border-radius: 6px; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; padding: 8px 10px; z-index: 100; transition: 0.3s; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; color: var(--text-muted); background: none; border: none; cursor: pointer; font-weight: 500; flex: 1; }
@@ -155,10 +155,13 @@
         .cal-day.selected { box-shadow: inset 0 0 0 2px var(--text-highlight); }
         .cal-day.has-pending { background: rgba(231,76,60,0.15); color: var(--red-danger); }
         .cal-day.has-paid { background: rgba(39,174,96,0.15); color: var(--green-success); }
+        .cal-day.has-sub { background: rgba(155,89,182,0.15); color: #9b59b6; } /* Cor roxa para focar que tem assinatura no dia */
         .cal-dot { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+        
+        .sub-dot { position: absolute; bottom: 4px; left: 35%; width: 5px; height: 5px; border-radius: 50%; background: #9b59b6; } /* Bolinha roxa para assinaturas */
 
         /* === CALCULADORA === */
-        .calc-visor { background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: right; font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; min-height: 30px; overflow-x: auto; white-space: nowrap; }
+        .calc-visor { background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: right; font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; min-height: 60px; overflow-x: auto; white-space: nowrap; outline: none; }
         .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .calc-btn { padding: 16px 0; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; background: var(--border-color); color: var(--text-main); transition: 0.15s; }
         .calc-btn:hover { filter: brightness(1.1); }
@@ -166,12 +169,19 @@
         .calc-btn.op { background: var(--blue-accent); color: white; }
         .calc-btn.eq { background: var(--green-success); color: white; }
         .calc-btn.clear { background: var(--red-danger); color: white; }
+        .calc-btn.select-fixas { background: var(--purple-light); color: white; grid-column: span 4; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem;}
+
+        /* Modal Seleção Fixas Calculadora */
+        .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
+        .modal-content { background: var(--card-bg); padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
+        .modal-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+        
     </style>
 </head>
 <body>
 
     <div id="loginScreen">
-        <h2 style="color: var(--text-highlight); margin-bottom: 20px;"><span class="material-icons" style="vertical-align: bottom;">lock</span> Finanças Pro</h2>
+        <h2 style="color: var(--text-highlight); margin-bottom: 20px;"><span class="material-icons" style="vertical-align: bottom;">analytics</span> Planner Financeiro</h2>
         <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Acesse para sincronizar os seus dados</p>
         
         <input type="email" id="emailInput" placeholder="O seu E-mail" style="width: 100%; margin-bottom: 15px;">
@@ -185,9 +195,21 @@
 
     <div class="loading-overlay" id="loadingDiv">A sincronizar com a Nuvem...</div>
 
+    <div class="modal-overlay" id="modalFixasCalc">
+        <div class="modal-content">
+            <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">Somar Contas Fixas</h3>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Selecione as contas que deseja enviar para a calculadora:</p>
+            <div id="listaFixasCalcModal"></div>
+            <div style="display: flex; gap: 10px; margin-top: 20px;">
+                <button class="btn-flat" style="flex: 1; background: var(--text-muted);" onclick="fecharModalFixas()">Cancelar</button>
+                <button class="btn-flat" style="flex: 1; background: var(--green-success);" onclick="aplicarSomaFixasModal()">Calcular</button>
+            </div>
+        </div>
+    </div>
+
     <div id="mainApp">
         <header>
-            <h1><span class="material-icons">account_balance_wallet</span> Finanças Pro</h1>
+            <h1><span class="material-icons">analytics</span> Planner Financeiro</h1>
             <div style="display:flex; gap:10px; align-items:center;">
                 <select id="mesSeletor" class="select-mes" onchange="mudarMesOuro()"></select>
                 <button class="btn-flat" style="background:var(--red-danger); padding:6px 10px;" onclick="fazerLogout()" title="Sair"><span class="material-icons" style="font-size:18px;">logout</span></button>
@@ -225,6 +247,30 @@
                     </div>
                 </div>
 
+                <div id="tab-diarios" class="card tab-content">
+                    <div class="card-title"><span class="material-icons">shopping_cart</span> Gastos Diários</div>
+                    <div class="input-inline">
+                        <input type="text" id="diarioNome" style="flex:2;" placeholder="Ex: Lanche, PIX">
+                        <input type="date" id="diarioData" style="flex:1.5;">
+                        <input type="number" id="diarioValor" style="flex:1;" placeholder="R$">
+                        <select id="diarioCategoria" style="flex:1.5;"></select>
+                        <button class="btn-flat" onclick="addGastoDiario()"><span class="material-icons">add</span></button>
+                    </div>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="sortable" onclick="ordenarTabela('diarios', 'data')">Data ↕️</th>
+                                    <th>Item</th>
+                                    <th class="sortable" onclick="ordenarTabela('diarios', 'valor')">Valor ↕️</th>
+                                    <th style="width: 40px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaDiarios"></tbody>
+                        </table>
+                    </div>
+                </div>
+
                 <div id="tab-calendario" class="card tab-content">
                     <div class="card-title"><span class="material-icons">event</span> Calendário de Vencimentos</div>
                     <div id="calendarioMesLabel" style="text-align:center; font-weight:700; color:var(--text-highlight); margin-bottom:12px; font-size:1rem; text-transform:capitalize;"></div>
@@ -258,6 +304,16 @@
 
                     <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
+                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">📥 Importar Lista de Gastos Diários (CSV)</h4>
+                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
+                        Cole os dados organizados por vírgula: <b>Nome, Valor, Categoria, Data (AAAA-MM-DD)</b><br>
+                        Exemplo: <i>Gasolina, 50.00, Transporte, 2026-07-03</i>
+                    </p>
+                    <textarea id="csvImportText" style="width:100%; height:110px; margin-bottom:10px; font-size:0.85rem;" placeholder="Cole as suas linhas do Excel ou bloco de notas aqui..."></textarea>
+                    <button class="btn-flat" style="background-color: var(--green-success);" onclick="importarGastosCSV()">Processar Importação</button>
+
+                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
                     <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🏷️ Nova Categoria</h4>
                     <div class="control-row">
                         <input type="text" id="novaCatNome" placeholder="Nome da Categoria">
@@ -278,22 +334,58 @@
                     <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
                     <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: var(--red-danger);">🗑️ Limpar Dados do Mês</h4>
                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
-                        Apague as contas fixas permanentemente do mês selecionado.
+                        Apague os dados permanentemente do mês selecionado.
                     </p>
-                    <button class="btn-flat" style="background-color: transparent; border: 1px solid var(--red-danger); color: var(--red-danger); width: 100%;" onclick="limparFixasDoMesAtual()">Apagar Contas Fixas</button>
+                    <div class="control-row">
+                        <button class="btn-flat" style="background-color: transparent; border: 1px solid var(--red-danger); color: var(--red-danger); flex: 1;" onclick="limparFixasDoMesAtual()">Apagar Fixas</button>
+                        <button class="btn-flat" style="background-color: var(--red-danger); flex: 1;" onclick="limparDiariosDoMesAtual()">Apagar Diários</button>
+                    </div>
                 </div>
             </div>
 
             <div class="col-right">
                 <div id="tab-dashboard" class="tab-content">
+                    
+                    <div class="card">
+                        <div class="card-title"><span class="material-icons">payments</span> Faturamentos / Receitas</div>
+                        <div class="input-inline">
+                            <input type="text" id="fatNome" style="flex:2;" placeholder="Origem (Ex: Salário, Venda)">
+                            <input type="number" id="fatValor" style="flex:1.5;" placeholder="R$">
+                            <input type="date" id="fatData" style="flex:1.5;">
+                            <button class="btn-flat" style="background:var(--green-success)" onclick="addFaturamento()"><span class="material-icons">add</span></button>
+                        </div>
+                        <div class="table-responsive" style="margin-bottom: 15px;">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th class="sortable" onclick="ordenarTabela('faturamentos', 'data')">Data ↕️</th>
+                                        <th>Origem</th>
+                                        <th class="sortable" onclick="ordenarTabela('faturamentos', 'valor')">Valor ↕️</th>
+                                        <th style="width: 40px;"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="listaFaturamentos"></tbody>
+                            </table>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:12px; border-radius:8px;">
+                            <span style="color:var(--blue-dark); font-weight:600; font-size:0.9rem;">SALDO / CAIXA INICIAL (Extra)</span>
+                            <div style="display: flex; align-items: center; gap: 5px;">
+                                <span style="font-weight: 700; color: var(--blue-dark);">R$</span>
+                                <input type="number" id="saldoInput" onblur="salvarSaldoDoMes()" style="background: transparent; border: none; border-bottom: 2px solid var(--blue-accent); border-radius: 0; width: 100px; text-align: right; font-weight: 700; font-size: 1.1rem; padding: 4px; color: var(--blue-dark);">
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="card">
                         <div class="card-title"><span class="material-icons">calculate</span> Painel de Controle</div>
                         <div class="matrix-grid">
+                            <div class="matrix-label" style="background-color: var(--blue-accent);">SALDO ESTIMADO</div>
+                            <div class="matrix-value" id="mSaldoEstimado" style="background-color: var(--bg-blue-light); font-size: 1.2rem; color: var(--blue-dark);">R$ 0,00</div>
+
                             <div class="matrix-label">ORÇAMENTO FIXO</div><div class="matrix-value" id="mOrcamento">R$ 0,00</div>
                             <div class="matrix-label">PAGO</div><div class="matrix-value" id="mPago" style="color: var(--green-success);">R$ 0,00</div>
                             <div class="matrix-label">RESTANTE CONTAS</div><div class="matrix-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</div>
-                            <div class="matrix-label" style="background-color: var(--blue-accent);">SALDO ATUAL</div>
-                            <div class="matrix-value" style="background-color: var(--bg-blue-light);"><input type="number" id="saldoInput" onblur="salvarSaldoDoMes()"></div>
+                            <div class="matrix-label">TOTAL DIÁRIOS</div><div class="matrix-value" id="mTotalDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
                             <div class="matrix-label">FALTA / SOBRA</div><div class="matrix-value" id="mResultado" style="font-size: 1.2rem;">R$ 0,00</div>
                         </div>
                     </div>
@@ -316,12 +408,13 @@
                         <div id="listaAssinaturasCard"></div>
                     </div>
                 </div>
-
+                
                 <div id="tab-calculadora" class="tab-content">
                     <div class="card">
-                        <div class="card-title"><span class="material-icons">calculate</span> Calculadora</div>
-                        <div class="calc-visor" id="calcVisor">0</div>
+                        <div class="card-title"><span class="material-icons">calculate</span> Calculadora Inteligente</div>
+                        <input type="text" class="calc-visor" id="calcVisor" value="0" oninput="validarInputCalculadora(this)" placeholder="Digite o cálculo...">
                         <div class="calc-grid">
+                            <button class="calc-btn select-fixas" onclick="abrirModalFixas()"><span class="material-icons" style="font-size: 18px;">receipt_long</span> Somar Contas Fixas</button>
                             <button class="calc-btn clear" onclick="calcInput('C')">C</button>
                             <button class="calc-btn" onclick="calcInput('⌫')">⌫</button>
                             <button class="calc-btn op" onclick="calcInput('%')">%</button>
@@ -347,6 +440,24 @@
                             <button class="calc-btn eq" onclick="calcInput('=')">=</button>
                         </div>
                     </div>
+                </div>
+
+                <div id="tab-anual" class="tab-content">
+                    <div class="card">
+                        <div class="card-title"><span class="material-icons">calendar_month</span> Relatório Anual</div>
+                        <div class="input-inline" style="margin-bottom: 20px;">
+                            <select id="anoRelatorio" style="flex: 2;" onchange="calcularRelatorioAnual()"></select>
+                            <button class="btn-flat" onclick="calcularRelatorioAnual()"><span class="material-icons">refresh</span></button>
+                        </div>
+                        <div class="matrix-grid" style="margin-bottom: 20px;">
+                            <div class="matrix-label">FATURAMENTO ANO</div><div class="matrix-value" id="aFat" style="color: var(--green-success);">R$ 0,00</div>
+                            <div class="matrix-label">GASTOS FIXOS (PAGOS)</div><div class="matrix-value" id="aFixos" style="color: var(--text-highlight);">R$ 0,00</div>
+                            <div class="matrix-label">GASTOS DIÁRIOS (TOTAIS)</div><div class="matrix-value" id="aDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
+                            <div class="matrix-label" style="background-color: var(--blue-dark);">TOTAL GASTO NO ANO</div><div class="matrix-value" id="aTotal" style="font-size: 1.2rem; font-weight: 800;">R$ 0,00</div>
+                        </div>
+                        <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--text-highlight);">Distribuição por Categorias</h4>
+                        <div class="acumulados-list" id="listaAcumuladosAno"></div>
+                    </div>
 
                     <button class="btn-flat desktop-toggle-btn" onclick="toggleConfigDesktop()" id="btnToggleConfig">
                         <span style="display:flex; align-items:center; gap:8px;"><span class="material-icons">visibility_off</span> Ocultar Configurações no Painel</span>
@@ -357,7 +468,7 @@
 
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="switchTab(event, 'tab-fixas')"><span class="material-icons">assignment</span>Contas</button>
-            <button class="nav-item" onclick="switchTab(event, 'tab-calendario')"><span class="material-icons">event</span>Calendário</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-diarios')"><span class="material-icons">shopping_cart</span>Diários</button>
             <button class="nav-item" onclick="switchTab(event, 'tab-dashboard')"><span class="material-icons">analytics</span>Mês</button>
             <button class="nav-item" onclick="switchTab(event, 'tab-calculadora')"><span class="material-icons">calculate</span>Calc.</button>
             <button class="nav-item" onclick="switchTab(event, 'tab-config')"><span class="material-icons">settings</span>Config</button>
@@ -412,11 +523,13 @@
         
         let mesAtualKey = "2026-07";
         let ordFixas = { col: '', asc: true };
+        let ordDiarios = { col: '', asc: true };
+        let ordFaturamentos = { col: '', asc: true };
+        
         let meuGraficoPizza;
         let meuGraficoBarra;
         let idEditandoFixa = null;
         let diaCalendarioSelecionado = null;
-        let calcDisplay = '';
 
         const coresCategorias = ['#2ecc71', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#e74c3c', '#1abc9c', '#34495e', '#fd79a8', '#00cec9', '#6c5ce7', '#ff7675'];
 
@@ -429,6 +542,8 @@
                 document.getElementById('mainApp').style.display = 'block';
                 loading.style.display = 'flex';
                 
+                document.getElementById('diarioData').value = new Date().toISOString().split('T')[0];
+                document.getElementById('fatData').value = new Date().toISOString().split('T')[0];
                 initChart();
                 atualizarBotaoTema();
                 carregarConfigGlobal(() => {
@@ -476,7 +591,6 @@
                 renderizarMeses();
                 renderizarListasDeCategorias();
                 
-                // Seleciona automaticamente o mês atual, se ele existir na lista
                 const mesAtualReal = new Date().toISOString().slice(0, 7);
                 if(mesesDisponiveis.some(m => m.key === mesAtualReal)) {
                     mesAtualKey = mesAtualReal;
@@ -507,11 +621,13 @@
                     let data = doc.data();
                     window.activeFixas = data.fixas || [];
                     window.activeDiarios = data.diarios || [];
+                    window.activeFaturamentos = data.faturamentos || [];
                     document.getElementById('saldoInput').value = data.saldo || 0;
                 } else {
                     window.activeFixas = [];
                     window.activeDiarios = [];
-                    document.getElementById('saldoInput').value = 1990;
+                    window.activeFaturamentos = [];
+                    document.getElementById('saldoInput').value = 0;
                 }
                 diaCalendarioSelecionado = null;
                 calcularEAtualizarVisual();
@@ -524,6 +640,7 @@
             let dados = {
                 fixas: window.activeFixas,
                 diarios: window.activeDiarios || [],
+                faturamentos: window.activeFaturamentos || [],
                 saldo: parseFloat(document.getElementById('saldoInput').value) || 0
             };
             db.collection('users').doc(currentUser.uid).collection('meses').doc(mesAtualKey).set(dados);
@@ -541,6 +658,13 @@
             });
         }
 
+        function renderizarAnosRelatorio() {
+            const anos = [...new Set(mesesDisponiveis.map(m => m.key.split('-')[0]))];
+            const selAno = document.getElementById('anoRelatorio');
+            selAno.innerHTML = '';
+            anos.forEach(ano => selAno.innerHTML += `<option value="${ano}">Resumo de ${ano}</option>`);
+        }
+
         function addNovoMes() {
             const inputVal = document.getElementById('novoMesInput').value; 
             if(!inputVal || mesesDisponiveis.some(m => m.key === inputVal)) return;
@@ -554,6 +678,7 @@
             
             salvarConfigGlobal();
             renderizarMeses();
+            renderizarAnosRelatorio();
             document.getElementById('novoMesInput').value = '';
             document.getElementById('mesSeletor').value = inputVal;
             mudarMesOuro();
@@ -609,6 +734,13 @@
         function limparFixasDoMesAtual() {
             if(!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja apagar TODAS as contas fixas de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`)) return;
             window.activeFixas = [];
+            salvarDadosDoMesAtual();
+            calcularEAtualizarVisual();
+        }
+
+        function limparDiariosDoMesAtual() {
+            if(!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja apagar TODOS os gastos diários de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`)) return;
+            window.activeDiarios = [];
             salvarDadosDoMesAtual();
             calcularEAtualizarVisual();
         }
@@ -672,8 +804,9 @@
         }
 
         function ordenarTabela(tabela, coluna) {
-            ordFixas.asc = (ordFixas.col === coluna) ? !ordFixas.asc : true; 
-            ordFixas.col = coluna;
+            if(tabela === 'fixas') { ordFixas.asc = (ordFixas.col === coluna) ? !ordFixas.asc : true; ordFixas.col = coluna; } 
+            else if(tabela === 'diarios') { ordDiarios.asc = (ordDiarios.col === coluna) ? !ordDiarios.asc : true; ordDiarios.col = coluna; }
+            else if(tabela === 'faturamentos') { ordFaturamentos.asc = (ordFaturamentos.col === coluna) ? !ordFaturamentos.asc : true; ordFaturamentos.col = coluna; }
             calcularEAtualizarVisual();
         }
 
@@ -683,13 +816,14 @@
             return arr.sort((a, b) => {
                 let valA = a[config.col]; let valB = b[config.col];
                 if(config.col === 'pago') { valA = a.pago ? 1 : 0; valB = b.pago ? 1 : 0; }
+                if(config.col === 'data') { valA = new Date(valA).getTime(); valB = new Date(valB).getTime(); }
                 if (valA < valB) return config.asc ? -1 : 1;
                 if (valA > valB) return config.asc ? 1 : -1;
                 return 0;
             });
         }
 
-        // === CALENDÁRIO DE VENCIMENTOS ===
+        // === CALENDÁRIO DE VENCIMENTOS (Com assinaturas) ===
         function renderizarCalendario() {
             const cal = document.getElementById('calendarioGrid');
             const label = document.getElementById('calendarioMesLabel');
@@ -711,15 +845,23 @@
 
             for(let dia = 1; dia <= diasNoMes; dia++) {
                 const contasDoDia = (window.activeFixas || []).filter(f => f.vencimento === dia);
+                const assinaturasDoDia = (assinaturasConfig || []).filter(a => a.vencimento === dia);
+                
                 const temPendente = contasDoDia.some(f => !f.pago);
-                const temEvento = contasDoDia.length > 0;
+                const temConta = contasDoDia.length > 0;
+                const temAssinatura = assinaturasDoDia.length > 0;
 
                 let classe = 'cal-day';
-                if(temEvento) classe += temPendente ? ' has-pending' : ' has-paid';
+                if(temConta) classe += temPendente ? ' has-pending' : ' has-paid';
+                else if(temAssinatura) classe += ' has-sub';
+                
                 if(hoje.getFullYear() === ano && (hoje.getMonth()+1) === mes && hoje.getDate() === dia) classe += ' today';
                 if(diaCalendarioSelecionado === dia) classe += ' selected';
 
-                html += `<div class="${classe}" onclick="mostrarEventosDia(${dia})">${dia}${temEvento ? '<span class="cal-dot"></span>' : ''}</div>`;
+                html += `<div class="${classe}" onclick="mostrarEventosDia(${dia})">${dia}`;
+                if(temConta) html += `<span class="cal-dot"></span>`;
+                if(temAssinatura) html += `<span class="sub-dot"></span>`;
+                html += `</div>`;
             }
 
             cal.innerHTML = html;
@@ -731,18 +873,25 @@
             const container = document.getElementById('calendarioEventos');
             if(!container) return;
 
-            let lista = dia 
+            let listaContas = dia 
                 ? (window.activeFixas || []).filter(f => f.vencimento === dia)
                 : [...(window.activeFixas || [])].sort((a,b) => a.vencimento - b.vencimento);
+                
+            let listaSubs = dia 
+                ? (assinaturasConfig || []).filter(s => s.vencimento === dia)
+                : [...(assinaturasConfig || [])].sort((a,b) => a.vencimento - b.vencimento);
 
-            const titulo = dia ? `Vencimentos - Dia ${dia}` : 'Todos os vencimentos do mês';
+            const titulo = dia ? `Eventos - Dia ${dia}` : 'Todos os eventos do mês';
 
-            if(lista.length === 0) {
-                container.innerHTML = `<h4 style="font-size:0.85rem; margin-bottom:8px; color:var(--text-highlight);">${titulo}</h4><p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:10px;">Nenhuma dívida encontrada.</p>`;
+            if(listaContas.length === 0 && listaSubs.length === 0) {
+                container.innerHTML = `<h4 style="font-size:0.85rem; margin-bottom:8px; color:var(--text-highlight);">${titulo}</h4><p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:10px;">Nenhum evento encontrado.</p>`;
                 return;
             }
 
-            container.innerHTML = `<h4 style="font-size:0.85rem; margin-bottom:8px; color:var(--text-highlight);">${titulo}</h4>` + lista.map(f => `
+            let html = `<h4 style="font-size:0.85rem; margin-bottom:8px; color:var(--text-highlight);">${titulo}</h4>`;
+            
+            listaContas.forEach(f => {
+                html += `
                 <div class="sub-item">
                     <span>
                         <span class="material-icons" style="font-size:16px; vertical-align:middle; color:var(--text-muted);">${obterIconeCategoria(f.categoria)}</span>
@@ -750,38 +899,101 @@
                         ${f.obs ? `<div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">${f.obs}</div>` : ''}
                     </span>
                     <span class="vencimento-tag" style="color:white; background-color:${f.pago ? 'var(--green-success)' : 'var(--red-danger)'}">Dia ${f.vencimento} ${f.pago ? '✓' : ''}</span>
-                </div>
-            `).join('');
+                </div>`;
+            });
+            
+            listaSubs.forEach(s => {
+                html += `
+                <div class="sub-item">
+                    <span>
+                        <span class="material-icons" style="font-size:16px; vertical-align:middle; color:#9b59b6;">star</span>
+                        ${s.nome} <strong style="color:#9b59b6"> - R$ ${(s.valor||0).toFixed(2)}</strong>
+                    </span>
+                    <span class="vencimento-tag" style="color:white; background-color:#9b59b6">Dia ${s.vencimento} (Assinatura)</span>
+                </div>`;
+            });
+
+            container.innerHTML = html;
         }
 
-        // === CALCULADORA ===
+        // === CALCULADORA INTELIGENTE ===
         function calcInput(val) {
             const visor = document.getElementById('calcVisor');
+            let atual = visor.value;
+            
             if(val === 'C') {
-                calcDisplay = '';
+                visor.value = '';
             } else if(val === '⌫') {
-                calcDisplay = calcDisplay.slice(0, -1);
+                visor.value = atual.slice(0, -1);
             } else if(val === '=') {
                 try {
-                    if(/^[0-9+\-*/.% ]+$/.test(calcDisplay)) {
-                        let resultado = Function('"use strict"; return (' + calcDisplay.replace(/%/g, '/100') + ')')();
-                        calcDisplay = Number.isFinite(resultado) ? String(Math.round(resultado * 100000000) / 100000000) : 'Erro';
+                    if(/^[0-9+\-*/.% ]+$/.test(atual)) {
+                        let resultado = Function('"use strict"; return (' + atual.replace(/%/g, '/100') + ')')();
+                        visor.value = Number.isFinite(resultado) ? String(Math.round(resultado * 100000000) / 100000000) : 'Erro';
                     }
                 } catch(e) {
-                    calcDisplay = 'Erro';
+                    visor.value = 'Erro';
                 }
             } else {
-                if(calcDisplay === 'Erro') calcDisplay = '';
-                calcDisplay += val;
+                if(atual === 'Erro' || atual === '0') visor.value = '';
+                visor.value += val;
             }
-            visor.innerText = calcDisplay === '' ? '0' : calcDisplay;
+        }
+
+        // Valida para aceitar apenas números e operadores no teclado
+        function validarInputCalculadora(input) {
+            input.value = input.value.replace(/[^0-9+\-*/.%]/g, '');
+        }
+
+        // Modal Seleção Fixas Calculadora
+        function abrirModalFixas() {
+            const modal = document.getElementById('modalFixasCalc');
+            const lista = document.getElementById('listaFixasCalcModal');
+            lista.innerHTML = '';
+            
+            if(!window.activeFixas || window.activeFixas.length === 0) {
+                lista.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem;">Nenhuma conta fixa cadastrada neste mês.</p>';
+            } else {
+                window.activeFixas.forEach(f => {
+                    lista.innerHTML += `
+                        <div class="modal-item">
+                            <div>
+                                <div style="font-weight:600;">${f.nome}</div>
+                                <div style="font-size:0.8rem; color:var(--text-muted);">R$ ${f.valor.toFixed(2)}</div>
+                            </div>
+                            <input type="checkbox" class="fixa-calc-check" value="${f.valor}" style="width: 20px; height: 20px; cursor: pointer;">
+                        </div>
+                    `;
+                });
+            }
+            modal.style.display = 'flex';
+        }
+
+        function fecharModalFixas() {
+            document.getElementById('modalFixasCalc').style.display = 'none';
+        }
+
+        function aplicarSomaFixasModal() {
+            const checks = document.querySelectorAll('.fixa-calc-check:checked');
+            let soma = 0;
+            checks.forEach(chk => soma += parseFloat(chk.value));
+            
+            const visor = document.getElementById('calcVisor');
+            if(visor.value === '0' || visor.value === 'Erro' || visor.value === '') {
+                visor.value = soma.toFixed(2);
+            } else {
+                visor.value += '+' + soma.toFixed(2);
+            }
+            
+            fecharModalFixas();
         }
 
         function calcularEAtualizarVisual() {
-            let orcamento = 0, pago = 0, restante = 0;
+            let orcamento = 0, pago = 0, restante = 0, totalDiarios = 0, totalFaturamentos = 0;
             let totalPorCategoria = {};
             categoriasAtuais.forEach(c => totalPorCategoria[c] = 0);
 
+            // Tabela Fixas
             const tbodyFixas = document.getElementById('listaFixas');
             tbodyFixas.innerHTML = '';
             let fixasOrdenadas = aplicarOrdenacao(window.activeFixas, ordFixas);
@@ -789,14 +1001,14 @@
             fixasOrdenadas.forEach(c => {
                 orcamento += c.valor;
                 if(c.pago) pago += c.valor; else restante += c.valor;
-                if(totalPorCategoria[c.categoria] !== undefined) totalPorCategoria[c.categoria] += c.valor;
                 let alerta = calcularAlertaVencimento(c.vencimento, c.pago);
 
                 tbodyFixas.innerHTML += `
                     <tr>
                         <td>
                             <strong>${c.nome}</strong>
-                            ${c.obs ? `<div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">${c.obs}</div>` : ''}
+                            <div style="color:var(--text-muted); font-size:0.75rem">${c.categoria}</div>
+                            ${c.obs ? `<div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;"><i>${c.obs}</i></div>` : ''}
                         </td>
                         <td><span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span></td>
                         <td>R$ ${c.valor.toFixed(2)}</td>
@@ -811,12 +1023,55 @@
                 `;
             });
 
-            const saldoInputVal = parseFloat(document.getElementById('saldoInput').value) || 0;
-            let resultadoFinal = saldoInputVal - restante;
+            // Tabela Faturamentos
+            const tbodyFat = document.getElementById('listaFaturamentos');
+            tbodyFat.innerHTML = '';
+            let fatOrdenados = aplicarOrdenacao(window.activeFaturamentos, ordFaturamentos);
+            
+            fatOrdenados.forEach(f => {
+                totalFaturamentos += f.valor;
+                tbodyFat.innerHTML += `
+                    <tr>
+                        <td style="color:var(--text-muted); font-size:0.85rem">${formatarData(f.data)}</td>
+                        <td style="font-weight: 500">${f.nome}</td>
+                        <td style="color:var(--green-success); font-weight:700;">+ R$ ${f.valor.toFixed(2)}</td>
+                        <td style="text-align:right;"><button class="btn-action btn-delete" onclick="deletarItemGeral(${f.id}, 'faturamento')"><span class="material-icons">delete</span></button></td>
+                    </tr>
+                `;
+            });
 
+            // Tabela Diarios
+            const tbodyDiarios = document.getElementById('listaDiarios');
+            tbodyDiarios.innerHTML = '';
+            let diariosOrdenados = aplicarOrdenacao(window.activeDiarios, ordDiarios);
+
+            diariosOrdenados.forEach(g => {
+                totalDiarios += g.valor;
+                if(totalPorCategoria[g.categoria] !== undefined) totalPorCategoria[g.categoria] += g.valor;
+
+                tbodyDiarios.innerHTML += `
+                    <tr>
+                        <td style="color:var(--text-muted); font-size:0.85rem">${formatarData(g.data)}</td>
+                        <td>
+                            <div style="font-weight: 500">${g.nome}</div>
+                            <div style="color:var(--text-muted); font-size:0.75rem">${g.categoria}</div>
+                        </td>
+                        <td>R$ ${g.valor.toFixed(2)}</td>
+                        <td style="text-align:right;"><button class="btn-action btn-delete" onclick="deletarItemGeral(${g.id}, 'diario')"><span class="material-icons">delete</span></button></td>
+                    </tr>
+                `;
+            });
+
+            const saldoCaixaInicial = parseFloat(document.getElementById('saldoInput').value) || 0;
+            const saldoEstimado = saldoCaixaInicial + totalFaturamentos;
+            let resultadoFinal = saldoEstimado - restante;
+
+            document.getElementById('mSaldoEstimado').innerText = `R$ ${saldoEstimado.toFixed(2)}`;
             document.getElementById('mOrcamento').innerText = `R$ ${orcamento.toFixed(2)}`;
             document.getElementById('mPago').innerText = `R$ ${pago.toFixed(2)}`;
             document.getElementById('mRestante').innerText = `R$ ${restante.toFixed(2)}`;
+            document.getElementById('mTotalDiarios').innerText = `R$ ${totalDiarios.toFixed(2)}`;
+            
             const elRes = document.getElementById('mResultado');
             elRes.innerText = `R$ ${resultadoFinal.toFixed(2)}`;
             elRes.style.color = resultadoFinal >= 0 ? 'var(--green-success)' : 'var(--red-danger)';
@@ -852,11 +1107,61 @@
             let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
             updateChart(chartDataArray);
 
-            renderizarCalendario();
+            if (document.getElementById('tab-calendario').classList.contains('active')) {
+                renderizarCalendario();
+            }
+            renderizarAnosRelatorio(); // Re-renderizar caso mude faturamento
         }
 
-        // SALVAR OU ATUALIZAR CONTA FIXA
-        function salvarContaFixa() {
+        function calcularRelatorioAnual() {
+            const anoSelecionado = document.getElementById('anoRelatorio').value;
+            if(!anoSelecionado || !currentUser) return;
+
+            let somaFixasPagas = 0; let somaDiarios = 0; let somaFaturamento = 0; let categoriasAno = {};
+            const mesesDoAno = mesesDisponiveis.filter(m => m.key.startsWith(anoSelecionado));
+            
+            let promessas = mesesDoAno.map(mes => {
+                return db.collection('users').doc(currentUser.uid).collection('meses').doc(mes.key).get().then(doc => {
+                    if(doc.exists) {
+                        let data = doc.data();
+                        (data.fixas || []).forEach(f => { if(f.pago) somaFixasPagas += f.valor; });
+                        (data.diarios || []).forEach(d => { 
+                            somaDiarios += d.valor; 
+                            categoriasAno[d.categoria] = (categoriasAno[d.categoria] || 0) + d.valor; 
+                        });
+                        (data.faturamentos || []).forEach(fat => {
+                            somaFaturamento += fat.valor;
+                        });
+                    }
+                });
+            });
+
+            Promise.all(promessas).then(() => {
+                document.getElementById('aFat').innerText = `R$ ${somaFaturamento.toFixed(2)}`;
+                document.getElementById('aFixos').innerText = `R$ ${somaFixasPagas.toFixed(2)}`;
+                document.getElementById('aDiarios').innerText = `R$ ${somaDiarios.toFixed(2)}`;
+                document.getElementById('aTotal').innerText = `R$ ${(somaFixasPagas + somaDiarios).toFixed(2)}`;
+
+                const divAcumuladosAno = document.getElementById('listaAcumuladosAno');
+                divAcumuladosAno.innerHTML = '';
+                let catArray = Object.entries(categoriasAno).sort((a,b) => b[1] - a[1]);
+                
+                catArray.forEach(([cat, valor]) => {
+                    let icone = obterIconeCategoria(cat);
+                    divAcumuladosAno.innerHTML += `
+                        <div class="acumulado-item">
+                            <span style="display:flex; align-items:center; gap:8px;">
+                                <span class="material-icons" style="font-size:18px; color:var(--text-muted);">${icone}</span> ${cat}
+                            </span>
+                            <span style="color:var(--text-highlight-alt); font-weight:700">R$ ${valor.toFixed(2)}</span>
+                        </div>`;
+                });
+                
+                if(catArray.length === 0) divAcumuladosAno.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center;">Nenhum gasto registrado em ${anoSelecionado}.</p>`;
+            });
+        }
+
+        function addContaFixa() {
             const nome = document.getElementById('fixaNome').value.trim(); 
             const valor = parseFloat(document.getElementById('fixaValor').value); 
             const venc = parseInt(document.getElementById('fixaVenc').value); 
@@ -866,7 +1171,6 @@
             if(!nome || isNaN(valor) || isNaN(venc)) return;
             
             if (idEditandoFixa !== null) {
-                // Atualiza a conta existente
                 window.activeFixas = window.activeFixas.map(c => 
                     c.id === idEditandoFixa ? { ...c, nome: nome, valor: valor, vencimento: venc, categoria: cat, obs: obs } : c
                 );
@@ -874,7 +1178,6 @@
                 document.getElementById('btnSalvarFixa').innerHTML = '<span class="material-icons">add</span>';
                 document.getElementById('btnCancelarEdicaoFixa').style.display = 'none';
             } else {
-                // Adiciona nova
                 window.activeFixas.push({ id: Date.now(), nome, valor, vencimento: venc, categoria: cat, obs: obs, pago: false });
             }
             
@@ -887,28 +1190,23 @@
             calcularEAtualizarVisual();
         }
 
-        // EDITAR CONTA FIXA
         function editarContaFixa(id) {
             const conta = window.activeFixas.find(c => c.id === id);
             if (!conta) return;
 
-            // Preenche os campos de input com os dados da conta
             document.getElementById('fixaNome').value = conta.nome;
             document.getElementById('fixaValor').value = conta.valor;
             document.getElementById('fixaVenc').value = conta.vencimento;
             document.getElementById('fixaCategoria').value = conta.categoria;
             document.getElementById('fixaObs').value = conta.obs || '';
             
-            // Muda o estado do botão
             idEditandoFixa = id;
             document.getElementById('btnSalvarFixa').innerHTML = '<span class="material-icons">check</span>';
             document.getElementById('btnCancelarEdicaoFixa').style.display = 'flex';
             
-            // Rola a tela para o topo suavemente (útil no celular)
             document.getElementById('tab-fixas').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // CANCELAR EDIÇÃO
         function cancelarEdicaoFixa() {
             idEditandoFixa = null;
             document.getElementById('fixaNome').value = ''; 
@@ -919,8 +1217,36 @@
             document.getElementById('btnCancelarEdicaoFixa').style.display = 'none';
         }
 
+        function addGastoDiario() {
+            const nome = document.getElementById('diarioNome').value.trim(); const valor = parseFloat(document.getElementById('diarioValor').value); const cat = document.getElementById('diarioCategoria').value; let data = document.getElementById('diarioData').value;
+            if(!nome || isNaN(valor)) return;
+            if(!data) data = new Date().toISOString().split('T')[0];
+            window.activeDiarios.push({ id: Date.now(), nome, valor, categoria: cat, data: data });
+            document.getElementById('diarioNome').value = ''; document.getElementById('diarioValor').value = '';
+            salvarDadosDoMesAtual(); calcularEAtualizarVisual();
+        }
+
+        function addFaturamento() {
+            const nome = document.getElementById('fatNome').value.trim(); 
+            const valor = parseFloat(document.getElementById('fatValor').value); 
+            let data = document.getElementById('fatData').value;
+            if(!nome || isNaN(valor)) return;
+            if(!data) data = new Date().toISOString().split('T')[0];
+            if(!window.activeFaturamentos) window.activeFaturamentos = [];
+            
+            window.activeFaturamentos.push({ id: Date.now(), nome, valor, data: data });
+            document.getElementById('fatNome').value = ''; document.getElementById('fatValor').value = '';
+            salvarDadosDoMesAtual(); calcularEAtualizarVisual();
+        }
+
         function togglePagoFixa(id) { window.activeFixas = window.activeFixas.map(c => c.id === id ? { ...c, pago: !c.pago } : c); salvarDadosDoMesAtual(); calcularEAtualizarVisual(); }
-        function deletarItemGeral(id, tipo) { if(tipo === 'fixa') window.activeFixas = window.activeFixas.filter(c => c.id !== id); else window.activeDiarios = (window.activeDiarios || []).filter(g => g.id !== id); salvarDadosDoMesAtual(); calcularEAtualizarVisual(); }
+        
+        function deletarItemGeral(id, tipo) { 
+            if(tipo === 'fixa') window.activeFixas = window.activeFixas.filter(c => c.id !== id); 
+            else if(tipo === 'diario') window.activeDiarios = (window.activeDiarios || []).filter(g => g.id !== id); 
+            else if(tipo === 'faturamento') window.activeFaturamentos = (window.activeFaturamentos || []).filter(f => f.id !== id);
+            salvarDadosDoMesAtual(); calcularEAtualizarVisual(); 
+        }
         
         function deletarAssinatura(id) { assinaturasConfig = assinaturasConfig.filter(s => s.id !== id); salvarConfigGlobal(); calcularEAtualizarVisual(); }
         function addCategoriaGlobal() { const nome = document.getElementById('novaCatNome').value.trim(); if(!nome || categoriasAtuais.includes(nome)) return; categoriasAtuais.push(nome); salvarConfigGlobal(); document.getElementById('novaCatNome').value = ''; renderizarListasDeCategorias(); calcularEAtualizarVisual(); }
@@ -939,20 +1265,28 @@
         }
 
         function renderizarListasDeCategorias() {
-            const selFixas = document.getElementById('fixaCategoria'); const boxConfig = document.getElementById('listaCategoriasConfig');
-            selFixas.innerHTML = ''; boxConfig.innerHTML = '';
-            categoriasAtuais.forEach(cat => { selFixas.innerHTML += `<option value="${cat}">${cat}</option>`; boxConfig.innerHTML += `<span style="background:var(--border-color); color:var(--text-main); padding:4px 10px; border-radius:20px; font-size:0.8rem; font-weight:600;">${cat}</span>`; });
+            const selFixas = document.getElementById('fixaCategoria'); 
+            const selDiarios = document.getElementById('diarioCategoria'); 
+            const boxConfig = document.getElementById('listaCategoriasConfig');
+            
+            selFixas.innerHTML = ''; selDiarios.innerHTML = ''; boxConfig.innerHTML = '';
+            categoriasAtuais.forEach(cat => { 
+                selFixas.innerHTML += `<option value="${cat}">${cat}</option>`; 
+                selDiarios.innerHTML += `<option value="${cat}">${cat}</option>`; 
+                boxConfig.innerHTML += `<span style="background:var(--border-color); color:var(--text-main); padding:4px 10px; border-radius:20px; font-size:0.8rem; font-weight:600;">${cat}</span>`; 
+            });
             if(meuGraficoPizza) meuGraficoPizza.data.labels = categoriasAtuais;
             if(meuGraficoBarra) meuGraficoBarra.data.labels = categoriasAtuais;
         }
 
         function switchTab(event, tabId) {
-            if(window.innerWidth >= 900) return;
+            if(window.innerWidth >= 900 && event) return; // desktop click ignore
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
-            event.currentTarget.classList.add('active');
+            if(event) event.currentTarget.classList.add('active');
             if(tabId === 'tab-calendario') renderizarCalendario();
+            if(tabId === 'tab-anual') calcularRelatorioAnual();
         }
 
         function initChart() {
