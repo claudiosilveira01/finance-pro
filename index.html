@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Planner Financeiro</title>
-    <!-- Ícone da Aba -->
+    <!-- Ícone da Aba do Navegador -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -24,12 +24,12 @@
             --text-main: #1e293b; --text-muted: #64748b; --border-color: #e2e8f0;
             
             --text-highlight: #431c5d;
-            --text-highlight-alt: #1e40af; /* Azul Escuro no Modo Claro */
+            --text-highlight-alt: #1e40af; 
             --bg-blue-light: #eff6ff;
             --badge-paid-bg: #f1f5f9;
             --badge-paid-text: #64748b;
             --calendar-invert: 0;
-            --sub-color: #8b5cf6; /* Roxo para assinaturas */
+            --sub-color: #8b5cf6; 
         }
 
         /* Cores Modo Escuro */
@@ -39,12 +39,12 @@
             --purple-light: #6b21a8; 
             
             --text-highlight: #d8b4fe; 
-            --text-highlight-alt: #93c5fd; /* Azul Celeste (Brilhante) no Modo Escuro */
+            --text-highlight-alt: #93c5fd; 
             --bg-blue-light: rgba(37, 99, 235, 0.15); 
             --badge-paid-bg: #334155;
             --badge-paid-text: #cbd5e1; 
             --calendar-invert: 1;
-            --sub-color: #c084fc; /* Roxo claro para assinaturas no modo escuro */
+            --sub-color: #c084fc; 
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -58,7 +58,8 @@
         .main-container { max-width: 1200px; margin: 20px auto; padding: 0 15px; display: grid; grid-template-columns: 1fr; gap: 20px; }
 
         @media (min-width: 900px) {
-            .main-container { grid-template-columns: 1.3fr 1fr; }
+            /* Alargado a coluna da esquerda para 1.4fr para dar mais espaço à tabela de fixas */
+            .main-container { grid-template-columns: 1.4fr 1fr; }
             body { padding-bottom: 20px; }
             .bottom-nav { display: none !important; }
             .tab-content { display: block !important; }
@@ -93,7 +94,7 @@
         .btn-flat:hover { filter: brightness(1.1); }
 
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.95rem; min-width: 400px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.95rem; min-width: 550px; }
         th { background-color: var(--purple-light); color: white; padding: 10px; font-weight: 500; white-space: nowrap; }
         th.sortable { cursor: pointer; user-select: none; transition: background 0.2s; }
         th.sortable:hover { background-color: var(--purple-main); }
@@ -138,17 +139,14 @@
         .cal-day.today { box-shadow: inset 0 0 0 2px var(--blue-accent); }
         .cal-day.selected { box-shadow: inset 0 0 0 2px var(--text-highlight); }
         
-        /* Cores de Eventos no Calendário */
         .cal-day.has-pending { background: rgba(231,76,60,0.15); color: var(--red-danger); }
         .cal-day.has-paid { background: rgba(39,174,96,0.15); color: var(--green-success); }
         .cal-day.has-sub { background: rgba(139, 92, 246, 0.15); color: var(--sub-color); } 
         
         .cal-dot { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
         .sub-dot { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--sub-color); } 
-        
-        /* Ajuste para quando tiver ambos no mesmo dia (Contas e Assinaturas) */
-        .dot-left { left: 40%; }
-        .dot-right { left: 60%; }
+        .dot-left { left: 35% !important; transform: none; }
+        .dot-right { left: 55% !important; transform: none; }
 
         /* === CALCULADORA === */
         .calc-visor { background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: right; font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; min-height: 60px; overflow-x: auto; white-space: nowrap; outline: none; width: 100%; color: var(--text-main); }
@@ -216,6 +214,7 @@
                         <input type="number" id="fixaValor" style="flex:1;" placeholder="R$">
                         <input type="number" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31">
                         <select id="fixaCategoria" style="flex:1.5;"></select>
+                        <!-- CORREÇÃO OURO: Função salvarContaFixa() no clique -->
                         <button class="btn-flat" id="btnSalvarFixa" onclick="salvarContaFixa()"><span class="material-icons">add</span></button>
                         <button class="btn-flat" id="btnCancelarEdicaoFixa" onclick="cancelarEdicaoFixa()" style="display: none; background-color: var(--text-muted);"><span class="material-icons">close</span></button>
                     </div>
@@ -226,7 +225,9 @@
                         <table>
                             <thead>
                                 <tr>
-                                    <th>Item</th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'nome')">Item ↕️</th>
+                                    <!-- Nova Coluna Separada -->
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'categoria')">Categoria ↕️</th>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'vencimento')">Venc. ↕️</th>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'valor')">Valor ↕️</th>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'pago')">Pago? ↕️</th>
@@ -338,7 +339,7 @@
                         <div class="card-title"><span class="material-icons">calculate</span> Painel de Controle</div>
                         <div class="matrix-grid">
                             <div class="matrix-label" style="background-color: var(--blue-accent);">SALDO ESTIMADO</div>
-                            <div class="matrix-value" id="mSaldoEstimado" style="background-color: var(--bg-blue-light); font-size: 1.2rem; color: var(--text-highlight-alt);">R$ 0,00</div>
+                            <div class="matrix-value" id="mSaldoEstimado" style="background-color: var(--bg-blue-light); font-size: 1.2rem; color: var(--text-highlight-alt); font-weight: 700;">R$ 0,00</div>
 
                             <div class="matrix-label">ORÇAMENTO FIXO</div><div class="matrix-value" id="mOrcamento">R$ 0,00</div>
                             <div class="matrix-label">PAGO</div><div class="matrix-value" id="mPago" style="color: var(--green-success);">R$ 0,00</div>
@@ -418,7 +419,6 @@
     </div>
 
     <script>
-        // === CONTROLE MODO ESCURO ===
         function checkTheme() {
             if(localStorage.getItem('theme') === 'dark') {
                 document.body.classList.add('dark-mode');
@@ -443,7 +443,6 @@
             }
         }
 
-        // === CONFIGURAÇÃO DO FIREBASE ===
         const firebaseConfig = {
             apiKey: "AIzaSyBJa2FQ7LGJNTIne8iiyRXCr0Og8V1NtVs",
             authDomain: "finance-pro-v1.firebaseapp.com",
@@ -457,7 +456,6 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
-        // === VARIÁVEIS GLOBAIS ===
         let currentUser = null;
         let categoriasAtuais = ["Alimentação", "Transporte", "Lazer", "Educação", "Assinaturas", "Saúde", "Comunicação", "Tributos", "PIX Terceiros", "Outros"];
         let assinaturasConfig = [];
@@ -473,7 +471,6 @@
 
         const coresCategorias = ['#2ecc71', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#e74c3c', '#1abc9c', '#34495e', '#fd79a8', '#00cec9', '#6c5ce7', '#ff7675'];
 
-        // === SISTEMA DE AUTENTICAÇÃO ===
         auth.onAuthStateChanged(user => {
             const loading = document.getElementById('loadingDiv');
             if(user) {
@@ -518,7 +515,6 @@
 
         function fazerLogout() { auth.signOut(); }
 
-        // === FIREBASE: SINCRONIZAÇÃO ===
         function carregarConfigGlobal(callback) {
             db.collection('users').doc(currentUser.uid).collection('config').doc('geral').get().then(doc => {
                 if(doc.exists) {
@@ -528,7 +524,6 @@
                     mesesDisponiveis = data.meses || [];
                 }
                 
-                // Lógica de Mês Automático (Cria e seleciona o mês atual se não existir)
                 const dataHoje = new Date();
                 const mesString = String(dataHoje.getMonth() + 1).padStart(2, '0');
                 const anoMesAtualReal = `${dataHoje.getFullYear()}-${mesString}`;
@@ -747,6 +742,8 @@
                 let valA = a[config.col]; let valB = b[config.col];
                 if(config.col === 'pago') { valA = a.pago ? 1 : 0; valB = b.pago ? 1 : 0; }
                 if(config.col === 'data') { valA = new Date(valA).getTime(); valB = new Date(valB).getTime(); }
+                if(typeof valA === 'string') valA = valA.toLowerCase();
+                if(typeof valB === 'string') valB = valB.toLowerCase();
                 if (valA < valB) return config.asc ? -1 : 1;
                 if (valA > valB) return config.asc ? 1 : -1;
                 return 0;
@@ -759,7 +756,7 @@
             return `${dia}/${mes}`;
         }
 
-        // === CALENDÁRIO DE VENCIMENTOS ===
+        // === CALENDÁRIO DE VENCIMENTOS CORRIGIDO ===
         function renderizarCalendario() {
             const cal = document.getElementById('calendarioGrid');
             const label = document.getElementById('calendarioMesLabel');
@@ -767,7 +764,7 @@
 
             const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const [ano, mes] = mesAtualKey.split('-').map(Number);
-            label.innerText = `${mesesNomes[mes-1]} De ${ano}`; // Letra D maiúscula conforme seu gosto
+            label.innerText = `${mesesNomes[mes-1]} De ${ano}`;
 
             const diasNoMes = new Date(ano, mes, 0).getDate();
             const primeiroDiaSemana = new Date(ano, mes - 1, 1).getDay();
@@ -815,13 +812,12 @@
         }
 
         function mostrarEventosDia(dia) {
-            // Se clicar no mesmo dia, deseleciona. Se for diferente, seleciona o novo.
             if(diaCalendarioSelecionado === dia) {
                 diaCalendarioSelecionado = null; 
             } else {
                 diaCalendarioSelecionado = dia;
             }
-            renderizarCalendario(); // Re-renderiza o calendário para atualizar as bordas azuis
+            renderizarCalendario();
         }
 
         function _renderizarEventosNaLista(dia) {
@@ -836,7 +832,7 @@
                 ? (assinaturasConfig || []).filter(s => s.vencimento === dia)
                 : [...(assinaturasConfig || [])].sort((a,b) => a.vencimento - b.vencimento);
 
-            const titulo = dia ? `Vencimentos - Dia ${dia}` : 'Todos os vencimentos do mês';
+            const titulo = dia ? `Eventos - Dia ${dia}` : 'Todos os eventos do mês';
 
             if(listaContas.length === 0 && listaSubs.length === 0) {
                 container.innerHTML = `<h4 style="font-size:0.85rem; margin-bottom:8px; color:var(--text-highlight);">${titulo}</h4><p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:10px;">Nenhum evento encontrado.</p>`;
@@ -961,12 +957,14 @@
                 tbodyFixas.innerHTML += `
                     <tr>
                         <td>
-                            <strong>${c.nome}</strong>
-                            <div style="color:var(--text-muted); font-size:0.75rem">${c.categoria}</div>
-                            ${c.obs ? `<div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;"><i>${c.obs}</i></div>` : ''}
+                            <strong style="font-size: 0.95rem;">${c.nome}</strong>
+                            ${c.obs ? `<div style="color:var(--text-muted); font-size:0.8rem; margin-top:3px;">${c.obs}</div>` : ''}
+                        </td>
+                        <td>
+                            <span style="background:var(--border-color); color:var(--text-main); padding:4px 8px; border-radius:6px; font-size:0.8rem; font-weight:600; white-space:nowrap;">${c.categoria}</span>
                         </td>
                         <td><span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span></td>
-                        <td>R$ ${c.valor.toFixed(2)}</td>
+                        <td><strong style="white-space:nowrap;">R$ ${c.valor.toFixed(2)}</strong></td>
                         <td><button class="status-badge ${c.pago?'sim':'nao'}" onclick="togglePagoFixa(${c.id})">${c.pago?'Sim':'Não'}</button></td>
                         <td style="text-align:right;">
                             <div style="display:flex; justify-content: flex-end; gap: 5px;">
@@ -1039,12 +1037,11 @@
             let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
             updateChart(chartDataArray);
 
-            if (document.getElementById('tab-calendario').classList.contains('active')) {
-                renderizarCalendario();
-            }
+            // Garante que o calendário atualize sempre que salvar novos dados
+            renderizarCalendario();
         }
 
-        function addContaFixa() {
+        function salvarContaFixa() {
             const nome = document.getElementById('fixaNome').value.trim(); 
             const valor = parseFloat(document.getElementById('fixaValor').value); 
             const venc = parseInt(document.getElementById('fixaVenc').value); 
