@@ -16,38 +16,24 @@
 
     <style>
         :root {
-            /* Cores Modo Claro (Padrão) */
+            /* Cores Modo Claro */
             --purple-main: #431c5d; --purple-light: #511878; --blue-accent: #2563eb;
             --blue-dark: #1e40af; --green-success: #27ae60; --red-danger: #e74c3c;
             --warning-orange: #f39c12; --bg-light: #f8fafc; --card-bg: #ffffff;
             --text-main: #1e293b; --text-muted: #64748b; --border-color: #e2e8f0;
             
-            /* Cores de Destaque Adaptativas */
-            --text-highlight: #431c5d;
-            --text-highlight-alt: #1e40af;
-            --bg-blue-light: #eff6ff;
-            --badge-paid-bg: #f1f5f9;
-            --badge-paid-text: #64748b;
-            --calendar-invert: 0; 
+            --text-highlight: #431c5d; --text-highlight-alt: #1e40af;
+            --bg-blue-light: #eff6ff; --badge-paid-bg: #f1f5f9; --badge-paid-text: #64748b;
+            --calendar-invert: 0;
         }
 
-        /* Variáveis Modo Escuro */
+        /* Cores Modo Escuro */
         body.dark-mode {
-            --bg-light: #0f172a;
-            --card-bg: #1e293b;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
-            --border-color: #334155;
-            --purple-main: #582082;
-            --purple-light: #6b21a8;
-            
-            /* Destaques Claros para o Modo Escuro brilhar */
-            --text-highlight: #d8b4fe; 
-            --text-highlight-alt: #93c5fd; 
-            --bg-blue-light: rgba(37, 99, 235, 0.15);
-            --badge-paid-bg: #334155;
-            --badge-paid-text: #cbd5e1;
-            --calendar-invert: 1; 
+            --bg-light: #0f172a; --card-bg: #1e293b; --text-main: #f8fafc;
+            --text-muted: #94a3b8; --border-color: #334155; --purple-main: #582082;
+            --purple-light: #6b21a8; --text-highlight: #d8b4fe; --text-highlight-alt: #93c5fd;
+            --bg-blue-light: rgba(37, 99, 235, 0.15); --badge-paid-bg: #334155;
+            --badge-paid-text: #cbd5e1; --calendar-invert: 1;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
@@ -66,31 +52,18 @@
             .bottom-nav { display: none !important; }
             .tab-content { display: block !important; }
             
-            .desktop-toggle-btn { 
-                display: flex !important; 
-                margin-top: 15px; 
-                width: 100%; 
-                background-color: transparent; 
-                color: var(--text-muted); 
-                border: 1px solid var(--border-color);
-                justify-content: center !important; 
-                padding: 10px 15px !important;
-                font-size: 0.85rem;
-                transition: 0.2s;
-            }
+            .desktop-toggle-btn { display: flex !important; margin-top: 15px; width: 100%; background-color: transparent; color: var(--text-muted); border: 1px solid var(--border-color); justify-content: center !important; padding: 10px 15px !important; font-size: 0.85rem; transition: 0.2s; }
             .desktop-toggle-btn:hover { background-color: var(--border-color); color: var(--text-main); }
             #tab-config.desktop-hidden { display: none !important; }
         }
 
         .desktop-toggle-btn { display: none; }
-
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 12px; padding: 20px; margin-bottom: 20px; transition: 0.3s; }
-        
         .card-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 15px; color: var(--text-highlight); display: flex; align-items: center; justify-content: flex-start; gap: 8px; }
 
         .matrix-grid { display: grid; grid-template-columns: 1fr 1.2fr; gap: 2px; background-color: var(--border-color); border-radius: 8px; overflow: hidden; border: 1px solid var(--border-color); }
         .matrix-label { background-color: var(--purple-main); color: white; padding: 12px; font-weight: 600; font-size: 0.9rem; display: flex; align-items: center; }
-        .matrix-value { background-color: var(--card-bg); color: var(--text-main); padding: 12px; font-weight: 700; font-size: 1.1rem; text-align: right; }
+        .matrix-value { background-color: var(--card-bg); color: var(--text-main); padding: 12px; font-weight: 700; font-size: 1.1rem; text-align: right; display:flex; align-items:center; justify-content:flex-end;}
         .matrix-value input { width: 100%; border: none; background-color: transparent; text-align: right; font-weight: 700; font-size: 1.1rem; color: var(--text-main); outline: none; }
 
         .input-inline, .control-row { display: flex; gap: 10px; margin-bottom: 15px; flex-wrap: wrap; align-items: center; }
@@ -130,6 +103,7 @@
         .acumulados-list { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
         .acumulado-item { display: flex; justify-content: space-between; padding: 8px 12px; background: var(--bg-light); border-radius: 6px; font-size: 0.9rem; font-weight: 500; transition: 0.3s; }
         .sub-item { display: flex; justify-content: space-between; align-items: center; padding: 10px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; }
+        .sub-date { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; background: var(--border-color); padding: 4px 8px; border-radius: 6px; }
 
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-between; padding: 8px 10px; z-index: 100; transition: 0.3s; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 0.65rem; color: var(--text-muted); background: none; border: none; cursor: pointer; font-weight: 500; flex: 1; }
@@ -155,13 +129,12 @@
         .cal-day.selected { box-shadow: inset 0 0 0 2px var(--text-highlight); }
         .cal-day.has-pending { background: rgba(231,76,60,0.15); color: var(--red-danger); }
         .cal-day.has-paid { background: rgba(39,174,96,0.15); color: var(--green-success); }
-        .cal-day.has-sub { background: rgba(155,89,182,0.15); color: #9b59b6; } /* Cor roxa para focar que tem assinatura no dia */
+        .cal-day.has-sub { background: rgba(155,89,182,0.15); color: #9b59b6; }
         .cal-dot { position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
-        
-        .sub-dot { position: absolute; bottom: 4px; left: 35%; width: 5px; height: 5px; border-radius: 50%; background: #9b59b6; } /* Bolinha roxa para assinaturas */
+        .sub-dot { position: absolute; bottom: 4px; left: 35%; width: 5px; height: 5px; border-radius: 50%; background: #9b59b6; } 
 
         /* === CALCULADORA === */
-        .calc-visor { background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: right; font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; min-height: 60px; overflow-x: auto; white-space: nowrap; outline: none; }
+        .calc-visor { background: var(--bg-light); border: 1px solid var(--border-color); border-radius: 8px; padding: 15px; text-align: right; font-size: 1.8rem; font-weight: 700; margin-bottom: 12px; min-height: 60px; overflow-x: auto; white-space: nowrap; outline: none; width: 100%; color: var(--text-main); }
         .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .calc-btn { padding: 16px 0; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: 600; cursor: pointer; background: var(--border-color); color: var(--text-main); transition: 0.15s; }
         .calc-btn:hover { filter: brightness(1.1); }
@@ -175,7 +148,6 @@
         .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(0,0,0,0.6); display: none; justify-content: center; align-items: center; z-index: 1000; }
         .modal-content { background: var(--card-bg); padding: 20px; border-radius: 12px; width: 90%; max-width: 400px; max-height: 80vh; overflow-y: auto; }
         .modal-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color); }
-        
     </style>
 </head>
 <body>
@@ -247,30 +219,6 @@
                     </div>
                 </div>
 
-                <div id="tab-diarios" class="card tab-content">
-                    <div class="card-title"><span class="material-icons">shopping_cart</span> Gastos Diários</div>
-                    <div class="input-inline">
-                        <input type="text" id="diarioNome" style="flex:2;" placeholder="Ex: Lanche, PIX">
-                        <input type="date" id="diarioData" style="flex:1.5;">
-                        <input type="number" id="diarioValor" style="flex:1;" placeholder="R$">
-                        <select id="diarioCategoria" style="flex:1.5;"></select>
-                        <button class="btn-flat" onclick="addGastoDiario()"><span class="material-icons">add</span></button>
-                    </div>
-                    <div class="table-responsive">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th class="sortable" onclick="ordenarTabela('diarios', 'data')">Data ↕️</th>
-                                    <th>Item</th>
-                                    <th class="sortable" onclick="ordenarTabela('diarios', 'valor')">Valor ↕️</th>
-                                    <th style="width: 40px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="listaDiarios"></tbody>
-                        </table>
-                    </div>
-                </div>
-
                 <div id="tab-calendario" class="card tab-content">
                     <div class="card-title"><span class="material-icons">event</span> Calendário de Vencimentos</div>
                     <div id="calendarioMesLabel" style="text-align:center; font-weight:700; color:var(--text-highlight); margin-bottom:12px; font-size:1rem; text-transform:capitalize;"></div>
@@ -304,16 +252,6 @@
 
                     <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
-                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">📥 Importar Lista de Gastos Diários (CSV)</h4>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
-                        Cole os dados organizados por vírgula: <b>Nome, Valor, Categoria, Data (AAAA-MM-DD)</b><br>
-                        Exemplo: <i>Gasolina, 50.00, Transporte, 2026-07-03</i>
-                    </p>
-                    <textarea id="csvImportText" style="width:100%; height:110px; margin-bottom:10px; font-size:0.85rem;" placeholder="Cole as suas linhas do Excel ou bloco de notas aqui..."></textarea>
-                    <button class="btn-flat" style="background-color: var(--green-success);" onclick="importarGastosCSV()">Processar Importação</button>
-
-                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
-
                     <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🏷️ Nova Categoria</h4>
                     <div class="control-row">
                         <input type="text" id="novaCatNome" placeholder="Nome da Categoria">
@@ -334,12 +272,9 @@
                     <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
                     <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: var(--red-danger);">🗑️ Limpar Dados do Mês</h4>
                     <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
-                        Apague os dados permanentemente do mês selecionado.
+                        Apague as contas fixas permanentemente do mês selecionado.
                     </p>
-                    <div class="control-row">
-                        <button class="btn-flat" style="background-color: transparent; border: 1px solid var(--red-danger); color: var(--red-danger); flex: 1;" onclick="limparFixasDoMesAtual()">Apagar Fixas</button>
-                        <button class="btn-flat" style="background-color: var(--red-danger); flex: 1;" onclick="limparDiariosDoMesAtual()">Apagar Diários</button>
-                    </div>
+                    <button class="btn-flat" style="background-color: transparent; border: 1px solid var(--red-danger); color: var(--red-danger); width: 100%;" onclick="limparFixasDoMesAtual()">Apagar Contas Fixas</button>
                 </div>
             </div>
 
@@ -368,7 +303,7 @@
                             </table>
                         </div>
                         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:12px; border-radius:8px;">
-                            <span style="color:var(--blue-dark); font-weight:600; font-size:0.9rem;">SALDO / CAIXA INICIAL (Extra)</span>
+                            <span style="color:var(--blue-dark); font-weight:600; font-size:0.9rem;">CAIXA INICIAL (Extra)</span>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 <span style="font-weight: 700; color: var(--blue-dark);">R$</span>
                                 <input type="number" id="saldoInput" onblur="salvarSaldoDoMes()" style="background: transparent; border: none; border-bottom: 2px solid var(--blue-accent); border-radius: 0; width: 100px; text-align: right; font-weight: 700; font-size: 1.1rem; padding: 4px; color: var(--blue-dark);">
@@ -385,7 +320,6 @@
                             <div class="matrix-label">ORÇAMENTO FIXO</div><div class="matrix-value" id="mOrcamento">R$ 0,00</div>
                             <div class="matrix-label">PAGO</div><div class="matrix-value" id="mPago" style="color: var(--green-success);">R$ 0,00</div>
                             <div class="matrix-label">RESTANTE CONTAS</div><div class="matrix-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</div>
-                            <div class="matrix-label">TOTAL DIÁRIOS</div><div class="matrix-value" id="mTotalDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
                             <div class="matrix-label">FALTA / SOBRA</div><div class="matrix-value" id="mResultado" style="font-size: 1.2rem;">R$ 0,00</div>
                         </div>
                     </div>
@@ -408,7 +342,7 @@
                         <div id="listaAssinaturasCard"></div>
                     </div>
                 </div>
-                
+
                 <div id="tab-calculadora" class="tab-content">
                     <div class="card">
                         <div class="card-title"><span class="material-icons">calculate</span> Calculadora Inteligente</div>
@@ -440,24 +374,6 @@
                             <button class="calc-btn eq" onclick="calcInput('=')">=</button>
                         </div>
                     </div>
-                </div>
-
-                <div id="tab-anual" class="tab-content">
-                    <div class="card">
-                        <div class="card-title"><span class="material-icons">calendar_month</span> Relatório Anual</div>
-                        <div class="input-inline" style="margin-bottom: 20px;">
-                            <select id="anoRelatorio" style="flex: 2;" onchange="calcularRelatorioAnual()"></select>
-                            <button class="btn-flat" onclick="calcularRelatorioAnual()"><span class="material-icons">refresh</span></button>
-                        </div>
-                        <div class="matrix-grid" style="margin-bottom: 20px;">
-                            <div class="matrix-label">FATURAMENTO ANO</div><div class="matrix-value" id="aFat" style="color: var(--green-success);">R$ 0,00</div>
-                            <div class="matrix-label">GASTOS FIXOS (PAGOS)</div><div class="matrix-value" id="aFixos" style="color: var(--text-highlight);">R$ 0,00</div>
-                            <div class="matrix-label">GASTOS DIÁRIOS (TOTAIS)</div><div class="matrix-value" id="aDiarios" style="color: var(--warning-orange);">R$ 0,00</div>
-                            <div class="matrix-label" style="background-color: var(--blue-dark);">TOTAL GASTO NO ANO</div><div class="matrix-value" id="aTotal" style="font-size: 1.2rem; font-weight: 800;">R$ 0,00</div>
-                        </div>
-                        <h4 style="margin: 10px 0 10px 0; font-size: 0.95rem; color: var(--text-highlight);">Distribuição por Categorias</h4>
-                        <div class="acumulados-list" id="listaAcumuladosAno"></div>
-                    </div>
 
                     <button class="btn-flat desktop-toggle-btn" onclick="toggleConfigDesktop()" id="btnToggleConfig">
                         <span style="display:flex; align-items:center; gap:8px;"><span class="material-icons">visibility_off</span> Ocultar Configurações no Painel</span>
@@ -468,7 +384,7 @@
 
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="switchTab(event, 'tab-fixas')"><span class="material-icons">assignment</span>Contas</button>
-            <button class="nav-item" onclick="switchTab(event, 'tab-diarios')"><span class="material-icons">shopping_cart</span>Diários</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-calendario')"><span class="material-icons">event</span>Calendário</button>
             <button class="nav-item" onclick="switchTab(event, 'tab-dashboard')"><span class="material-icons">analytics</span>Mês</button>
             <button class="nav-item" onclick="switchTab(event, 'tab-calculadora')"><span class="material-icons">calculate</span>Calc.</button>
             <button class="nav-item" onclick="switchTab(event, 'tab-config')"><span class="material-icons">settings</span>Config</button>
@@ -519,13 +435,11 @@
         let currentUser = null;
         let categoriasAtuais = ["Alimentação", "Transporte", "Lazer", "Educação", "Assinaturas", "Saúde", "Comunicação", "Tributos", "PIX Terceiros", "Outros"];
         let assinaturasConfig = [];
-        let mesesDisponiveis = [{ key: "2026-07", label: "Julho / 2026" }];
+        let mesesDisponiveis = [];
         
-        let mesAtualKey = "2026-07";
+        let mesAtualKey = "";
         let ordFixas = { col: '', asc: true };
-        let ordDiarios = { col: '', asc: true };
         let ordFaturamentos = { col: '', asc: true };
-        
         let meuGraficoPizza;
         let meuGraficoBarra;
         let idEditandoFixa = null;
@@ -542,7 +456,6 @@
                 document.getElementById('mainApp').style.display = 'block';
                 loading.style.display = 'flex';
                 
-                document.getElementById('diarioData').value = new Date().toISOString().split('T')[0];
                 document.getElementById('fatData').value = new Date().toISOString().split('T')[0];
                 initChart();
                 atualizarBotaoTema();
@@ -586,17 +499,27 @@
                     let data = doc.data();
                     categoriasAtuais = data.categorias || categoriasAtuais;
                     assinaturasConfig = data.assinaturas || assinaturasConfig;
-                    mesesDisponiveis = data.meses || mesesDisponiveis;
+                    mesesDisponiveis = data.meses || [];
                 }
+                
+                // Lógica de Mês Automático (Cria e seleciona o mês atual se não existir)
+                const dataHoje = new Date();
+                const mesString = String(dataHoje.getMonth() + 1).padStart(2, '0');
+                const anoMesAtualReal = `${dataHoje.getFullYear()}-${mesString}`;
+                
+                if(!mesesDisponiveis.some(m => m.key === anoMesAtualReal)) {
+                    const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+                    const label = `${mesesNomes[dataHoje.getMonth()]} / ${dataHoje.getFullYear()}`;
+                    mesesDisponiveis.push({ key: anoMesAtualReal, label: label });
+                    mesesDisponiveis.sort((a, b) => a.key.localeCompare(b.key));
+                    salvarConfigGlobal();
+                }
+
+                mesAtualKey = anoMesAtualReal;
+                
                 renderizarMeses();
                 renderizarListasDeCategorias();
                 
-                const mesAtualReal = new Date().toISOString().slice(0, 7);
-                if(mesesDisponiveis.some(m => m.key === mesAtualReal)) {
-                    mesAtualKey = mesAtualReal;
-                } else {
-                    mesAtualKey = mesesDisponiveis[0].key;
-                }
                 document.getElementById('mesSeletor').value = mesAtualKey;
                 carregarMes(mesAtualKey);
                 if(callback) callback();
@@ -620,12 +543,10 @@
                 if(doc.exists) {
                     let data = doc.data();
                     window.activeFixas = data.fixas || [];
-                    window.activeDiarios = data.diarios || [];
                     window.activeFaturamentos = data.faturamentos || [];
                     document.getElementById('saldoInput').value = data.saldo || 0;
                 } else {
                     window.activeFixas = [];
-                    window.activeDiarios = [];
                     window.activeFaturamentos = [];
                     document.getElementById('saldoInput').value = 0;
                 }
@@ -639,7 +560,6 @@
             if(!currentUser) return;
             let dados = {
                 fixas: window.activeFixas,
-                diarios: window.activeDiarios || [],
                 faturamentos: window.activeFaturamentos || [],
                 saldo: parseFloat(document.getElementById('saldoInput').value) || 0
             };
@@ -658,13 +578,6 @@
             });
         }
 
-        function renderizarAnosRelatorio() {
-            const anos = [...new Set(mesesDisponiveis.map(m => m.key.split('-')[0]))];
-            const selAno = document.getElementById('anoRelatorio');
-            selAno.innerHTML = '';
-            anos.forEach(ano => selAno.innerHTML += `<option value="${ano}">Resumo de ${ano}</option>`);
-        }
-
         function addNovoMes() {
             const inputVal = document.getElementById('novoMesInput').value; 
             if(!inputVal || mesesDisponiveis.some(m => m.key === inputVal)) return;
@@ -678,7 +591,6 @@
             
             salvarConfigGlobal();
             renderizarMeses();
-            renderizarAnosRelatorio();
             document.getElementById('novoMesInput').value = '';
             document.getElementById('mesSeletor').value = inputVal;
             mudarMesOuro();
@@ -734,13 +646,6 @@
         function limparFixasDoMesAtual() {
             if(!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja apagar TODAS as contas fixas de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`)) return;
             window.activeFixas = [];
-            salvarDadosDoMesAtual();
-            calcularEAtualizarVisual();
-        }
-
-        function limparDiariosDoMesAtual() {
-            if(!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja apagar TODOS os gastos diários de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`)) return;
-            window.activeDiarios = [];
             salvarDadosDoMesAtual();
             calcularEAtualizarVisual();
         }
@@ -805,7 +710,6 @@
 
         function ordenarTabela(tabela, coluna) {
             if(tabela === 'fixas') { ordFixas.asc = (ordFixas.col === coluna) ? !ordFixas.asc : true; ordFixas.col = coluna; } 
-            else if(tabela === 'diarios') { ordDiarios.asc = (ordDiarios.col === coluna) ? !ordDiarios.asc : true; ordDiarios.col = coluna; }
             else if(tabela === 'faturamentos') { ordFaturamentos.asc = (ordFaturamentos.col === coluna) ? !ordFaturamentos.asc : true; ordFaturamentos.col = coluna; }
             calcularEAtualizarVisual();
         }
@@ -823,7 +727,13 @@
             });
         }
 
-        // === CALENDÁRIO DE VENCIMENTOS (Com assinaturas) ===
+        function formatarData(dataISO) {
+            if(!dataISO) return '--/--';
+            const [ano, mes, dia] = dataISO.split('-');
+            return `${dia}/${mes}`;
+        }
+
+        // === CALENDÁRIO DE VENCIMENTOS ===
         function renderizarCalendario() {
             const cal = document.getElementById('calendarioGrid');
             const label = document.getElementById('calendarioMesLabel');
@@ -940,12 +850,10 @@
             }
         }
 
-        // Valida para aceitar apenas números e operadores no teclado
         function validarInputCalculadora(input) {
             input.value = input.value.replace(/[^0-9+\-*/.%]/g, '');
         }
 
-        // Modal Seleção Fixas Calculadora
         function abrirModalFixas() {
             const modal = document.getElementById('modalFixasCalc');
             const lista = document.getElementById('listaFixasCalcModal');
@@ -989,7 +897,7 @@
         }
 
         function calcularEAtualizarVisual() {
-            let orcamento = 0, pago = 0, restante = 0, totalDiarios = 0, totalFaturamentos = 0;
+            let orcamento = 0, pago = 0, restante = 0, totalFaturamentos = 0;
             let totalPorCategoria = {};
             categoriasAtuais.forEach(c => totalPorCategoria[c] = 0);
 
@@ -1001,6 +909,8 @@
             fixasOrdenadas.forEach(c => {
                 orcamento += c.valor;
                 if(c.pago) pago += c.valor; else restante += c.valor;
+                if(totalPorCategoria[c.categoria] !== undefined) totalPorCategoria[c.categoria] += c.valor;
+                
                 let alerta = calcularAlertaVencimento(c.vencimento, c.pago);
 
                 tbodyFixas.innerHTML += `
@@ -1040,28 +950,6 @@
                 `;
             });
 
-            // Tabela Diarios
-            const tbodyDiarios = document.getElementById('listaDiarios');
-            tbodyDiarios.innerHTML = '';
-            let diariosOrdenados = aplicarOrdenacao(window.activeDiarios, ordDiarios);
-
-            diariosOrdenados.forEach(g => {
-                totalDiarios += g.valor;
-                if(totalPorCategoria[g.categoria] !== undefined) totalPorCategoria[g.categoria] += g.valor;
-
-                tbodyDiarios.innerHTML += `
-                    <tr>
-                        <td style="color:var(--text-muted); font-size:0.85rem">${formatarData(g.data)}</td>
-                        <td>
-                            <div style="font-weight: 500">${g.nome}</div>
-                            <div style="color:var(--text-muted); font-size:0.75rem">${g.categoria}</div>
-                        </td>
-                        <td>R$ ${g.valor.toFixed(2)}</td>
-                        <td style="text-align:right;"><button class="btn-action btn-delete" onclick="deletarItemGeral(${g.id}, 'diario')"><span class="material-icons">delete</span></button></td>
-                    </tr>
-                `;
-            });
-
             const saldoCaixaInicial = parseFloat(document.getElementById('saldoInput').value) || 0;
             const saldoEstimado = saldoCaixaInicial + totalFaturamentos;
             let resultadoFinal = saldoEstimado - restante;
@@ -1070,7 +958,6 @@
             document.getElementById('mOrcamento').innerText = `R$ ${orcamento.toFixed(2)}`;
             document.getElementById('mPago').innerText = `R$ ${pago.toFixed(2)}`;
             document.getElementById('mRestante').innerText = `R$ ${restante.toFixed(2)}`;
-            document.getElementById('mTotalDiarios').innerText = `R$ ${totalDiarios.toFixed(2)}`;
             
             const elRes = document.getElementById('mResultado');
             elRes.innerText = `R$ ${resultadoFinal.toFixed(2)}`;
@@ -1110,55 +997,6 @@
             if (document.getElementById('tab-calendario').classList.contains('active')) {
                 renderizarCalendario();
             }
-            renderizarAnosRelatorio(); // Re-renderizar caso mude faturamento
-        }
-
-        function calcularRelatorioAnual() {
-            const anoSelecionado = document.getElementById('anoRelatorio').value;
-            if(!anoSelecionado || !currentUser) return;
-
-            let somaFixasPagas = 0; let somaDiarios = 0; let somaFaturamento = 0; let categoriasAno = {};
-            const mesesDoAno = mesesDisponiveis.filter(m => m.key.startsWith(anoSelecionado));
-            
-            let promessas = mesesDoAno.map(mes => {
-                return db.collection('users').doc(currentUser.uid).collection('meses').doc(mes.key).get().then(doc => {
-                    if(doc.exists) {
-                        let data = doc.data();
-                        (data.fixas || []).forEach(f => { if(f.pago) somaFixasPagas += f.valor; });
-                        (data.diarios || []).forEach(d => { 
-                            somaDiarios += d.valor; 
-                            categoriasAno[d.categoria] = (categoriasAno[d.categoria] || 0) + d.valor; 
-                        });
-                        (data.faturamentos || []).forEach(fat => {
-                            somaFaturamento += fat.valor;
-                        });
-                    }
-                });
-            });
-
-            Promise.all(promessas).then(() => {
-                document.getElementById('aFat').innerText = `R$ ${somaFaturamento.toFixed(2)}`;
-                document.getElementById('aFixos').innerText = `R$ ${somaFixasPagas.toFixed(2)}`;
-                document.getElementById('aDiarios').innerText = `R$ ${somaDiarios.toFixed(2)}`;
-                document.getElementById('aTotal').innerText = `R$ ${(somaFixasPagas + somaDiarios).toFixed(2)}`;
-
-                const divAcumuladosAno = document.getElementById('listaAcumuladosAno');
-                divAcumuladosAno.innerHTML = '';
-                let catArray = Object.entries(categoriasAno).sort((a,b) => b[1] - a[1]);
-                
-                catArray.forEach(([cat, valor]) => {
-                    let icone = obterIconeCategoria(cat);
-                    divAcumuladosAno.innerHTML += `
-                        <div class="acumulado-item">
-                            <span style="display:flex; align-items:center; gap:8px;">
-                                <span class="material-icons" style="font-size:18px; color:var(--text-muted);">${icone}</span> ${cat}
-                            </span>
-                            <span style="color:var(--text-highlight-alt); font-weight:700">R$ ${valor.toFixed(2)}</span>
-                        </div>`;
-                });
-                
-                if(catArray.length === 0) divAcumuladosAno.innerHTML = `<p style="font-size:0.85rem; color:var(--text-muted); text-align:center;">Nenhum gasto registrado em ${anoSelecionado}.</p>`;
-            });
         }
 
         function addContaFixa() {
@@ -1217,15 +1055,6 @@
             document.getElementById('btnCancelarEdicaoFixa').style.display = 'none';
         }
 
-        function addGastoDiario() {
-            const nome = document.getElementById('diarioNome').value.trim(); const valor = parseFloat(document.getElementById('diarioValor').value); const cat = document.getElementById('diarioCategoria').value; let data = document.getElementById('diarioData').value;
-            if(!nome || isNaN(valor)) return;
-            if(!data) data = new Date().toISOString().split('T')[0];
-            window.activeDiarios.push({ id: Date.now(), nome, valor, categoria: cat, data: data });
-            document.getElementById('diarioNome').value = ''; document.getElementById('diarioValor').value = '';
-            salvarDadosDoMesAtual(); calcularEAtualizarVisual();
-        }
-
         function addFaturamento() {
             const nome = document.getElementById('fatNome').value.trim(); 
             const valor = parseFloat(document.getElementById('fatValor').value); 
@@ -1243,7 +1072,6 @@
         
         function deletarItemGeral(id, tipo) { 
             if(tipo === 'fixa') window.activeFixas = window.activeFixas.filter(c => c.id !== id); 
-            else if(tipo === 'diario') window.activeDiarios = (window.activeDiarios || []).filter(g => g.id !== id); 
             else if(tipo === 'faturamento') window.activeFaturamentos = (window.activeFaturamentos || []).filter(f => f.id !== id);
             salvarDadosDoMesAtual(); calcularEAtualizarVisual(); 
         }
@@ -1266,13 +1094,11 @@
 
         function renderizarListasDeCategorias() {
             const selFixas = document.getElementById('fixaCategoria'); 
-            const selDiarios = document.getElementById('diarioCategoria'); 
             const boxConfig = document.getElementById('listaCategoriasConfig');
             
-            selFixas.innerHTML = ''; selDiarios.innerHTML = ''; boxConfig.innerHTML = '';
+            selFixas.innerHTML = ''; boxConfig.innerHTML = '';
             categoriasAtuais.forEach(cat => { 
                 selFixas.innerHTML += `<option value="${cat}">${cat}</option>`; 
-                selDiarios.innerHTML += `<option value="${cat}">${cat}</option>`; 
                 boxConfig.innerHTML += `<span style="background:var(--border-color); color:var(--text-main); padding:4px 10px; border-radius:20px; font-size:0.8rem; font-weight:600;">${cat}</span>`; 
             });
             if(meuGraficoPizza) meuGraficoPizza.data.labels = categoriasAtuais;
@@ -1280,13 +1106,12 @@
         }
 
         function switchTab(event, tabId) {
-            if(window.innerWidth >= 900 && event) return; // desktop click ignore
+            if(window.innerWidth >= 900 && event) return; 
             document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             if(event) event.currentTarget.classList.add('active');
             if(tabId === 'tab-calendario') renderizarCalendario();
-            if(tabId === 'tab-anual') calcularRelatorioAnual();
         }
 
         function initChart() {
