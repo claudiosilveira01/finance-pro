@@ -95,7 +95,7 @@
             <div id="listaFixasCalcModal"></div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
                 <button class="btn-flat" style="flex: 1; background: var(--bg-light); color: var(--text-main); box-shadow: none;" onclick="fecharModalFixas()">Cancelar</button>
-                <button class="btn-flat" style="flex: 1; background: var(--green-success);" onclick="aplicarSomaFixasModal()">Calcular</button>
+                <button class="btn-flat" style="flex: 1; background: var(--gradient-green);" onclick="aplicarSomaFixasModal()">Calcular</button>
             </div>
         </div>
     </div>
@@ -116,6 +116,20 @@
             <div class="input-inline">
                 <input type="text" id="fixaObs" style="flex:1;" placeholder="Observações (opcional)">
             </div>
+
+            <div id="fixaRecorrenteSection">
+                <label style="display:flex; align-items:center; gap:8px; margin: 2px 2px 10px; cursor:pointer; font-size:0.88rem; color:var(--text-main); font-weight:600;">
+                    <input type="checkbox" id="fixaRecorrente" onchange="document.getElementById('fixaRecorrenteAte').disabled = !this.checked;" style="width:18px; height:18px; flex:none;">
+                    <i class="ph ph-arrows-clockwise" style="font-size:16px; color:var(--text-highlight);"></i>
+                    Repetir todo mês até
+                </label>
+                <div class="input-inline">
+                    <input type="month" id="fixaRecorrenteAte" style="flex:1;" disabled>
+                </div>
+            </div>
+
+            <button class="btn-flat" id="btnExcluirFixaModal" onclick="excluirFixaDoModal()" style="width:100%; background:transparent; box-shadow:none; border:1.5px solid var(--red-danger); color:var(--red-danger); display:none; margin-bottom:8px;"><i class="ph ph-trash"></i> Excluir Conta</button>
+
             <div style="display:flex; gap:10px; margin-top:8px;">
                 <button class="btn-flat" id="btnCancelarEdicaoFixa" onclick="cancelarEdicaoFixa()" style="flex:1; background: var(--bg-light); color: var(--text-main); box-shadow: none;"><i class="ph ph-x"></i> Cancelar</button>
                 <button class="btn-flat" id="btnSalvarFixa" onclick="salvarContaFixa()" style="flex:1;"><i class="ph ph-plus"></i> Salvar</button>
@@ -139,7 +153,7 @@
             <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-calendar-plus" style="vertical-align:-2px;"></i> Adicionar Novo Mês</h4>
             <div class="control-row">
                 <input type="month" id="novoMesInput">
-                <button class="btn-flat" onclick="addNovoMes()">Adicionar Mês</button>
+                <button class="btn-flat" onclick="addNovoMes()" title="Adicionar Mês" style="flex: 0 0 48px; padding: 11px;"><i class="ph ph-plus"></i></button>
             </div>
 
             <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
@@ -147,7 +161,7 @@
             <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-arrows-clockwise" style="vertical-align:-2px;"></i> Copiar Contas Fixas de Outro Mês</h4>
             <div class="control-row">
                 <select id="mesCopiaSeletor"></select>
-                <button class="btn-flat" onclick="copiarContasFixas()">Copiar para o Mês Atual</button>
+                <button class="btn-flat" onclick="copiarContasFixas()" title="Copiar para o Mês Atual" style="flex: 0 0 48px; padding: 11px;"><i class="ph ph-copy"></i></button>
             </div>
 
             <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
@@ -155,7 +169,7 @@
             <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-tag" style="vertical-align:-2px;"></i> Nova Categoria</h4>
             <div class="control-row">
                 <input type="text" id="novaCatNome" placeholder="Nome da Categoria">
-                <button class="btn-flat" onclick="addCategoriaGlobal()">Salvar Categoria</button>
+                <button class="btn-flat" onclick="addCategoriaGlobal()" title="Salvar Categoria" style="flex: 0 0 48px; padding: 11px;"><i class="ph ph-plus"></i></button>
             </div>
             <div id="listaCategoriasConfig" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;"></div>
 
@@ -188,18 +202,6 @@
     </div>
 
     <div id="mainApp">
-        <header>
-            <h1><i class="ph ph-chart-line-up"></i> Planner Financeiro</h1>
-            <div class="header-actions">
-                <div class="month-nav">
-                    <button onclick="navegarMes(-1)" title="Mês anterior"><i class="ph ph-caret-left"></i></button>
-                    <select id="mesSeletor" onchange="mudarMesOuro()"></select>
-                    <button onclick="navegarMes(1)" title="Próximo mês"><i class="ph ph-caret-right"></i></button>
-                </div>
-                <button class="icon-btn icon-btn-danger" onclick="fazerLogout()" title="Sair"><i class="ph ph-sign-out"></i></button>
-            </div>
-        </header>
-
         <div class="main-container">
             <div class="col-left">
                 <!-- ABA: CONTAS FIXAS -->
@@ -214,27 +216,14 @@
                     <div class="input-inline" style="margin-bottom:10px;">
                         <input type="text" id="buscaFixas" oninput="calcularEAtualizarVisual()" style="flex:1;" placeholder="🔍 Buscar por nome ou categoria...">
                     </div>
-                    <div class="input-inline sort-mobile-only">
-                        <select onchange="ordenarTabela('fixas', this.value)" style="flex:1;">
-                            <option value="">Ordenar por...</option>
-                            <option value="nome">Nome</option>
-                            <option value="categoria">Categoria</option>
-                            <option value="vencimento">Vencimento</option>
-                            <option value="valor">Valor</option>
-                            <option value="pago">Pago</option>
-                        </select>
-                        <button class="card-action-btn" onclick="if(ordFixas.col) ordenarTabela('fixas', ordFixas.col)" title="Inverter ordem"><i class="ph ph-arrows-down-up"></i></button>
-                    </div>
                     <div class="table-responsive">
                         <table>
                             <thead>
                                 <tr>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'nome')">Item <i class="ph ph-caret-up-down"></i></th>
-                                    <th class="sortable" onclick="ordenarTabela('fixas', 'categoria')">Categoria <i class="ph ph-caret-up-down"></i></th>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'vencimento')">Venc. <i class="ph ph-caret-up-down"></i></th>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'valor')">Valor <i class="ph ph-caret-up-down"></i></th>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'pago')">Pago? <i class="ph ph-caret-up-down"></i></th>
-                                    <th style="width: 80px;">Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="listaFixas"></tbody>
@@ -254,29 +243,32 @@
             <div class="col-right">
                 <div id="tab-dashboard" class="tab-content">
 
-                    <!-- FATURAMENTOS / RECEITAS -->
+                    <!-- CONTROLES: título, mês, configurações, sair -->
+                    <div class="card" style="display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;">
+                        <span style="display:flex; align-items:center; gap:8px; font-weight:800; color:var(--text-highlight); font-size:1.1rem; white-space:nowrap;">
+                            <i class="ph ph-chart-line-up"></i> Planner Financeiro
+                        </span>
+                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <div class="month-nav">
+                                <button onclick="navegarMes(-1)" title="Mês anterior"><i class="ph ph-caret-left"></i></button>
+                                <select id="mesSeletor" onchange="mudarMesOuro()"></select>
+                                <button onclick="navegarMes(1)" title="Próximo mês"><i class="ph ph-caret-right"></i></button>
+                            </div>
+                            <button class="card-action-btn" onclick="abrirModalConfig()" title="Configurações"><i class="ph ph-gear"></i></button>
+                            <button class="card-action-btn card-action-btn-danger" onclick="fazerLogout()" title="Sair"><i class="ph ph-sign-out"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- RECEITAS -->
                     <div class="card">
                         <div class="card-title">
-                            <span class="card-title-left"><i class="ph ph-wallet"></i> Faturamentos / Receitas</span>
-                            <button class="card-action-btn" onclick="abrirModalConfig()" title="Configurações"><i class="ph ph-gear"></i></button>
+                            <span class="card-title-left"><i class="ph ph-wallet"></i> Receitas</span>
                         </div>
                         <div class="input-inline">
                             <input type="text" id="fatNome" style="flex:2;" placeholder="Origem (Ex: Salário, Venda)">
                             <input type="number" id="fatValor" style="flex:1.5;" placeholder="R$">
                             <input type="date" id="fatData" style="flex:1.5;">
-                            <button class="btn-flat" style="background:var(--green-success)" onclick="addFaturamento()"><i class="ph ph-plus"></i> Adicionar</button>
-                        </div>
-                        <div class="input-inline" style="margin-bottom:10px;">
-                            <input type="text" id="buscaFaturamentos" oninput="calcularEAtualizarVisual()" style="flex:1;" placeholder="🔍 Buscar por origem...">
-                        </div>
-                        <div class="input-inline sort-mobile-only">
-                            <select onchange="ordenarTabela('faturamentos', this.value)" style="flex:1;">
-                                <option value="">Ordenar por...</option>
-                                <option value="data">Data</option>
-                                <option value="nome">Origem</option>
-                                <option value="valor">Valor</option>
-                            </select>
-                            <button class="card-action-btn" onclick="if(ordFaturamentos.col) ordenarTabela('faturamentos', ordFaturamentos.col)" title="Inverter ordem"><i class="ph ph-arrows-down-up"></i></button>
+                            <button class="btn-flat" style="background:var(--gradient-green)" onclick="addFaturamento()"><i class="ph ph-plus"></i> Adicionar</button>
                         </div>
                         <div class="table-responsive" style="margin-bottom: 15px;">
                             <table>
@@ -291,11 +283,11 @@
                                 <tbody id="listaFaturamentos"></tbody>
                             </table>
                         </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm);">
-                            <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">CAIXA INICIAL (Extra)</span>
-                            <div style="display: flex; align-items: center; gap: 5px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); flex-wrap:wrap; gap:10px;">
+                            <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">CAIXA ATUAL</span>
+                            <div style="display: flex; align-items: center; gap: 6px; background:var(--card-bg); border:1.5px solid var(--border-color); border-radius:var(--radius-sm); padding:8px 12px;">
                                 <span style="font-weight: 700; color: var(--text-highlight-alt);">R$</span>
-                                <input type="number" id="saldoInput" onblur="salvarSaldoDoMes()" style="background: transparent; border: none; border-bottom: 2px solid var(--blue-accent); border-radius: 0; width: 100px; text-align: right; font-weight: 700; font-size: 1.1rem; padding: 4px; color: var(--text-highlight-alt);">
+                                <input type="number" id="saldoInput" onblur="salvarSaldoDoMes()" style="background: transparent; border: none; width: 100px; text-align: right; font-weight: 700; font-size: 1.1rem; padding: 0; color: var(--text-highlight-alt); outline: none;">
                             </div>
                         </div>
                     </div>

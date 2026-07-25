@@ -1,5 +1,5 @@
         :root {
-            /* Tema Roxo Tech — Modo Claro (cor sólida, sem gradiente) */
+            /* Tema Roxo Tech — Modo Claro */
             --purple-main: #5B3FD6; --purple-light: #8B7CF6; --blue-accent: #4F6EF7;
             --blue-dark: #3B4FD1; --green-success: #16A34A; --red-danger: #EF4444;
             --warning-orange: #F59E0B; --bg-light: #F6F5FC; --card-bg: #FFFFFF;
@@ -13,6 +13,10 @@
             --calendar-invert: 0;
             --sub-color: #9333EA;
 
+            --gradient-btn: linear-gradient(135deg, #7C6FF0 0%, #5B3FD6 100%);
+            --gradient-green: linear-gradient(135deg, #22C55E 0%, #15803D 100%);
+            --gradient-blue: linear-gradient(135deg, #60A5FA 0%, #3B4FD1 100%);
+            --gradient-red: linear-gradient(135deg, #F87171 0%, #DC2626 100%);
             --shadow-sm: 0 1px 2px rgba(31, 22, 79, 0.06);
             --shadow-md: 0 6px 20px rgba(31, 22, 79, 0.08);
             --shadow-lg: 0 16px 40px rgba(31, 22, 79, 0.16);
@@ -34,6 +38,7 @@
             --calendar-invert: 1;
             --sub-color: #C084FC;
 
+            --gradient-btn: linear-gradient(135deg, #8B7CF6 0%, #6D4FEA 100%);
             --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
             --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.35);
             --shadow-lg: 0 16px 40px rgba(0, 0, 0, 0.5);
@@ -41,30 +46,19 @@
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         html { overflow-x: hidden; }
-        body { background-color: var(--bg-light); color: var(--text-main); padding-bottom: 78px; transition: background 0.3s, color 0.3s; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        body { background-color: var(--bg-light); color: var(--text-main); transition: background 0.3s, color 0.3s; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
-        /* === CABEÇALHO ===
-           Fluido por natureza: flex-wrap decide sozinho, a cada redimensionamento, se cabe tudo numa
-           linha ou se os controles descem pra uma segunda — sem "pulos" bruscos em um pixel mágico. */
-        header { background: var(--purple-main); color: white; padding: 14px clamp(14px, 3vw, 22px); display: flex; justify-content: space-between; align-items: center; gap: 12px; box-shadow: var(--shadow-md); position: sticky; top: 0; z-index: 90; flex-wrap: wrap; }
-        header h1 { font-size: clamp(1.05rem, 4vw, 1.4rem); font-weight: 800; display: flex; align-items: center; gap: 10px; letter-spacing: -0.02em; white-space: nowrap; }
-        header .header-actions { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
-
-        .month-nav { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.22); border-radius: var(--radius-sm); padding: 4px; backdrop-filter: blur(6px); flex: 1 1 200px; min-width: 0; }
-        .month-nav button { background: transparent; border: none; color: white; width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s, transform 0.15s; flex-shrink: 0; }
-        .month-nav button:hover { background: rgba(255,255,255,0.22); }
+        /* Botão de navegação de mês — vive dentro de um card normal agora, não num header roxo */
+        .month-nav { display: flex; align-items: center; gap: 4px; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 4px; flex: 1 1 180px; min-width: 0; }
+        .month-nav button { background: transparent; border: none; color: var(--text-highlight); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s, transform 0.15s; flex-shrink: 0; }
+        .month-nav button:hover { background: var(--border-color); }
         .month-nav button:active { transform: scale(0.92); }
-        .month-nav select { background: transparent; color: white; border: none; font-weight: 700; font-size: 0.9rem; outline: none; cursor: pointer; padding: 4px 6px; text-align: center; flex: 1; min-width: 0; }
-        .month-nav select option { color: var(--text-main); }
+        .month-nav select { background: transparent; color: var(--text-main); border: none; font-weight: 700; font-size: 0.9rem; outline: none; cursor: pointer; padding: 4px 6px; text-align: center; flex: 1; min-width: 0; }
 
-        .icon-btn { background: rgba(255,255,255,0.16); border: 1px solid rgba(255,255,255,0.22); color: white; width: 38px; height: 38px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s, transform 0.15s; flex-shrink: 0; }
-        .icon-btn:hover { background: rgba(255,255,255,0.28); }
-        .icon-btn:active { transform: scale(0.94); }
-        .icon-btn.icon-btn-danger:hover { background: var(--red-danger); }
-
-        /* Botão de ação secundária dentro de cards (ex: abrir calculadora/configurações) */
+        /* Botão de ação secundária dentro de cards (ex: abrir calculadora/configurações/sair) */
         .card-action-btn { background: var(--bg-light); border: 1px solid var(--border-color); color: var(--text-highlight); width: 38px; height: 38px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
-        .card-action-btn:hover { background: var(--purple-main); color: white; border-color: transparent; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+        .card-action-btn:hover { background: var(--gradient-btn); color: white; border-color: transparent; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+        .card-action-btn.card-action-btn-danger:hover { background: var(--red-danger); }
 
         /* === GRID PRINCIPAL — fluido, sem breakpoint fixo ===
            repeat(auto-fit, minmax(...)) deixa o navegador decidir quantas colunas cabem a cada instante:
@@ -78,6 +72,7 @@
             .bottom-nav { display: none !important; }
             .tab-content { display: block !important; }
         }
+        @media (max-width: 899px) { body { padding-bottom: 78px; } }
 
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: clamp(16px, 3vw, 22px); margin-bottom: 20px; box-shadow: var(--shadow-sm); transition: box-shadow 0.25s, transform 0.25s, background 0.3s; container-type: inline-size; }
         .card:hover { box-shadow: var(--shadow-md); }
@@ -99,20 +94,22 @@
         ::-webkit-calendar-picker-indicator { filter: invert(var(--calendar-invert)); cursor: pointer; }
         ::placeholder { color: var(--text-muted); opacity: 0.7; font-weight: 400; }
 
-        .btn-flat { background: var(--purple-main); color: white; border: none; padding: 11px 18px; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; transition: transform 0.15s, box-shadow 0.15s, filter 0.15s; box-shadow: var(--shadow-sm); }
+        .btn-flat { background: var(--gradient-btn); color: white; border: none; padding: 11px 18px; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; transition: transform 0.15s, box-shadow 0.15s, filter 0.15s; box-shadow: var(--shadow-sm); }
         .btn-flat:hover { filter: brightness(1.08); box-shadow: var(--shadow-md); transform: translateY(-1px); }
         .btn-flat:active { transform: translateY(0) scale(0.98); }
 
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-md); }
         table { width: 100%; border-collapse: separate; border-spacing: 0; text-align: left; font-size: 0.95rem; }
 
-        /* Controle de ordenação: só aparece quando o card fica estreito demais pro cabeçalho clicável (ver abaixo) */
+        /* Controle de ordenação (usado só onde a busca por texto ainda existe): some quando o card
+           fica estreito demais pro cabeçalho clicável, mesma lógica de baixo. */
         .sort-mobile-only { display: none; }
 
         /* === TABELA → CARDS: baseado no espaço REAL do card (container query), não na tela inteira ===
            Isso resolve o caso em que a tela é "larga" mas a coluna em si é estreita (grid de 2 colunas,
-           sidebar, etc.) — o navegador reavalia isso a cada frame do redimensionamento, sem scroll horizontal. */
-        @container (max-width: 560px) {
+           sidebar, etc.) — o navegador reavalia isso a cada frame do redimensionamento, sem scroll horizontal.
+           Com tabelas mais enxutas isso raramente ativa, mas fica como rede de segurança. */
+        @container (max-width: 360px) {
             .sort-mobile-only { display: flex; }
             .table-responsive table { min-width: 0; }
             .table-responsive thead { display: none; }
@@ -132,6 +129,10 @@
         td { padding: 10px 6px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
         tbody tr { transition: background 0.15s; }
         tbody tr:hover { background: var(--bg-light); }
+
+        /* Nome do item como link — abre o popup de edição */
+        .item-link { background: none; border: none; padding: 0; margin: 0; font: inherit; text-align: left; cursor: pointer; color: var(--text-main); font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: color 0.15s; }
+        .item-link:hover { color: var(--text-highlight); text-decoration: underline; }
 
         .status-badge { padding: 5px 10px; border-radius: 999px; font-weight: 700; font-size: 0.78rem; border: none; cursor: pointer; width: 62px; text-align: center; color: white; transition: transform 0.15s, filter 0.15s; }
         .status-badge:hover { filter: brightness(1.1); transform: translateY(-1px); }
@@ -191,10 +192,10 @@
         .calc-btn:hover { filter: brightness(0.96); }
         body.dark-mode .calc-btn:hover { filter: brightness(1.3); }
         .calc-btn:active { transform: scale(0.94); }
-        .calc-btn.op { background: var(--blue-accent); color: white; }
-        .calc-btn.eq { background: var(--green-success); color: white; }
-        .calc-btn.clear { background: var(--red-danger); color: white; }
-        .calc-btn.select-fixas { background: var(--purple-main); color: white; grid-column: span 4; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem;}
+        .calc-btn.op { background: var(--gradient-blue); color: white; }
+        .calc-btn.eq { background: var(--gradient-green); color: white; }
+        .calc-btn.clear { background: var(--gradient-red); color: white; }
+        .calc-btn.select-fixas { background: var(--gradient-btn); color: white; grid-column: span 4; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem;}
 
         /* === MODAIS === */
         .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(15, 11, 31, 0.55); backdrop-filter: blur(3px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 16px; animation: modal-fade 0.2s ease-out; }
@@ -209,7 +210,7 @@
         .modal-item:hover { border-color: var(--purple-light); }
         .modal-item.checked { border-color: var(--purple-main); background: var(--bg-blue-light); }
         .modal-item-check { width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--border-color); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; transition: 0.15s; background: var(--card-bg); }
-        .modal-item.checked .modal-item-check { background: var(--purple-main); border-color: transparent; }
+        .modal-item.checked .modal-item-check { background: var(--gradient-btn); border-color: transparent; }
         .modal-item-check .ph { font-size: 14px; opacity: 0; transition: 0.15s; }
         .modal-item.checked .modal-item-check .ph { opacity: 1; }
         .modal-item-badge { display: inline-flex; align-items: center; gap: 4px; background: var(--border-color); color: var(--text-main); padding: 3px 9px; border-radius: 999px; font-size: 0.72rem; font-weight: 600; margin-top: 3px; }
@@ -228,7 +229,7 @@
         @media (max-width: 600px) { .toast-container { left: 10px; right: 10px; top: 10px; max-width: none; } }
 
         /* Botão flutuante (FAB) — usado para "+ Nova Conta" */
-        .fab-inline { background: var(--purple-main); color: white; border: none; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-md); transition: transform 0.15s, box-shadow 0.15s; flex-shrink: 0; }
+        .fab-inline { background: var(--gradient-btn); color: white; border: none; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-md); transition: transform 0.15s, box-shadow 0.15s; flex-shrink: 0; }
         .fab-inline .ph { font-size: 20px; }
         .fab-inline:hover { transform: scale(1.06) rotate(90deg); box-shadow: var(--shadow-lg); }
         .fab-inline:active { transform: scale(0.96) rotate(90deg); }

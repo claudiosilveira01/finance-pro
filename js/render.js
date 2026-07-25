@@ -26,21 +26,12 @@
                 tbodyFixas.innerHTML += `
                     <tr>
                         <td data-label="Item">
-                            <strong style="font-size: 0.95rem;">${c.nome}</strong>
-                            ${c.obs ? `<div style="color:var(--text-muted); font-size:0.8rem; margin-top:3px;">${c.obs}</div>` : ''}
-                        </td>
-                        <td data-label="Categoria">
-                            <span style="background:var(--border-color); color:var(--text-main); padding:2px 7px; border-radius:999px; font-size:0.72rem; font-weight:600; white-space:nowrap;"><i class="ph ph-${obterIconeCategoria(c.categoria)}" style="font-size:10px; margin-right:2px;"></i>${c.categoria}</span>
+                            <button class="item-link" onclick="editarContaFixa(${c.id})">${c.nome}</button>
+                            <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${c.categoria}${c.obs ? ' · ' + c.obs : ''}</div>
                         </td>
                         <td data-label="Venc."><span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span></td>
                         <td data-label="Valor"><strong style="white-space:nowrap;">R$ ${c.valor.toFixed(2)}</strong></td>
                         <td data-label="Pago?"><button class="status-badge ${c.pago?'sim':'nao'}" onclick="togglePagoFixa(${c.id})">${c.pago?'Sim':'Não'}</button></td>
-                        <td data-label="Ações" style="text-align:right;">
-                            <div style="display:flex; justify-content: flex-end; gap: 5px;">
-                                <button class="btn-action" onclick="editarContaFixa(${c.id})" title="Editar"><i class="ph ph-pencil-simple" style="font-size: 18px;"></i></button>
-                                <button class="btn-action btn-delete" onclick="deletarItemGeral(${c.id}, 'fixa')" title="Excluir"><i class="ph ph-trash" style="font-size: 18px;"></i></button>
-                            </div>
-                        </td>
                     </tr>
                 `;
             });
