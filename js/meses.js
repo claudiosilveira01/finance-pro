@@ -1,0 +1,124 @@
+// Carregamento/gravação dos dados do mês ativo e gestão da lista de meses
+        function carregarMes(anoMes) {
+            if(!currentUser) return;
+            document.getElementById('loadingDiv').style.display = 'flex';
+            
+            getMesesCollectionRef().doc(anoMes).get().then(doc => {
+                if(doc.exists) {
+                    let data = doc.data();
+                    window.activeFixas = data.fixas || [];
+                    window.activeFaturamentos = data.faturamentos || [];
+                    document.getElementById('saldoInput').value = data.saldo || 0;
+                } else {
+                    window.activeFixas = [];
+                    window.activeFaturamentos = [];
+                    document.getElementById('saldoInput').value = 0;
+                }
+                diaCalendarioSelecionado = null;
+                calcularEAtualizarVisual();
+                document.getElementById('loadingDiv').style.display = 'none';
+            });
+        }
+
+        function salvarDadosDoMesAtual() {
+            if(!currentUser) return;
+            let dados = {
+                fixas: window.activeFixas,
+                faturamentos: window.activeFaturamentos || [],
+                saldo: parseFloat(document.getElementById('saldoInput').value) || 0
+            };
+            getMesesCollectionRef().doc(mesAtualKey).set(dados).catch(err => {
+                mostrarToast('Erro ao salvar os dados do mês. Verifique sua conexão.', 'error', 6000, {
+                    acao: { texto: 'Tentar de novo', callback: salvarDadosDoMesAtual }
+                });
+            });
+        }
+
+        function renderizarMeses() {
+            const seletor = document.getElementById('mesSeletor');
+            const copiaSeletor = document.getElementById('mesCopiaSeletor');
+            seletor.innerHTML = '';
+            if(copiaSeletor) copiaSeletor.innerHTML = '<option value="">Selecione um mês...</option>';
+            
+            mesesDisponiveis.forEach(m => {
+                seletor.innerHTML += `<option value="${m.key}">${m.label}</option>`;
+                if(copiaSeletor) copiaSeletor.innerHTML += `<option value="${m.key}">${m.label}</option>`;
+            });
+        }
+
+        function addNovoMes() {
+            const inputVal = document.getElementById('novoMesInput').value; 
+            if(!inputVal || mesesDisponiveis.some(m => m.key === inputVal)) return;
+
+            const [ano, mes] = inputVal.split('-');
+            const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const label = `${mesesNomes[parseInt(mes)-1]} / ${ano}`;
+
+            mesesDisponiveis.push({ key: inputVal, label: label });
+            mesesDisponiveis.sort((a, b) => a.key.localeCompare(b.key)); 
+            
+            salvarConfigGlobal();
+            renderizarMeses();
+            document.getElementById('novoMesInput').value = '';
+            document.getElementById('mesSeletor').value = inputVal;
+            mudarMesOuro();
+        }
+
+        function mudarMesOuro() {
+            mesAtualKey = document.getElementById('mesSeletor').value;
+            carregarMes(mesAtualKey);
+        }
+
+        function copiarContasFixas() {
+            const mesOrigemKey = document.getElementById('mesCopiaSeletor').value;
+            if(!mesOrigemKey) return alert("Selecione um mês de origem primeiro!");
+            if(mesOrigemKey === mesAtualKey) return alert("Você já está na aba do mesmo mês!");
+            
+            if(!confirm("Deseja copiar as contas fixas de " + mesOrigemKey + " para o mês atual (" + mesAtualKey + ")? O status de pagamento será redefinido para 'Não'.")) return;
+
+            document.getElementById('loadingDiv').style.display = 'flex';
+            
+            getMesesCollectionRef().doc(mesOrigemKey).get().then(doc => {
+                if(doc.exists) {
+                    let data = doc.data();
+                    let fixasOrigem = data.fixas || [];
+                    
+                    if(fixasOrigem.length === 0) {
+                        alert("Nenhuma conta fixa localizada no mês de origem.");
+                    } else {
+                        fixasOrigem.forEach(f => {
+                            window.activeFixas.push({
+                                id: Date.now() + Math.floor(Math.random() * 1000), 
+                                nome: f.nome,
+                                valor: f.valor,
+                                vencimento: f.vencimento,
+                                categoria: f.categoria,
+                                obs: f.obs || '',
+                                pago: false
+                            });
+                        });
+                        salvarDadosDoMesAtual();
+                        calcularEAtualizarVisual();
+                        alert("Contas fixas copiadas com sucesso!");
+                    }
+                } else {
+                    alert("Dados indisponíveis para o mês de origem.");
+                }
+                document.getElementById('loadingDiv').style.display = 'none';
+            }).catch(err => {
+                alert("Erro operacional: " + err.message);
+                document.getElementById('loadingDiv').style.display = 'none';
+            });
+        }
+
+        function limparFixasDoMesAtual() {
+            if(!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja apagar TODAS as contas fixas de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`)) return;
+            window.activeFixas = [];
+            salvarDadosDoMesAtual();
+            calcularEAtualizarVisual();
+        }
+
+        function salvarSaldoDoMes() {
+            salvarDadosDoMesAtual();
+            calcularEAtualizarVisual();
+        }
