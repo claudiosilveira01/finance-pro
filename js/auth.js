@@ -42,3 +42,12 @@
         }
 
         function fazerLogout() { auth.signOut(); }
+
+        function recuperarSenha() {
+            const email = document.getElementById('emailInput').value.trim();
+            if(!email) return mostrarErroAuth('Digite seu e-mail no campo acima para receber o link de recuperação.');
+
+            auth.sendPasswordResetEmail(email)
+                .then(() => mostrarToast('E-mail de recuperação enviado! Verifique sua caixa de entrada.', 'success', 6000))
+                .catch(err => mostrarErroAuth('Erro ao enviar e-mail de recuperação: ' + err.message));
+        }

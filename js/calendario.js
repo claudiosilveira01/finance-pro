@@ -94,7 +94,7 @@
                 html += `
                 <div class="sub-item">
                     <span>
-                        <span class="material-icons" style="font-size:16px; vertical-align:middle; color:var(--text-muted);">${obterIconeCategoria(f.categoria)}</span>
+                        <i class="ph ph-${obterIconeCategoria(f.categoria)}" style="font-size:16px; vertical-align:middle; color:var(--text-muted);"></i>
                         ${f.nome} <strong style="color:var(--text-highlight-alt)"> - R$ ${f.valor.toFixed(2)}</strong>
                         ${f.obs ? `<div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">${f.obs}</div>` : ''}
                     </span>
@@ -106,7 +106,7 @@
                 html += `
                 <div class="sub-item">
                     <span>
-                        <span class="material-icons" style="font-size:16px; vertical-align:middle; color:var(--sub-color);">star</span>
+                        <i class="ph ph-star" style="font-size:16px; vertical-align:middle; color:var(--sub-color);"></i>
                         ${s.nome} <strong style="color:var(--sub-color)"> - R$ ${(s.valor||0).toFixed(2)}</strong>
                     </span>
                     <span class="vencimento-tag" style="color:white; background-color:var(--sub-color)">Dia ${s.vencimento}</span>

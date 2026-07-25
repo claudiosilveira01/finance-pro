@@ -20,91 +20,84 @@ Decisões de escopo já fechadas com o usuário (não reabrir):
 
 ### Fase 0 — Regras de segurança do Firestore (modelo pessoal)
 - Criado `firestore.rules` na raiz do repo, isolando `users/{uid}/config` e `users/{uid}/meses` por dono (`request.auth.uid == userId`).
-- **AÇÃO PENDENTE DO USUÁRIO (não é código):** aplicar esse conteúdo manualmente no Console do Firebase → Firestore Database → Regras → colar → Publicar. Sem isso, a proteção não está de fato ativa no backend.
+- **AÇÃO PENDENTE DO USUÁRIO (não é código):** aplicar esse conteúdo manualmente no Console do Firebase → Firestore Database → Regras → colar → Publicar. Sem isso, a proteção não está de fato ativa no backend. **Ainda não confirmado.**
 
 ### Fase 1 — Divisão do arquivo único
-`index.html` foi dividido, sem alterar nenhuma lógica (extração por número de linha exato do arquivo original, não retranscrita à mão — validado por contagem de linhas, balanceamento de chaves `{}` e checagem cruzada de que as 45 funções originais e todos os `onclick` do HTML continuam presentes):
+`index.html` foi dividido, sem alterar nenhuma lógica (extração por número de linha exato do arquivo original — validado por contagem de linhas, balanceamento de chaves `{}` e checagem cruzada de que as 45 funções originais e todos os `onclick` do HTML continuam presentes). **Checkpoint validado no Claude Code**: app aberto via servidor local + Chrome real, visual idêntico ao original, zero erros no console, CRUD/tema/gráficos/calculadora testados manualmente.
 
+Estrutura final de arquivos (após todas as fases abaixo):
 ```
-index.html            → só marcação (referencia os arquivos abaixo)
-css/style.css          → todo o CSS original
-js/config.js           → firebaseConfig, auth, db, estado global do app
-js/theme.js             → tema claro/escuro
-js/auth.js              → login, cadastro, logout, estado do usuário
-js/config-global.js     → config global no Firestore (categorias, assinaturas, meses)
-js/meses.js             → carregar/gravar dados do mês ativo, gestão de meses
-js/categorias.js        → categorias (ícones, lista) — hoje só "adicionar"
-js/fixas.js             → CRUD de contas fixas + alerta de vencimento
-js/faturamentos.js      → faturamentos/receitas do mês
-js/assinaturas.js       → assinaturas informativas
-js/calendario.js        → calendário de vencimentos
-js/calculadora.js       → calculadora inteligente
-js/tabelas.js           → ordenação de tabelas
-js/charts.js            → gráficos (Chart.js)
-js/ui.js                → navegação entre abas / toggle configurações
-js/render.js            → calcularEAtualizarVisual() — função central, redesenha tudo
-js/app.js               → hoje só um comentário-placeholder; vai receber o registro do
-                           service worker na Fase 3
+index.html               → marcação + <script> tags
+css/style.css             → CSS original + estilos novos (toast, modal, calendário)
+js/config.js              → firebaseConfig, auth, db, wrappers getConfigDocRef()/getMesesCollectionRef(), estado global
+js/toast.js               → mostrarToast() (Fase 2)
+js/modal.js               → abrirModalConfirmacao/Prompt/Selecao() (Fase 2 + 5)
+js/undo.js                → excluirComUndo()/flushPendingDelete() (Fase 8)
+js/theme.js               → tema claro/escuro
+js/auth.js                → login, cadastro, logout, recuperarSenha() (Fase 7)
+js/config-global.js       → config global no Firestore (categorias, assinaturas, meses)
+js/meses.js               → carregar/gravar dados do mês, gestão de meses, modais de copiar/limpar (Fase 8)
+js/categorias.js          → CRUD completo de categorias incl. editar/excluir com merge (Fase 5)
+js/fixas.js               → CRUD de contas fixas, exclusão com undo (Fase 8)
+js/faturamentos.js        → faturamentos/receitas do mês
+js/assinaturas.js         → assinaturas + renderizarAssinaturas() + "Adicionar às Contas Fixas" (Fase 6)
+js/calendario.js          → calendário de vencimentos
+js/calculadora.js         → calculadora inteligente
+js/tabelas.js             → ordenação de tabelas
+js/charts.js              → gráficos (Chart.js)
+js/ui.js                  → navegação entre abas / toggle configurações
+js/render.js              → calcularEAtualizarVisual() — função central; totais sempre no array completo, filtro de busca só afeta renderização (Fase 9)
+js/exportar.js            → exportação CSV/PDF (Fase 10)
+js/app.js                 → ainda só placeholder; vai receber o registro do service worker quando a Fase 3 for retomada
 ```
 
-**Seam já preparado para a Fase 12 (compartilhamento):** ainda não foi criado (ver pendências abaixo) — os wrappers `getConfigDocRef()`/`getMesesCollectionRef()` mencionados no plano original **ainda não existem**; hoje `js/config-global.js` e `js/meses.js` continuam chamando `db.collection('users').doc(currentUser.uid)...` diretamente. Isso é a primeira coisa a fazer quando a Fase 12 começar (ou pode ser adiantado antes, para evitar reabrir os mesmos arquivos duas vezes).
+**Seam da Fase 12 já criado:** `getConfigDocRef()`/`getMesesCollectionRef()` existem em `js/config.js` e são usados em todas as leituras/gravações (`config-global.js`, `meses.js`, `categorias.js`). Quando a Fase 12 começar, é só fazer essas duas funções checarem `orcamentoAtivoId` e apontar para o caminho novo ou legado — nenhum outro arquivo precisa ser reaberto.
 
-**Checkpoint pendente:** o usuário ainda não confirmou visualmente que o app se comporta 100% igual após o split (eu não consegui rodar um teste automatizado em navegador neste ambiente — não havia Node, Python real nem PHP disponíveis para subir um servidor estático local, nem `chromium-cli`). **Isso deve ser a primeira coisa a validar no Claude Cowork**, já que lá há acesso a navegador: abrir `index.html`, confirmar visual idêntico ao original e checar o console (F12) por erros, antes de prosseguir para qualquer fase nova.
+### Fase 2 — Toast + modal genérico + tratamento de erro ✅ validado
+`js/toast.js` (`mostrarToast`) e `js/modal.js` (`abrirModalConfirmacao`/`abrirModalPrompt`). `salvarDadosDoMesAtual()`/`salvarConfigGlobal()` propagam erro via `.catch` com toast + "Tentar de novo". Testado ao vivo: toasts success/error com ação, modais de confirmação/prompt.
+
+### Fase 4 — SRI nos CDNs ✅ validado
+Chart.js pinado em `4.5.1`, Firebase compat SDK (`10.12.2`) e jsPDF/jspdf-autotable (Fase 10) — todos com `integrity`/`crossorigin="anonymous"`, hashes sha384 calculados baixando os arquivos exatos dos CDNs. Google Fonts documentado como não aplicável. Testado: `typeof Chart`/`typeof firebase`/`typeof window.jspdf` confirmam carregamento correto (hash errado bloquearia o script).
+
+### Fase 5 — Editar/excluir categorias ✅ validado
+`editarCategoriaGlobal(antigo, novo)` propaga renomeação/merge para `categoriasAtuais` e para as fixas de **todos os meses** (via `getMesesCollectionRef()`). `excluirCategoriaGlobal(nome)` bloqueia e oferece migração via `abrirModalSelecao` quando a categoria está em uso no mês atual; exclusão direta quando não está. Testado ao vivo: rename simples, merge com migração, bloqueio quando não há categoria substituta.
+
+### Fase 6 — Assinatura → "Adicionar às Contas Fixas" ✅ validado
+`renderizarAssinaturas()` único alimenta `#listaAssinaturasCard` e a nova `#listaAssinaturasConfig`. Botão "Adicionar às Contas Fixas" abre modal pré-preenchido (nome/valor/vencimento/categoria) e cria conta fixa avulsa no mês atual. Testado ao vivo.
+
+### Fase 7 — Recuperação de senha ✅ validado
+`recuperarSenha()` em `js/auth.js` via `auth.sendPasswordResetEmail`. Link "Esqueci minha senha" na tela de login. Caminho de validação (e-mail vazio) testado ao vivo; envio real não foi disparado em teste para não gerar e-mail real no Firebase de produção.
+
+### Fase 8 — Confirmação/undo consistentes ✅ validado
+`copiarContasFixas`/`limparFixasDoMesAtual` usam `abrirModalConfirmacao` em vez de `confirm()`. Exclusões de fixas/faturamentos/assinaturas/categorias (quando não estão em uso) passam por `excluirComUndo()`: removem da UI na hora, toast "Item excluído" + "Desfazer" por 5s, só persistem se o tempo passar sem desfazer. `flushPendingDelete()` força a persistência pendente ao trocar de mês (`mudarMesOuro`) ou fechar a aba (`beforeunload`). Testado ao vivo: undo restaura sem persistir, timeout persiste exatamente uma vez, troca de mês força flush imediato.
+
+### Fase 9 — Busca/filtro nas tabelas ✅ validado
+Campo de busca acima das tabelas de Contas Fixas (`#buscaFixas`, por nome ou categoria) e Faturamentos (`#buscaFaturamentos`, por origem). `calcularEAtualizarVisual()` sempre soma o array completo para os totais/gráficos; o filtro só corta as linhas renderizadas. Testado ao vivo com múltiplos itens.
+
+### Fase 10 — Exportação CSV/PDF ✅ validado
+CSV manual (`js/exportar.js`) com BOM UTF-8, delimitador `;` (padrão Excel-BR) e escapamento de aspas/`;`/quebras de linha. PDF via jsPDF + jspdf-autotable (relatório com faturamentos, fixas e resumo). Nova seção "Exportar Dados" em Configurações. Testado ao vivo: conteúdo do CSV inspecionado byte a byte (BOM + escaping corretos), PDF gerado conferido via leitura do arquivo (acentuação, tabelas e cores corretas).
+
+⚠️ **Nota:** durante o teste desta fase um PDF de teste (`relatorio-2026-07.pdf`, dados fictícios) foi baixado sem querer para a pasta Downloads do usuário — o mecanismo interno do jsPDF não passa pelo mesmo caminho de interceptação usado para bloquear os downloads de CSV de teste. O usuário foi avisado e optou por deixar o arquivo como está.
 
 ---
 
-## ⏳ O que falta fazer (nesta ordem recomendada)
+## ⏳ O que falta fazer
 
-### Fase 2 — Toast + modal genérico + tratamento de erro
-- Novo `js/toast.js` (`mostrarToast(msg, tipo, duracao, {acao})`, tipos success/error/warning/info reaproveitando as variáveis CSS de cor já existentes).
-- Novo `js/modal.js` (`abrirModalConfirmacao({...})`, `abrirModalPrompt({...})`), generalizando o padrão de modal já usado em `modalFixasCalc` no HTML.
-- `salvarDadosDoMesAtual()` e `salvarConfigGlobal()` (em `js/meses.js` e `js/config-global.js`) passam a propagar erro do Firestore via `.catch`, mostrando toast de erro com botão "Tentar de novo". Sem toast de sucesso a cada salvamento (evita fadiga de notificação).
-
-### Fase 3 — PWA instalável
-- `manifest.json` + `service-worker.js` (cache-first do app shell; **nunca** interceptar `firestore.googleapis.com`/`identitytoolkit.googleapis.com`, para não conflitar com o SDK do Firebase).
-- Ícones PNG (192/512, incluindo variante maskable) precisam ser gerados a partir do ícone/emoji atual — é artefato binário, não gerável só por código.
+### Fase 3 — PWA instalável — **EM STAND-BY, a pedido do usuário**
+- `manifest.json` + `service-worker.js` (cache-first do app shell; **nunca** interceptar `firestore.googleapis.com`/`identitytoolkit.googleapis.com`).
+- Ícones PNG (192/512, incluindo variante maskable): já foram **gerados** via `<canvas>` no navegador (fundo roxo `#431c5d` + emoji 📊, incluindo safe-zone para maskable) e a lógica de extração para PNG real (via `[Convert]::FromBase64String` no PowerShell) foi validada — mas a etapa de design foi pausada pelo usuário antes de salvar os arquivos finais e integrá-los ao `manifest.json`. Retomar a partir daqui quando o usuário sinalizar.
 - `js/app.js` recebe o registro do service worker.
 - `CACHE_NAME` versionado manualmente a cada deploy que mude arquivo cacheado.
 
-### Fase 4 — SRI (Subresource Integrity) nos CDNs
-- Pinar Chart.js numa versão exata (hoje a tag usa URL "latest", incompatível com SRI) e aplicar `integrity` + `crossorigin="anonymous"`.
-- Aplicar SRI também no Firebase compat SDK (URLs já versionadas em `10.12.2`).
-- Google Fonts: documentar como **não aplicável** (conteúdo varia por user-agent) — não forçar SRI ali.
-
-### Fase 5 — Editar/excluir categorias existentes
-- `editarCategoriaGlobal(antigo, novo)`: propaga renomeação para `categoriasAtuais` **e** para as fixas de todos os meses (categoria é rótulo canônico global, não por mês).
-- `excluirCategoriaGlobal(nome)`: bloqueia exclusão direta se a categoria estiver em uso; oferece migrar as contas existentes para outra categoria (reaproveita a função de rename como merge).
-- UI: botões editar/excluir ao lado de cada categoria em Configurações (`js/categorias.js`).
-
-### Fase 6 — Assinatura → "Adicionar às Contas Fixas"
-- Hoje a lista de assinaturas só é renderizada no card do Dashboard (`#listaAssinaturasCard`) — a aba Configurações só tem o formulário de adicionar, sem lista própria. Precisa criar a lista também lá (`#listaAssinaturasConfig`).
-- `renderizarAssinaturas()` único alimenta os dois lugares; cada item ganha um botão "Adicionar às Contas Fixas" que abre um modal pré-preenchido (nome/valor/vencimento + seleção de categoria) e cria uma conta fixa avulsa no mês atual ao confirmar.
-
-### Fase 7 — Recuperação de senha
-- `recuperarSenha()` em `js/auth.js`, usando `auth.sendPasswordResetEmail`.
-- Link "Esqueci minha senha" na tela de login.
-
-### Fase 8 — Confirmação/undo consistentes
-- Troca os `confirm()` nativos (`copiarContasFixas`, `limparFixasDoMesAtual`) pelo modal genérico da Fase 2.
-- Exclusões (fixas/faturamentos/assinaturas/categorias) passam a ser otimistas na UI: toast "Item excluído" + botão "Desfazer" por 5s antes de persistir a exclusão no Firestore. Helper único `excluirComUndo({item, restaurar, persistir})` para não duplicar a lógica.
-- Trocar de mês ou fechar a aba durante a janela de undo deve forçar a persistência imediata pendente (`flushPendingDelete`).
-
-### Fase 9 — Busca/filtro nas tabelas
-- Campo de busca acima das tabelas de Contas Fixas e Faturamentos, filtro client-side por nome (+ categoria nas fixas).
-- Importante: o filtro só afeta as linhas **renderizadas** — os totais do Painel de Controle e os gráficos continuam somando o array completo, não o filtrado.
-
-### Fase 10 — Exportação CSV/PDF
-- CSV gerado manualmente (sem lib, com BOM UTF-8 para acentuação no Excel).
-- PDF via `jsPDF` + `jspdf-autotable` (CDN versionado, com SRI seguindo o padrão da Fase 4).
-- Nova seção "Exportar Dados" em Configurações: fixas, faturamentos, relatório mensal completo.
-
-### Fase 11 — Notificações push no navegador
-- Depende do service worker (Fase 3) para usar `registration.showNotification()`.
+### Fase 11 — Notificações push no navegador — **bloqueada pela Fase 3**
+- Depende do service worker da Fase 3 para usar `registration.showNotification()`.
 - Nova config `notificacoes: {ativado, diasAntecedencia}` em `config/geral`.
 - Checagem ao carregar o app + `setInterval` enquanto aberto; dedupe via `localStorage` + `tag` para não repetir no mesmo dia.
 - Limitação já aceita: não dispara com o navegador totalmente fechado.
 
-### Fase 12 — Compartilhamento de orçamento multi-usuário (mais arriscada, por último)
+### Fase 12 — Compartilhamento de orçamento multi-usuário — **CANCELADA pelo usuário**
+Decisão do usuário: não implementar. Seção mantida abaixo só como registro histórico do que havia sido desenhado, caso o usuário reconsidere no futuro.
+
 Migração **opt-in** (não automática), para não colocar em risco os dados já existentes do usuário atual.
 
 Novo modelo de dados:
@@ -125,11 +118,43 @@ users/{uid}.orcamentoAtivoId                  → aponta pro orçamento em uso; 
 ---
 
 ## Checkpoints ainda pendentes com o usuário
-1. **Confirmar visualmente** que o app funciona 100% igual após o split da Fase 1 (primeira coisa a fazer no Cowork).
-2. Confirmar que aplicou o `firestore.rules` da Fase 0 no Console do Firebase.
-3. Antes de publicar as regras finais da Fase 12 (compartilhamento) — revisão conjunta no Rules Playground.
+1. ~~Confirmar visualmente que o app funciona 100% igual após o split da Fase 1~~ — **feito** (validado no Claude Code via servidor local).
+2. **Confirmar que aplicou o `firestore.rules` da Fase 0 no Console do Firebase** — ainda pendente, precisa ser feito manualmente pelo usuário.
+3. Decidir quando retomar a Fase 3 (ícones do PWA) — pausada a pedido do usuário.
+4. ~~Antes de publicar as regras finais da Fase 12 (compartilhamento) — revisão conjunta no Rules Playground~~ — **não se aplica mais**, Fase 12 cancelada.
+
+## Estado atual do escopo
+- **Feito e validado:** Fases 0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 13 (redesign visual).
+- **Em stand-by:** Fase 3 (PWA) — aguardando o usuário retomar o design dos ícones.
+- **Bloqueada:** Fase 11 (notificações push) — depende da Fase 3.
+- **Cancelada:** Fase 12 (compartilhamento multi-usuário) — decisão do usuário.
+
+---
+
+## Fase 13 — Redesign Visual "Roxo Tech" ✅ concluída e validada
+
+Reforma visual completa do app, inspirada em referências enviadas pelo usuário (dashboards fintech modernos + set de ícones "Regular"). Implementada e testada de uma vez (não fase a fase), a pedido do usuário.
+
+**13.1 — Design system:** paleta "roxo tech" (mesmas variáveis CSS de antes, valores novos — `--purple-main: #6D4FEA`, gradiente `--gradient-primary`), modo escuro repaginado (`#120E22`/`#1C1735`), fonte **Plus Jakarta Sans**, cantos arredondados maiores (`--radius-sm/md/lg`), sombras suaves (`--shadow-sm/md/lg`). Todos os 42 usos de Material Icons (25 no HTML + 17 no JS) trocados por **Phosphor Icons peso Regular** via CDN com SRI (hash calculado a partir do arquivo real, mesmo padrão da Fase 4). `obterIconeCategoria()` remapeado para nomes Phosphor.
+
+**13.2 — Cabeçalho e mês:** header com gradiente, seletor de mês reformulado com setas ◀ ▶ (`navegarMes()` novo em `meses.js`) + dropdown estilizado. Ajuste extra descoberto em teste: no mobile real (≤480px) o header agora quebra em duas linhas (título / navegação+sair) — sem isso o botão de sair ficava cortado fora da tela.
+
+**13.3 — Bottom nav + modais:** nav mobile reduzida para **Contas · Calendário · Mês**. Calculadora e Configurações deixaram de ser abas (`tab-calculadora`/`tab-config` removidas) e viraram modais (`#modalCalculadora`, `#modalConfig`), abertos por botões dentro das abas Contas e Mês respectivamente — isso eliminou também a lógica antiga de `toggleConfigDesktop()`/`desktop-hidden` (não fazia mais sentido com Config em modal).
+
+**13.4 — Componentes:** botões primários com gradiente roxo; **Adicionar Mês**, **Copiar para o Mês Atual** e **Salvar Categoria** voltaram para o roxo padrão do tema (antes um deles era laranja). Hover/active com transições suaves em cards, botões, linhas de tabela.
+
+**13.5 — Popup de Nova Conta Fixa:** formulário saiu do topo da aba Contas Fixas e virou modal (`#modalNovaFixa`), acionado por um botão "+" flutuante. `editarContaFixa()` agora abre o mesmo modal pré-preenchido (título e botão mudam para "Editar Conta Fixa" / "Salvar Alteração").
+
+**13.6 — Modal "Somar Contas Fixas":** lista de checkboxes crua virou cards clicáveis com badge de categoria (ícone + nome) e checkbox customizado com feedback visual (borda + fundo roxo + check).
+
+**13.7 — Gráficos/calendário/painel/mobile:** paleta de cores dos gráficos (`coresCategorias` em `config.js`) atualizada para tons roxo/azul/teal/laranja. Calendário e Painel de Controle restilizados. Passada de responsividade mobile (ver 13.2).
+
+**Validação:** testado extensivamente no Chrome real com dados reais do usuário (servidor HTTP local via PowerShell) — todos os modais, navegação de mês, dark mode, edição/exclusão, gráficos, chips de categoria, e o bottom nav mobile (simulado via override de `window.innerWidth` + CSS, já que o `resize_window` da automação não afeta o viewport real do Chrome). Zero erros de console em toda a sessão de testes.
+
+**Correção feita durante o teste:** os indicadores de ordenação das tabelas usavam o emoji "↕️", que renderizava como um glifo quebrado nesse ambiente — trocado por ícone Phosphor (`ph-caret-up-down`), mais consistente com o resto do redesign de qualquer forma.
 
 ## Arquivos-chave do repositório hoje
-- `index.html`, `css/style.css`, `js/*.js` — estrutura atual pós-Fase 1
-- `firestore.rules` — versão pessoal (Fase 0); versão final compartilhada vem na Fase 12
+- `index.html`, `css/style.css`, `js/*.js` — estrutura atual pós-Fases 0, 1, 2, 4–10, 13 (ver seções acima para o mapa completo de arquivos)
+- `firestore.rules` — versão pessoal (Fase 0), ainda não publicada no Console do Firebase; não haverá versão "compartilhada" já que a Fase 12 foi cancelada
 - `PLANO-EVOLUCAO.md` — este documento
+- Nenhuma alteração foi commitada ou enviada ao GitHub — o usuário faz isso manualmente pelo VS Code

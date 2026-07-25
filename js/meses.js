@@ -65,19 +65,36 @@
         }
 
         function mudarMesOuro() {
+            flushPendingDelete();
             mesAtualKey = document.getElementById('mesSeletor').value;
             carregarMes(mesAtualKey);
+        }
+
+        function navegarMes(direcao) {
+            const seletor = document.getElementById('mesSeletor');
+            const novoIndice = seletor.selectedIndex + direcao;
+            if(novoIndice < 0 || novoIndice >= seletor.options.length) return;
+            seletor.selectedIndex = novoIndice;
+            mudarMesOuro();
         }
 
         function copiarContasFixas() {
             const mesOrigemKey = document.getElementById('mesCopiaSeletor').value;
             if(!mesOrigemKey) return alert("Selecione um mês de origem primeiro!");
             if(mesOrigemKey === mesAtualKey) return alert("Você já está na aba do mesmo mês!");
-            
-            if(!confirm("Deseja copiar as contas fixas de " + mesOrigemKey + " para o mês atual (" + mesAtualKey + ")? O status de pagamento será redefinido para 'Não'.")) return;
 
+            abrirModalConfirmacao({
+                titulo: 'Copiar Contas Fixas',
+                mensagem: `Deseja copiar as contas fixas de ${mesOrigemKey} para o mês atual (${mesAtualKey})?\nO status de pagamento será redefinido para "Não".`,
+                textoConfirmar: 'Copiar',
+                corConfirmar: 'var(--warning-orange)',
+                onConfirmar: () => _executarCopiaContasFixas(mesOrigemKey)
+            });
+        }
+
+        function _executarCopiaContasFixas(mesOrigemKey) {
             document.getElementById('loadingDiv').style.display = 'flex';
-            
+
             getMesesCollectionRef().doc(mesOrigemKey).get().then(doc => {
                 if(doc.exists) {
                     let data = doc.data();
@@ -112,10 +129,16 @@
         }
 
         function limparFixasDoMesAtual() {
-            if(!confirm(`⚠️ ATENÇÃO!\nTem certeza que deseja apagar TODAS as contas fixas de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`)) return;
-            window.activeFixas = [];
-            salvarDadosDoMesAtual();
-            calcularEAtualizarVisual();
+            abrirModalConfirmacao({
+                titulo: 'Apagar Contas Fixas',
+                mensagem: `Tem certeza que deseja apagar TODAS as contas fixas de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`,
+                textoConfirmar: 'Apagar',
+                onConfirmar: () => {
+                    window.activeFixas = [];
+                    salvarDadosDoMesAtual();
+                    calcularEAtualizarVisual();
+                }
+            });
         }
 
         function salvarSaldoDoMes() {

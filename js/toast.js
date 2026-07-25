@@ -10,9 +10,9 @@
                 info: 'var(--blue-accent)'
             };
             const icones = {
-                success: 'check_circle',
-                error: 'error',
-                warning: 'warning',
+                success: 'check-circle',
+                error: 'x-circle',
+                warning: 'warning-circle',
                 info: 'info'
             };
             const cor = cores[tipo] || cores.info;
@@ -23,10 +23,10 @@
             toast.style.borderLeftColor = cor;
 
             toast.innerHTML = `
-                <span class="material-icons toast-icon" style="color:${cor};">${icone}</span>
+                <i class="ph ph-${icone} toast-icon" style="color:${cor};"></i>
                 <span class="toast-msg">${msg}</span>
                 ${opcoes.acao ? `<button class="toast-acao" style="color:${cor};">${opcoes.acao.texto}</button>` : ''}
-                <button class="toast-close"><span class="material-icons">close</span></button>
+                <button class="toast-close"><i class="ph ph-x"></i></button>
             `;
 
             container.appendChild(toast);

@@ -74,3 +74,33 @@
             overlay.querySelector('#modalBtnCancelar').onclick = _fecharModalGenerico;
             input.addEventListener('keydown', e => { if (e.key === 'Enter') confirmar(); });
         }
+
+        function abrirModalSelecao({
+            titulo = 'Selecione uma opção',
+            mensagem = '',
+            opcoes = [],
+            valorInicial = '',
+            textoConfirmar = 'Confirmar',
+            textoCancelar = 'Cancelar',
+            onConfirmar
+        }) {
+            const opcoesHtml = opcoes.map(o => `<option value="${o}" ${o === valorInicial ? 'selected' : ''}>${o}</option>`).join('');
+            const html = `
+                <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">${titulo}</h3>
+                ${mensagem ? `<p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px; white-space: pre-line;">${mensagem}</p>` : ''}
+                <select id="modalSelecaoInput" style="width: 100%; margin-bottom: 20px;">${opcoesHtml}</select>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">${textoCancelar}</button>
+                    <button class="btn-flat" id="modalBtnConfirmar" style="flex: 1; background: var(--blue-accent);">${textoConfirmar}</button>
+                </div>
+            `;
+            const overlay = _renderModalGenerico(html);
+            const select = overlay.querySelector('#modalSelecaoInput');
+
+            overlay.querySelector('#modalBtnConfirmar').onclick = () => {
+                const valor = select.value;
+                _fecharModalGenerico();
+                if (onConfirmar) onConfirmar(valor);
+            };
+            overlay.querySelector('#modalBtnCancelar').onclick = _fecharModalGenerico;
+        }

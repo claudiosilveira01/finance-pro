@@ -33,56 +33,77 @@
             if(!nome || isNaN(valor) || isNaN(venc)) return;
             
             if (idEditandoFixa !== null) {
-                window.activeFixas = window.activeFixas.map(c => 
+                window.activeFixas = window.activeFixas.map(c =>
                     c.id === idEditandoFixa ? { ...c, nome: nome, valor: valor, vencimento: venc, categoria: cat, obs: obs } : c
                 );
                 idEditandoFixa = null;
-                document.getElementById('btnSalvarFixa').innerHTML = '<span class="material-icons">add</span>';
-                document.getElementById('btnCancelarEdicaoFixa').style.display = 'none';
             } else {
                 window.activeFixas.push({ id: Date.now(), nome, valor, vencimento: venc, categoria: cat, obs: obs, pago: false });
             }
-            
-            document.getElementById('fixaNome').value = ''; 
-            document.getElementById('fixaValor').value = ''; 
+
+            _resetarFormFixa();
+            fecharModalNovaFixa();
+
+            salvarDadosDoMesAtual();
+            calcularEAtualizarVisual();
+        }
+
+        function abrirModalNovaFixa() {
+            idEditandoFixa = null;
+            _resetarFormFixa();
+            document.getElementById('modalNovaFixa').style.display = 'flex';
+        }
+
+        function fecharModalNovaFixa() {
+            document.getElementById('modalNovaFixa').style.display = 'none';
+        }
+
+        function _resetarFormFixa() {
+            document.getElementById('fixaNome').value = '';
+            document.getElementById('fixaValor').value = '';
             document.getElementById('fixaVenc').value = '';
             document.getElementById('fixaObs').value = '';
-            
-            salvarDadosDoMesAtual(); 
-            calcularEAtualizarVisual();
+            document.getElementById('modalNovaFixaTitulo').innerHTML = '<span class="card-title-left"><i class="ph ph-plus"></i> Nova Conta Fixa</span>';
+            document.getElementById('btnSalvarFixa').innerHTML = '<i class="ph ph-plus"></i> Salvar';
         }
 
         function editarContaFixa(id) {
             const conta = window.activeFixas.find(c => c.id === id);
             if (!conta) return;
 
+            abrirModalNovaFixa();
+
             document.getElementById('fixaNome').value = conta.nome;
             document.getElementById('fixaValor').value = conta.valor;
             document.getElementById('fixaVenc').value = conta.vencimento;
             document.getElementById('fixaCategoria').value = conta.categoria;
             document.getElementById('fixaObs').value = conta.obs || '';
-            
+
             idEditandoFixa = id;
-            document.getElementById('btnSalvarFixa').innerHTML = '<span class="material-icons">check</span>';
-            document.getElementById('btnCancelarEdicaoFixa').style.display = 'flex';
-            
-            document.getElementById('tab-fixas').scrollIntoView({ behavior: 'smooth' });
+            document.getElementById('modalNovaFixaTitulo').innerHTML = '<span class="card-title-left"><i class="ph ph-pencil-simple"></i> Editar Conta Fixa</span>';
+            document.getElementById('btnSalvarFixa').innerHTML = '<i class="ph ph-check"></i> Salvar Alteração';
         }
 
         function cancelarEdicaoFixa() {
             idEditandoFixa = null;
-            document.getElementById('fixaNome').value = ''; 
-            document.getElementById('fixaValor').value = ''; 
-            document.getElementById('fixaVenc').value = '';
-            document.getElementById('fixaObs').value = '';
-            document.getElementById('btnSalvarFixa').innerHTML = '<span class="material-icons">add</span>';
-            document.getElementById('btnCancelarEdicaoFixa').style.display = 'none';
+            _resetarFormFixa();
+            fecharModalNovaFixa();
         }
 
         function togglePagoFixa(id) { window.activeFixas = window.activeFixas.map(c => c.id === id ? { ...c, pago: !c.pago } : c); salvarDadosDoMesAtual(); calcularEAtualizarVisual(); }
 
-        function deletarItemGeral(id, tipo) { 
-            if(tipo === 'fixa') window.activeFixas = window.activeFixas.filter(c => c.id !== id); 
-            else if(tipo === 'faturamento') window.activeFaturamentos = (window.activeFaturamentos || []).filter(f => f.id !== id);
-            salvarDadosDoMesAtual(); calcularEAtualizarVisual(); 
+        function deletarItemGeral(id, tipo) {
+            const arr = tipo === 'fixa' ? window.activeFixas : window.activeFaturamentos;
+            const idx = arr.findIndex(x => x.id === id);
+            if(idx === -1) return;
+            const item = arr[idx];
+
+            arr.splice(idx, 1);
+            calcularEAtualizarVisual();
+
+            excluirComUndo({
+                mensagem: `Item excluído: ${item.nome}`,
+                restaurar: () => { arr.splice(idx, 0, item); calcularEAtualizarVisual(); },
+                persistir: () => salvarDadosDoMesAtual()
+            });
         }

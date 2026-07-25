@@ -18,7 +18,8 @@
             const icon = document.getElementById('iconTheme');
             const text = document.getElementById('textTheme');
             if(icon && text) {
-                icon.innerText = isDark ? 'light_mode' : 'dark_mode';
+                icon.classList.remove('ph-moon', 'ph-sun');
+                icon.classList.add(isDark ? 'ph-sun' : 'ph-moon');
                 text.innerText = isDark ? 'Voltar para Modo Claro' : 'Ativar Modo Escuro';
             }
         }

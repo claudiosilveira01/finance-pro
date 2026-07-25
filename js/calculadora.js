@@ -31,18 +31,19 @@
             const modal = document.getElementById('modalFixasCalc');
             const lista = document.getElementById('listaFixasCalcModal');
             lista.innerHTML = '';
-            
+
             if(!window.activeFixas || window.activeFixas.length === 0) {
-                lista.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem;">Nenhuma conta fixa cadastrada neste mês.</p>';
+                lista.innerHTML = '<p style="color:var(--text-muted); font-size:0.9rem; text-align:center; padding:24px 0;">Nenhuma conta fixa cadastrada neste mês.</p>';
             } else {
                 window.activeFixas.forEach(f => {
                     lista.innerHTML += `
-                        <div class="modal-item">
+                        <div class="modal-item" data-valor="${f.valor}" onclick="this.classList.toggle('checked')">
                             <div>
-                                <div style="font-weight:600;">${f.nome}</div>
-                                <div style="font-size:0.8rem; color:var(--text-muted);">R$ ${f.valor.toFixed(2)}</div>
+                                <div style="font-weight:700;">${f.nome}</div>
+                                <span class="modal-item-badge"><i class="ph ph-${obterIconeCategoria(f.categoria)}" style="font-size:11px;"></i>${f.categoria}</span>
+                                <div style="font-size:0.85rem; color:var(--text-muted); margin-top:4px; font-weight:600;">R$ ${f.valor.toFixed(2)}</div>
                             </div>
-                            <input type="checkbox" class="fixa-calc-check" value="${f.valor}" style="width: 20px; height: 20px; cursor: pointer;">
+                            <div class="modal-item-check"><i class="ph ph-check"></i></div>
                         </div>
                     `;
                 });
@@ -55,16 +56,16 @@
         }
 
         function aplicarSomaFixasModal() {
-            const checks = document.querySelectorAll('.fixa-calc-check:checked');
+            const selecionados = document.querySelectorAll('#listaFixasCalcModal .modal-item.checked');
             let soma = 0;
-            checks.forEach(chk => soma += parseFloat(chk.value));
-            
+            selecionados.forEach(el => soma += parseFloat(el.dataset.valor));
+
             const visor = document.getElementById('calcVisor');
             if(visor.value === '0' || visor.value === 'Erro' || visor.value === '') {
                 visor.value = soma.toFixed(2);
             } else {
                 visor.value += '+' + soma.toFixed(2);
             }
-            
+
             fecharModalFixas();
         }

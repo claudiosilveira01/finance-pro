@@ -13,8 +13,6 @@
         const db = firebase.firestore();
 
         // Único ponto de acesso aos documentos do usuário no Firestore.
-        // Preparado para a Fase 12 (compartilhamento): quando existir orcamentoAtivoId,
-        // estas funções passam a apontar para orcamentos/{id} em vez de users/{uid}.
         function getConfigDocRef() {
             return db.collection('users').doc(currentUser.uid).collection('config').doc('geral');
         }
@@ -35,4 +33,4 @@
         let idEditandoFixa = null;
         let diaCalendarioSelecionado = null;
 
-        const coresCategorias = ['#2ecc71', '#3498db', '#9b59b6', '#f1c40f', '#e67e22', '#e74c3c', '#1abc9c', '#34495e', '#fd79a8', '#00cec9', '#6c5ce7', '#ff7675'];
+        const coresCategorias = ['#6D4FEA', '#4F6EF7', '#EC4899', '#06B6D4', '#F59E0B', '#10B981', '#A855F7', '#EF4444', '#3B82F6', '#14B8A6', '#F97316', '#8B5CF6'];

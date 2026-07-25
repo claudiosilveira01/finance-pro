@@ -6,29 +6,39 @@
     <title>Planner Financeiro</title>
     <!-- Ícone da Aba do Navegador -->
     <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📊</text></svg>">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+    <!-- Google Fonts: SRI não aplicável (o CSS retornado varia por user-agent, quebraria o hash entre navegadores) -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Phosphor Icons (peso Regular) -->
+    <link href="https://cdn.jsdelivr.net/npm/@phosphor-icons/web@2.1.2/src/regular/style.css" rel="stylesheet" integrity="sha384-6p9AefaqUhEVheRlj1mpAkbngHXy9mbYMrIdcIt4Jlc9lOLIablJq3bBsLOjGwZ7" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js" integrity="sha384-AQ3POAMqIhwS81FrUH95ekxqBZHeP5tG2JfEL3+7GuTtfRLWnrRh32UxwzM+//A9" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js" integrity="sha384-qn4Jh88HhJA8dplNQyGjOh9OGI4izVhrfj/qIFgaKcdgOE06pXqIKGlsCILZcLAC" crossorigin="anonymous"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js" integrity="sha384-TnlRYaR4JYz/lpaGuaiU61PjNberSA4vjLjtF+oRC/IkohkJqnWxw5EmDSOt1vA1" crossorigin="anonymous"></script>
+
+    <!-- jsPDF + autotable: usados só na exportação de PDF -->
+    <script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js" integrity="sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@5.0.8/dist/jspdf.plugin.autotable.min.js" integrity="sha384-5jk55M0XWoAw7LyhlXJe19ErOr3doBAPzxw9vahPFbvolqWa2yDk4fhHa2zuYeOa" crossorigin="anonymous"></script>
 
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
     <div id="loginScreen">
-        <h2 style="color: var(--text-highlight); margin-bottom: 20px;"><span class="material-icons" style="vertical-align: bottom;">analytics</span> Planner Financeiro</h2>
+        <h2 style="color: var(--text-highlight); margin-bottom: 20px; font-weight: 800; font-size: 1.4rem;"><i class="ph ph-chart-line-up" style="vertical-align: -3px; font-size: 1.3rem;"></i> Planner Financeiro</h2>
         <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Acesse para sincronizar os seus dados</p>
-        
+
         <input type="email" id="emailInput" placeholder="O seu E-mail" style="width: 100%; margin-bottom: 15px;">
-        <input type="password" id="senhaInput" placeholder="A sua Senha" style="width: 100%; margin-bottom: 15px;">
-        
-        <button onclick="fazerLogin()" class="btn-flat" style="width: 100%; margin-bottom: 10px; padding: 12px;">Entrar</button>
-        <button onclick="criarConta()" class="btn-flat" style="width: 100%; background-color: var(--purple-light); padding: 12px;">Criar Conta Grátis</button>
-        
+        <input type="password" id="senhaInput" placeholder="A sua Senha" style="width: 100%; margin-bottom: 10px;">
+
+        <p style="text-align: right; margin-bottom: 15px;">
+            <a href="#" onclick="recuperarSenha(); return false;" style="color: var(--text-muted); font-size: 0.8rem; text-decoration: underline;">Esqueci minha senha</a>
+        </p>
+
+        <button onclick="fazerLogin()" class="btn-flat" style="width: 100%; margin-bottom: 10px; padding: 13px;">Entrar</button>
+        <button onclick="criarConta()" class="btn-flat" style="width: 100%; background: var(--bg-light); color: var(--text-highlight); box-shadow: none; padding: 13px;">Criar Conta Grátis</button>
+
         <p id="authErro" style="color: var(--red-danger); font-size: 0.85rem; margin-top: 15px; display: none;"></p>
     </div>
 
@@ -42,25 +52,151 @@
         <div class="modal-content"></div>
     </div>
 
+    <!-- Modal: Calculadora Inteligente -->
+    <div class="modal-overlay" id="modalCalculadora">
+        <div class="modal-content" style="position: relative;">
+            <button class="modal-close-x" onclick="fecharModalCalculadora()"><i class="ph ph-x"></i></button>
+            <div class="card-title"><span class="card-title-left"><i class="ph ph-calculator"></i> Calculadora Inteligente</span></div>
+            <input type="text" class="calc-visor" id="calcVisor" value="0" oninput="validarInputCalculadora(this)" placeholder="Digite o cálculo...">
+            <div class="calc-grid">
+                <button class="calc-btn select-fixas" onclick="abrirModalFixas()"><i class="ph ph-receipt" style="font-size: 18px;"></i> Somar Contas Fixas</button>
+                <button class="calc-btn clear" onclick="calcInput('C')">C</button>
+                <button class="calc-btn" onclick="calcInput('⌫')">⌫</button>
+                <button class="calc-btn op" onclick="calcInput('%')">%</button>
+                <button class="calc-btn op" onclick="calcInput('/')">÷</button>
+
+                <button class="calc-btn" onclick="calcInput('7')">7</button>
+                <button class="calc-btn" onclick="calcInput('8')">8</button>
+                <button class="calc-btn" onclick="calcInput('9')">9</button>
+                <button class="calc-btn op" onclick="calcInput('*')">×</button>
+
+                <button class="calc-btn" onclick="calcInput('4')">4</button>
+                <button class="calc-btn" onclick="calcInput('5')">5</button>
+                <button class="calc-btn" onclick="calcInput('6')">6</button>
+                <button class="calc-btn op" onclick="calcInput('-')">-</button>
+
+                <button class="calc-btn" onclick="calcInput('1')">1</button>
+                <button class="calc-btn" onclick="calcInput('2')">2</button>
+                <button class="calc-btn" onclick="calcInput('3')">3</button>
+                <button class="calc-btn op" onclick="calcInput('+')">+</button>
+
+                <button class="calc-btn" onclick="calcInput('0')" style="grid-column: span 2;">0</button>
+                <button class="calc-btn" onclick="calcInput('.')">.</button>
+                <button class="calc-btn eq" onclick="calcInput('=')">=</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal Seleção Fixas para Calculadora -->
-    <div class="modal-overlay" id="modalFixasCalc">
+    <div class="modal-overlay" id="modalFixasCalc" style="z-index: 1001;">
         <div class="modal-content">
-            <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">Somar Contas Fixas</h3>
+            <h3 style="margin-bottom: 6px; color: var(--text-highlight); font-size: 1.1rem; font-weight: 700;">Somar Contas Fixas</h3>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Selecione as contas que deseja enviar para a calculadora:</p>
             <div id="listaFixasCalcModal"></div>
             <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button class="btn-flat" style="flex: 1; background: var(--text-muted);" onclick="fecharModalFixas()">Cancelar</button>
+                <button class="btn-flat" style="flex: 1; background: var(--bg-light); color: var(--text-main); box-shadow: none;" onclick="fecharModalFixas()">Cancelar</button>
                 <button class="btn-flat" style="flex: 1; background: var(--green-success);" onclick="aplicarSomaFixasModal()">Calcular</button>
             </div>
         </div>
     </div>
 
+    <!-- Modal: Nova / Editar Conta Fixa -->
+    <div class="modal-overlay" id="modalNovaFixa">
+        <div class="modal-content" style="position: relative;">
+            <button class="modal-close-x" onclick="fecharModalNovaFixa()"><i class="ph ph-x"></i></button>
+            <div class="card-title" id="modalNovaFixaTitulo"><span class="card-title-left"><i class="ph ph-plus"></i> Nova Conta Fixa</span></div>
+            <div class="input-inline">
+                <input type="text" id="fixaNome" style="flex:2;" placeholder="Item (Ex: Energia, Mensalidades)">
+                <input type="number" id="fixaValor" style="flex:1;" placeholder="R$">
+            </div>
+            <div class="input-inline">
+                <input type="number" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31">
+                <select id="fixaCategoria" style="flex:1.5;"></select>
+            </div>
+            <div class="input-inline">
+                <input type="text" id="fixaObs" style="flex:1;" placeholder="Observações (opcional)">
+            </div>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button class="btn-flat" id="btnCancelarEdicaoFixa" onclick="cancelarEdicaoFixa()" style="flex:1; background: var(--bg-light); color: var(--text-main); box-shadow: none;"><i class="ph ph-x"></i> Cancelar</button>
+                <button class="btn-flat" id="btnSalvarFixa" onclick="salvarContaFixa()" style="flex:1;"><i class="ph ph-plus"></i> Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Configurações do Sistema -->
+    <div class="modal-overlay" id="modalConfig">
+        <div class="modal-content modal-wide" style="position: relative;">
+            <button class="modal-close-x" onclick="fecharModalConfig()"><i class="ph ph-x"></i></button>
+            <div class="card-title"><span class="card-title-left"><i class="ph ph-gear"></i> Configurações do Sistema</span></div>
+
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-moon" style="vertical-align:-2px;"></i> Aparência do Aplicativo</h4>
+            <button class="btn-flat" style="background: var(--bg-light); color: var(--text-main); box-shadow: none; width: 100%; justify-content: center;" onclick="toggleDarkMode()">
+                <i class="ph ph-moon" id="iconTheme"></i> <span id="textTheme">Ativar Modo Escuro</span>
+            </button>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-calendar-plus" style="vertical-align:-2px;"></i> Adicionar Novo Mês</h4>
+            <div class="control-row">
+                <input type="month" id="novoMesInput">
+                <button class="btn-flat" onclick="addNovoMes()">Adicionar Mês</button>
+            </div>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-arrows-clockwise" style="vertical-align:-2px;"></i> Copiar Contas Fixas de Outro Mês</h4>
+            <div class="control-row">
+                <select id="mesCopiaSeletor"></select>
+                <button class="btn-flat" onclick="copiarContasFixas()">Copiar para o Mês Atual</button>
+            </div>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-tag" style="vertical-align:-2px;"></i> Nova Categoria</h4>
+            <div class="control-row">
+                <input type="text" id="novaCatNome" placeholder="Nome da Categoria">
+                <button class="btn-flat" onclick="addCategoriaGlobal()">Salvar Categoria</button>
+            </div>
+            <div id="listaCategoriasConfig" style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:20px;"></div>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-bell" style="vertical-align:-2px;"></i> Controle de Assinaturas (Informativo)</h4>
+            <div class="control-row">
+                <input type="text" id="subNome" placeholder="Ex: Netflix" style="flex:2;">
+                <input type="number" id="subValor" placeholder="Valor (R$)" style="flex:1.5;">
+                <input type="number" id="subVenc" placeholder="Dia Venc." min="1" max="31" style="flex:1;">
+                <button class="btn-flat" onclick="addAssinaturaInformativa()">Adicionar</button>
+            </div>
+            <div id="listaAssinaturasConfig" style="margin-top:12px;"></div>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-download-simple" style="vertical-align:-2px;"></i> Exportar Dados</h4>
+            <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;">
+                <button class="btn-flat" style="flex:1; min-width:140px; justify-content:center;" onclick="exportarFixasCSV()"><i class="ph ph-file-text" style="font-size:18px;"></i> Fixas (CSV)</button>
+                <button class="btn-flat" style="flex:1; min-width:140px; justify-content:center;" onclick="exportarFaturamentosCSV()"><i class="ph ph-file-text" style="font-size:18px;"></i> Faturamentos (CSV)</button>
+                <button class="btn-flat" style="flex:1; min-width:180px; justify-content:center;" onclick="exportarRelatorioMensalPDF()"><i class="ph ph-file-pdf" style="font-size:18px;"></i> Relatório Mensal (PDF)</button>
+            </div>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700; color: var(--red-danger);"><i class="ph ph-trash" style="vertical-align:-2px;"></i> Limpar Dados do Mês</h4>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
+                Apague as contas fixas permanentemente do mês selecionado.
+            </p>
+            <button class="btn-flat" style="background: transparent; box-shadow: none; border: 1.5px solid var(--red-danger); color: var(--red-danger); width: 100%;" onclick="limparFixasDoMesAtual()">Apagar Contas Fixas</button>
+        </div>
+    </div>
+
     <div id="mainApp">
         <header>
-            <h1><span class="material-icons">analytics</span> Planner Financeiro</h1>
-            <div style="display:flex; gap:10px; align-items:center;">
-                <select id="mesSeletor" class="select-mes" onchange="mudarMesOuro()"></select>
-                <button class="btn-flat" style="background:var(--red-danger); padding:6px 10px;" onclick="fazerLogout()" title="Sair"><span class="material-icons" style="font-size:18px;">logout</span></button>
+            <h1><i class="ph ph-chart-line-up"></i> Planner Financeiro</h1>
+            <div class="header-actions">
+                <div class="month-nav">
+                    <button onclick="navegarMes(-1)" title="Mês anterior"><i class="ph ph-caret-left"></i></button>
+                    <select id="mesSeletor" onchange="mudarMesOuro()"></select>
+                    <button onclick="navegarMes(1)" title="Próximo mês"><i class="ph ph-caret-right"></i></button>
+                </div>
+                <button class="icon-btn icon-btn-danger" onclick="fazerLogout()" title="Sair"><i class="ph ph-sign-out"></i></button>
             </div>
         </header>
 
@@ -68,29 +204,36 @@
             <div class="col-left">
                 <!-- ABA: CONTAS FIXAS -->
                 <div id="tab-fixas" class="card tab-content active">
-                    <div class="card-title"><span class="material-icons">assignment</span> Contas Fixas</div>
-                    <div class="input-inline">
-                        <input type="text" id="fixaNome" style="flex:2;" placeholder="Item (Ex: Energia, Mensalidades)">
-                        <input type="number" id="fixaValor" style="flex:1;" placeholder="R$">
-                        <input type="number" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31">
-                        <select id="fixaCategoria" style="flex:1.5;"></select>
-                        <!-- CORREÇÃO OURO: Função salvarContaFixa() no clique -->
-                        <button class="btn-flat" id="btnSalvarFixa" onclick="salvarContaFixa()"><span class="material-icons">add</span></button>
-                        <button class="btn-flat" id="btnCancelarEdicaoFixa" onclick="cancelarEdicaoFixa()" style="display: none; background-color: var(--text-muted);"><span class="material-icons">close</span></button>
+                    <div class="card-title">
+                        <span class="card-title-left"><i class="ph ph-clipboard-text"></i> Contas Fixas</span>
+                        <span style="display:flex; gap:8px;">
+                            <button class="card-action-btn" onclick="abrirModalCalculadora()" title="Calculadora"><i class="ph ph-calculator"></i></button>
+                            <button class="fab-inline" onclick="abrirModalNovaFixa()" title="Nova Conta Fixa"><i class="ph ph-plus"></i></button>
+                        </span>
                     </div>
-                    <div class="input-inline">
-                        <input type="text" id="fixaObs" style="flex:1;" placeholder="Observações (opcional)">
+                    <div class="input-inline" style="margin-bottom:10px;">
+                        <input type="text" id="buscaFixas" oninput="calcularEAtualizarVisual()" style="flex:1;" placeholder="🔍 Buscar por nome ou categoria...">
+                    </div>
+                    <div class="input-inline sort-mobile-only">
+                        <select onchange="ordenarTabela('fixas', this.value)" style="flex:1;">
+                            <option value="">Ordenar por...</option>
+                            <option value="nome">Nome</option>
+                            <option value="categoria">Categoria</option>
+                            <option value="vencimento">Vencimento</option>
+                            <option value="valor">Valor</option>
+                            <option value="pago">Pago</option>
+                        </select>
+                        <button class="card-action-btn" onclick="if(ordFixas.col) ordenarTabela('fixas', ordFixas.col)" title="Inverter ordem"><i class="ph ph-arrows-down-up"></i></button>
                     </div>
                     <div class="table-responsive">
                         <table>
                             <thead>
                                 <tr>
-                                    <th class="sortable" onclick="ordenarTabela('fixas', 'nome')">Item ↕️</th>
-                                    <!-- Nova Coluna Separada -->
-                                    <th class="sortable" onclick="ordenarTabela('fixas', 'categoria')">Categoria ↕️</th>
-                                    <th class="sortable" onclick="ordenarTabela('fixas', 'vencimento')">Venc. ↕️</th>
-                                    <th class="sortable" onclick="ordenarTabela('fixas', 'valor')">Valor ↕️</th>
-                                    <th class="sortable" onclick="ordenarTabela('fixas', 'pago')">Pago? ↕️</th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'nome')">Item <i class="ph ph-caret-up-down"></i></th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'categoria')">Categoria <i class="ph ph-caret-up-down"></i></th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'vencimento')">Venc. <i class="ph ph-caret-up-down"></i></th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'valor')">Valor <i class="ph ph-caret-up-down"></i></th>
+                                    <th class="sortable" onclick="ordenarTabela('fixas', 'pago')">Pago? <i class="ph ph-caret-up-down"></i></th>
                                     <th style="width: 80px;">Ações</th>
                                 </tr>
                             </thead>
@@ -101,92 +244,55 @@
 
                 <!-- ABA: CALENDÁRIO -->
                 <div id="tab-calendario" class="card tab-content">
-                    <div class="card-title"><span class="material-icons">event</span> Calendário de Vencimentos</div>
+                    <div class="card-title"><span class="card-title-left"><i class="ph ph-calendar-blank"></i> Calendário de Vencimentos</span></div>
                     <div id="calendarioMesLabel" style="text-align:center; font-weight:700; color:var(--text-highlight); margin-bottom:12px; font-size:1rem; text-transform:capitalize;"></div>
                     <div class="calendario-grid" id="calendarioGrid"></div>
                     <div id="calendarioEventos"></div>
-                </div>
-
-                <!-- ABA: CONFIGURAÇÕES -->
-                <div id="tab-config" class="card tab-content">
-                    <div class="card-title"><span class="material-icons">settings</span> Configurações do Sistema</div>
-                    
-                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🎨 Aparência do Aplicativo</h4>
-                    <button class="btn-flat" style="background-color: var(--border-color); color: var(--text-main); width: 100%; justify-content: center;" onclick="toggleDarkMode()">
-                        <span class="material-icons" id="iconTheme">dark_mode</span> <span id="textTheme">Ativar Modo Escuro</span>
-                    </button>
-
-                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
-
-                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🗓️ Adicionar Novo Mês</h4>
-                    <div class="control-row">
-                        <input type="month" id="novoMesInput">
-                        <button class="btn-flat" onclick="addNovoMes()">Adicionar Mês</button>
-                    </div>
-
-                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
-
-                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🔄 Copiar Contas Fixas de Outro Mês</h4>
-                    <div class="control-row">
-                        <select id="mesCopiaSeletor"></select>
-                        <button class="btn-flat" style="background-color: var(--warning-orange);" onclick="copiarContasFixas()">Copiar para o Mês Atual</button>
-                    </div>
-
-                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
-
-                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🏷️ Nova Categoria</h4>
-                    <div class="control-row">
-                        <input type="text" id="novaCatNome" placeholder="Nome da Categoria">
-                        <button class="btn-flat" onclick="addCategoriaGlobal()">Salvar Categoria</button>
-                    </div>
-                    <div id="listaCategoriasConfig" style="display:flex; gap:5px; flex-wrap:wrap; margin-bottom:20px;"></div>
-
-                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
-
-                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem;">🔔 Controle de Assinaturas (Informativo)</h4>
-                    <div class="control-row">
-                        <input type="text" id="subNome" placeholder="Ex: Netflix" style="flex:2;">
-                        <input type="number" id="subValor" placeholder="Valor (R$)" style="flex:1.5;">
-                        <input type="number" id="subVenc" placeholder="Dia Venc." min="1" max="31" style="flex:1;">
-                        <button class="btn-flat" onclick="addAssinaturaInformativa()">Adicionar</button>
-                    </div>
-
-                    <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
-                    <h4 style="margin: 0 0 5px 0; font-size: 0.9rem; color: var(--red-danger);">🗑️ Limpar Dados do Mês</h4>
-                    <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 10px;">
-                        Apague as contas fixas permanentemente do mês selecionado.
-                    </p>
-                    <button class="btn-flat" style="background-color: transparent; border: 1px solid var(--red-danger); color: var(--red-danger); width: 100%;" onclick="limparFixasDoMesAtual()">Apagar Contas Fixas</button>
                 </div>
             </div>
 
             <div class="col-right">
                 <div id="tab-dashboard" class="tab-content">
-                    
+
                     <!-- FATURAMENTOS / RECEITAS -->
                     <div class="card">
-                        <div class="card-title"><span class="material-icons">payments</span> Faturamentos / Receitas</div>
+                        <div class="card-title">
+                            <span class="card-title-left"><i class="ph ph-wallet"></i> Faturamentos / Receitas</span>
+                            <button class="card-action-btn" onclick="abrirModalConfig()" title="Configurações"><i class="ph ph-gear"></i></button>
+                        </div>
                         <div class="input-inline">
                             <input type="text" id="fatNome" style="flex:2;" placeholder="Origem (Ex: Salário, Venda)">
                             <input type="number" id="fatValor" style="flex:1.5;" placeholder="R$">
                             <input type="date" id="fatData" style="flex:1.5;">
-                            <button class="btn-flat" style="background:var(--green-success)" onclick="addFaturamento()"><span class="material-icons">add</span></button>
+                            <button class="btn-flat" style="background:var(--green-success)" onclick="addFaturamento()"><i class="ph ph-plus"></i> Adicionar</button>
+                        </div>
+                        <div class="input-inline" style="margin-bottom:10px;">
+                            <input type="text" id="buscaFaturamentos" oninput="calcularEAtualizarVisual()" style="flex:1;" placeholder="🔍 Buscar por origem...">
+                        </div>
+                        <div class="input-inline sort-mobile-only">
+                            <select onchange="ordenarTabela('faturamentos', this.value)" style="flex:1;">
+                                <option value="">Ordenar por...</option>
+                                <option value="data">Data</option>
+                                <option value="nome">Origem</option>
+                                <option value="valor">Valor</option>
+                            </select>
+                            <button class="card-action-btn" onclick="if(ordFaturamentos.col) ordenarTabela('faturamentos', ordFaturamentos.col)" title="Inverter ordem"><i class="ph ph-arrows-down-up"></i></button>
                         </div>
                         <div class="table-responsive" style="margin-bottom: 15px;">
                             <table>
                                 <thead>
                                     <tr>
-                                        <th class="sortable" onclick="ordenarTabela('faturamentos', 'data')">Data ↕️</th>
+                                        <th class="sortable" onclick="ordenarTabela('faturamentos', 'data')">Data <i class="ph ph-caret-up-down"></i></th>
                                         <th>Origem</th>
-                                        <th class="sortable" onclick="ordenarTabela('faturamentos', 'valor')">Valor ↕️</th>
+                                        <th class="sortable" onclick="ordenarTabela('faturamentos', 'valor')">Valor <i class="ph ph-caret-up-down"></i></th>
                                         <th style="width: 40px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="listaFaturamentos"></tbody>
                             </table>
                         </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:12px; border-radius:8px;">
-                            <span style="color:var(--text-highlight-alt); font-weight:600; font-size:0.9rem;">CAIXA INICIAL (Extra)</span>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm);">
+                            <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">CAIXA INICIAL (Extra)</span>
                             <div style="display: flex; align-items: center; gap: 5px;">
                                 <span style="font-weight: 700; color: var(--text-highlight-alt);">R$</span>
                                 <input type="number" id="saldoInput" onblur="salvarSaldoDoMes()" style="background: transparent; border: none; border-bottom: 2px solid var(--blue-accent); border-radius: 0; width: 100px; text-align: right; font-weight: 700; font-size: 1.1rem; padding: 4px; color: var(--text-highlight-alt);">
@@ -196,10 +302,10 @@
 
                     <!-- PAINEL DE CONTROLE -->
                     <div class="card">
-                        <div class="card-title"><span class="material-icons">calculate</span> Painel de Controle</div>
+                        <div class="card-title"><span class="card-title-left"><i class="ph ph-gauge"></i> Painel de Controle</span></div>
                         <div class="matrix-grid">
-                            <div class="matrix-label" style="background-color: var(--blue-accent);">SALDO ESTIMADO</div>
-                            <div class="matrix-value" id="mSaldoEstimado" style="background-color: var(--bg-blue-light); font-size: 1.2rem; color: var(--text-highlight-alt); font-weight: 700;">R$ 0,00</div>
+                            <div class="matrix-label">SALDO ESTIMADO</div>
+                            <div class="matrix-value" id="mSaldoEstimado" style="background-color: var(--bg-blue-light); font-size: 1.2rem; color: var(--text-highlight-alt); font-weight: 800;">R$ 0,00</div>
 
                             <div class="matrix-label">ORÇAMENTO FIXO</div><div class="matrix-value" id="mOrcamento">R$ 0,00</div>
                             <div class="matrix-label">PAGO</div><div class="matrix-value" id="mPago" style="color: var(--green-success);">R$ 0,00</div>
@@ -210,7 +316,7 @@
 
                     <!-- ACUMULADO POR CATEGORIA (SÓ FIXAS) -->
                     <div class="card">
-                        <div class="card-title"><span class="material-icons">pie_chart</span> Acumulado por Categoria</div>
+                        <div class="card-title"><span class="card-title-left"><i class="ph ph-chart-pie"></i> Acumulado por Categoria</span></div>
                         <div class="charts-wrapper">
                             <div class="chart-container"><canvas id="chartCategorias"></canvas></div>
                             <div class="chart-container"><canvas id="barChartCategorias"></canvas></div>
@@ -220,66 +326,27 @@
 
                     <!-- ASSINATURAS -->
                     <div class="card">
-                        <div class="card-title"><span class="material-icons">credit_card</span> Suas Assinaturas</div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-light); padding:10px 14px; border-radius:8px; margin-bottom:12px;">
+                        <div class="card-title"><span class="card-title-left"><i class="ph ph-credit-card"></i> Suas Assinaturas</span></div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-light); padding:12px 14px; border-radius:var(--radius-sm); margin-bottom:12px;">
                             <span style="color:var(--text-muted); font-weight:600; font-size:0.8rem;">TOTAL MENSAL</span>
                             <span style="color:var(--text-highlight); font-size:1.1rem; font-weight:800;" id="totalAssinaturas">R$ 0,00</span>
                         </div>
                         <div id="listaAssinaturasCard"></div>
                     </div>
                 </div>
-
-                <!-- ABA: CALCULADORA -->
-                <div id="tab-calculadora" class="tab-content">
-                    <div class="card">
-                        <div class="card-title"><span class="material-icons">calculate</span> Calculadora Inteligente</div>
-                        <input type="text" class="calc-visor" id="calcVisor" value="0" oninput="validarInputCalculadora(this)" placeholder="Digite o cálculo...">
-                        <div class="calc-grid">
-                            <button class="calc-btn select-fixas" onclick="abrirModalFixas()"><span class="material-icons" style="font-size: 18px;">receipt_long</span> Somar Contas Fixas</button>
-                            <button class="calc-btn clear" onclick="calcInput('C')">C</button>
-                            <button class="calc-btn" onclick="calcInput('⌫')">⌫</button>
-                            <button class="calc-btn op" onclick="calcInput('%')">%</button>
-                            <button class="calc-btn op" onclick="calcInput('/')">÷</button>
-
-                            <button class="calc-btn" onclick="calcInput('7')">7</button>
-                            <button class="calc-btn" onclick="calcInput('8')">8</button>
-                            <button class="calc-btn" onclick="calcInput('9')">9</button>
-                            <button class="calc-btn op" onclick="calcInput('*')">×</button>
-
-                            <button class="calc-btn" onclick="calcInput('4')">4</button>
-                            <button class="calc-btn" onclick="calcInput('5')">5</button>
-                            <button class="calc-btn" onclick="calcInput('6')">6</button>
-                            <button class="calc-btn op" onclick="calcInput('-')">-</button>
-
-                            <button class="calc-btn" onclick="calcInput('1')">1</button>
-                            <button class="calc-btn" onclick="calcInput('2')">2</button>
-                            <button class="calc-btn" onclick="calcInput('3')">3</button>
-                            <button class="calc-btn op" onclick="calcInput('+')">+</button>
-
-                            <button class="calc-btn" onclick="calcInput('0')" style="grid-column: span 2;">0</button>
-                            <button class="calc-btn" onclick="calcInput('.')">.</button>
-                            <button class="calc-btn eq" onclick="calcInput('=')">=</button>
-                        </div>
-                    </div>
-
-                    <button class="btn-flat desktop-toggle-btn" onclick="toggleConfigDesktop()" id="btnToggleConfig">
-                        <span style="display:flex; align-items:center; gap:8px;"><span class="material-icons">visibility_off</span> Ocultar Configurações no Painel</span>
-                    </button>
-                </div>
             </div>
         </div>
 
         <nav class="bottom-nav">
-            <button class="nav-item active" onclick="switchTab(event, 'tab-fixas')"><span class="material-icons">assignment</span>Contas</button>
-            <button class="nav-item" onclick="switchTab(event, 'tab-calendario')"><span class="material-icons">event</span>Calendário</button>
-            <button class="nav-item" onclick="switchTab(event, 'tab-dashboard')"><span class="material-icons">analytics</span>Mês</button>
-            <button class="nav-item" onclick="switchTab(event, 'tab-calculadora')"><span class="material-icons">calculate</span>Calc.</button>
-            <button class="nav-item" onclick="switchTab(event, 'tab-config')"><span class="material-icons">settings</span>Config</button>
+            <button class="nav-item active" onclick="switchTab(event, 'tab-fixas')"><i class="ph ph-clipboard-text"></i>Contas</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-calendario')"><i class="ph ph-calendar-blank"></i>Calendário</button>
+            <button class="nav-item" onclick="switchTab(event, 'tab-dashboard')"><i class="ph ph-chart-line-up"></i>Mês</button>
         </nav>
     </div>
 
     <script src="js/toast.js"></script>
     <script src="js/modal.js"></script>
+    <script src="js/undo.js"></script>
     <script src="js/config.js"></script>
     <script src="js/theme.js"></script>
     <script src="js/auth.js"></script>
@@ -295,6 +362,7 @@
     <script src="js/charts.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/render.js"></script>
+    <script src="js/exportar.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>
