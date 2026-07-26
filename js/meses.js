@@ -19,6 +19,7 @@
                 fixasSelecionadas.clear();
                 extratoSelecionados.clear();
                 diaCalendarioSelecionado = null;
+                animarNaCarga = true;
                 calcularEAtualizarVisual();
                 document.getElementById('loadingDiv').style.display = 'none';
             });

@@ -36,4 +36,8 @@
         let fixasSelecionadas = new Set();
         let extratoSelecionados = new Set();
 
+        // Controla quando as animações de entrada (badges, listas, odômetro lento) tocam:
+        // só na carga inicial, troca de mês ou troca de aba no mobile — nunca ao selecionar/marcar itens.
+        let animarNaCarga = true;
+
         const coresCategorias = ['#6D4FEA', '#4F6EF7', '#EC4899', '#06B6D4', '#F59E0B', '#10B981', '#A855F7', '#EF4444', '#3B82F6', '#14B8A6', '#F97316', '#8B5CF6'];

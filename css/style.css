@@ -45,7 +45,7 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        html { overflow-x: hidden; }
+        html { overflow-x: hidden; font-size: 17.5px; }
         body { background-color: var(--bg-light); color: var(--text-main); transition: background 0.3s, color 0.3s; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
 
         /* Botão de navegação de mês — vive dentro de um card normal agora, não num header roxo */
@@ -166,20 +166,23 @@
            no arquivo vence, então um @container antes delas seria sempre sobrescrito. */
         @container (max-width: 420px) {
             table { font-size: 0.78rem; }
-            th, td { padding: 7px 3px; }
-            th.th-check, td.td-check { width: 22px; }
-            .row-check { width: 15px; height: 15px; }
-            .status-badge { width: 40px; font-size: 0.6rem; padding: 3px 3px; }
-            .vencimento-tag { font-size: 0.56rem; padding: 2px 4px; }
-            .item-link { font-size: 0.78rem; }
-            .fixa-sub { font-size: 0.66rem; }
-            .fixa-valor { font-size: 0.78rem; }
+            th, td { padding: 7px 2px; }
+            th { font-size: 0.66rem; }
+            th.th-check, td.td-check { width: 30px; padding-left: 4px; }
+            /* O círculo continua compacto, mas a área tocável (td) fica maior — alvo de toque adequado. */
+            .row-check { width: 22px; height: 22px; }
+            .status-badge { width: 38px; font-size: 0.58rem; padding: 3px 2px; }
+            .vencimento-tag { font-size: 0.54rem; padding: 2px 3px; }
+            .item-link { font-size: 0.76rem; }
+            .fixa-sub { font-size: 0.64rem; }
+            .fixa-valor { font-size: 0.76rem; }
         }
         @container (max-width: 340px) {
-            th, td { padding: 6px 2px; }
-            .status-badge { width: 34px; font-size: 0.56rem; }
-            .vencimento-tag { font-size: 0.52rem; padding: 1px 3px; }
-            .item-link { font-size: 0.74rem; }
+            th, td { padding: 6px 1px; }
+            th { font-size: 0.6rem; }
+            .status-badge { width: 32px; font-size: 0.54rem; }
+            .vencimento-tag { font-size: 0.5rem; padding: 1px 2px; }
+            .item-link { font-size: 0.72rem; }
         }
         .btn-action { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display:flex; align-items:center; padding: 6px; border-radius: 8px; transition: background 0.15s, color 0.15s; }
         .btn-action:hover { color: var(--blue-accent); background: var(--bg-blue-light); }
@@ -307,9 +310,9 @@
 
         /* Pequeno "pop" nos badges de vencimento e status, toda vez que a tabela é redesenhada */
         @keyframes badge-pop { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
-        .vencimento-tag, .status-badge { animation: badge-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
+        .vencimento-tag.anim-pop, .status-badge.anim-pop { animation: badge-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
         @media (prefers-reduced-motion: reduce) {
             .reveal-init { opacity: 1; transform: none; }
-            .reveal-in, .item-anim, .vencimento-tag, .status-badge { animation: none; }
+            .reveal-in, .item-anim, .anim-pop { animation: none; }
         }

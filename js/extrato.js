@@ -296,8 +296,9 @@ function renderizarExtrato() {
         .forEach(([tipo, info], idx) => {
             const cor = info.direcao === 'entrada' ? 'var(--green-success)' : 'var(--red-danger)';
             const sinal = info.direcao === 'entrada' ? '+' : '-';
+            const classeAnim = animarNaCarga ? ' item-anim' : '';
             divTipos.innerHTML += `
-                <div class="acumulado-item item-anim" style="animation-delay:${idx * 0.05}s">
+                <div class="acumulado-item${classeAnim}" style="animation-delay:${idx * 0.05}s">
                     <span>${tipo} <span style="color:var(--text-muted); font-weight:400;">(${info.count})</span></span>
                     <span style="color:${cor}; font-weight:700;">${sinal} R$ ${info.soma.toFixed(2)}</span>
                 </div>`;

@@ -5,7 +5,15 @@
             document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             if(event) event.currentTarget.classList.add('active');
-            if(tabId === 'tab-calendario') renderizarCalendario();
+
+            // No mobile, trocar de aba reanima os detalhes (badges, listas, odômetro) — deixa o app "vivo".
+            // calcularEAtualizarVisual() já cuida de redesenhar o calendário também.
+            if (event) {
+                animarNaCarga = true;
+                calcularEAtualizarVisual();
+            } else if (tabId === 'tab-calendario') {
+                renderizarCalendario();
+            }
         }
 
         function abrirModalCalculadora() {
