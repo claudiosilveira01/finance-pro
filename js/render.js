@@ -94,7 +94,10 @@
             renderizarExtrato();
 
             let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
-            updateChart(chartDataArray);
+            window.__ultimoChartDataArray = chartDataArray;
+            if (!window.chartFoiRevelado || window.chartFoiRevelado()) {
+                updateChart(chartDataArray);
+            }
 
             // Garante que o calendário atualize sempre que salvar novos dados
             renderizarCalendario();

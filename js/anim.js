@@ -21,9 +21,37 @@
             card.style.animationDelay = `${Math.min(i * 0.06, 0.4)}s`;
             observer.observe(card);
         });
+
+        observarGraficoCategoria();
     }
 
     window.iniciarAnimacoesDeEntrada = iniciarAnimacoesDeEntrada;
+
+    // O gráfico só recebe os dados reais (e portanto só "cresce") quando o card
+    // dele realmente aparece na tela — senão a animação acontecia durante o
+    // carregamento, antes do usuário rolar até lá, e parecia que nada tinha animado.
+    let chartRevelado = false;
+    let chartObserver = null;
+    function observarGraficoCategoria() {
+        if (chartRevelado) return;
+        const cardGrafico = document.getElementById('chartCategorias')?.closest('.card');
+        if (!cardGrafico) return;
+
+        if (chartObserver) chartObserver.disconnect();
+        chartObserver = new IntersectionObserver((entradas) => {
+            entradas.forEach(entrada => {
+                if (entrada.isIntersecting && !chartRevelado) {
+                    chartRevelado = true;
+                    if (window.__ultimoChartDataArray && typeof updateChart === 'function') {
+                        updateChart(window.__ultimoChartDataArray);
+                    }
+                    chartObserver.disconnect();
+                }
+            });
+        }, { threshold: 0.2 });
+        chartObserver.observe(cardGrafico);
+    }
+    window.chartFoiRevelado = () => chartRevelado;
 
     // Efeito de contagem: anima o número de 0 até o valor final (usado no Painel de Controle)
     const contadoresAtivos = {};
