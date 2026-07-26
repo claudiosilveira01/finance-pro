@@ -164,6 +164,11 @@
 
         function togglePagoFixa(id) { window.activeFixas = window.activeFixas.map(c => c.id === id ? { ...c, pago: !c.pago } : c); salvarDadosDoMesAtual(); calcularEAtualizarVisual(); }
 
+        function toggleSelecaoFixa(id) {
+            if (fixasSelecionadas.has(id)) fixasSelecionadas.delete(id); else fixasSelecionadas.add(id);
+            calcularEAtualizarVisual();
+        }
+
         function deletarItemGeral(id, tipo) {
             const arr = tipo === 'fixa' ? window.activeFixas : window.activeFaturamentos;
             const idx = arr.findIndex(x => x.id === id);

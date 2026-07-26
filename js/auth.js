@@ -12,6 +12,7 @@
                 atualizarBotaoTema();
                 carregarConfigGlobal(() => {
                     loading.style.display = 'none';
+                    iniciarAnimacoesDeEntrada();
                 });
             } else {
                 currentUser = null;

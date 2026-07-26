@@ -31,6 +31,9 @@
         let meuGraficoPizza;
         let meuGraficoBarra;
         let idEditandoFixa = null;
+        let idEditandoFaturamento = null;
         let diaCalendarioSelecionado = null;
+        let fixasSelecionadas = new Set();
+        let extratoSelecionados = new Set();
 
         const coresCategorias = ['#6D4FEA', '#4F6EF7', '#EC4899', '#06B6D4', '#F59E0B', '#10B981', '#A855F7', '#EF4444', '#3B82F6', '#14B8A6', '#F97316', '#8B5CF6'];

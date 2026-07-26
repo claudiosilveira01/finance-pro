@@ -124,7 +124,7 @@ users/{uid}.orcamentoAtivoId                  → aponta pro orçamento em uso; 
 4. ~~Antes de publicar as regras finais da Fase 12 (compartilhamento) — revisão conjunta no Rules Playground~~ — **não se aplica mais**, Fase 12 cancelada.
 
 ## Estado atual do escopo
-- **Feito e validado:** Fases 0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 13 (redesign visual).
+- **Feito e validado:** Fases 0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 13 (redesign visual), responsividade dinâmica, V2 e V2.5 (ver seção própria abaixo).
 - **Em stand-by:** Fase 3 (PWA) — aguardando o usuário retomar o design dos ícones.
 - **Bloqueada:** Fase 11 (notificações push) — depende da Fase 3.
 - **Cancelada:** Fase 12 (compartilhamento multi-usuário) — decisão do usuário.
@@ -152,6 +152,27 @@ Reforma visual completa do app, inspirada em referências enviadas pelo usuário
 **Validação:** testado extensivamente no Chrome real com dados reais do usuário (servidor HTTP local via PowerShell) — todos os modais, navegação de mês, dark mode, edição/exclusão, gráficos, chips de categoria, e o bottom nav mobile (simulado via override de `window.innerWidth` + CSS, já que o `resize_window` da automação não afeta o viewport real do Chrome). Zero erros de console em toda a sessão de testes.
 
 **Correção feita durante o teste:** os indicadores de ordenação das tabelas usavam o emoji "↕️", que renderizava como um glifo quebrado nesse ambiente — trocado por ícone Phosphor (`ph-caret-up-down`), mais consistente com o resto do redesign de qualquer forma.
+
+## Pós-Fase 13 — Responsividade dinâmica, V2 e V2.5 ✅ concluídas
+
+Depois do redesign da Fase 13, o usuário reportou bugs reais de responsividade (scroll horizontal, layout cortado no celular) e pediu redesign incremental em duas rodadas ("V2" e "V2.5"), sem passar por `PLANO-EVOLUCAO.md` fase a fase — registrado aqui só para manter a continuidade.
+
+**Responsividade dinâmica:** causa raiz era o clássico bug do CSS Grid com `min-width: auto` — a tabela empurrava a coluna inteira. Corrigido com `min-width: 0` em `.main-container`/`.col-left`/`.col-right` + **Container Queries** (`container-type: inline-size`, `@container`) no lugar de `@media` de viewport, e `repeat(auto-fit, minmax(min(400px,100%), 1fr))` no grid principal — layout recalcula em tempo real conforme a tela muda, sem breakpoints fixos.
+
+**V2:** Contas Fixas voltou a uma tabela enxuta (Item/Venc./Valor/Pago), nome do item virou link que abre popup de edição (com conta recorrente: duplica a conta fixa para os meses seguintes via `_duplicarContaEmMesesFuturos()` em `fixas.js`), botões do Config viraram ícones compactos, gradiente voltou nos botões (mantendo badges/tabelas planos), busca/ordenação removidas de Receitas, header antigo removido (substituído por um card com título/navegação de mês/config/logout acima de Receitas), "Faturamentos" renomeado para "Receitas", "Caixa Inicial (Extra)" virou "Caixa Atual".
+
+**V2.5 (11 itens):**
+- Checkbox de seleção em Contas Fixas (`.row-check`, `toggleSelecaoFixa()` em `fixas.js`) somando os marcados numa nova linha **"SOMA DE CONTAS"** no Painel de Controle (`#mSomaSelecionadas`), sem aparecer no card de Contas Fixas.
+- Tabela de Contas Fixas deixou de virar cards empilhados no mobile (removida a conversão `@container` antiga) — permanece tabela, só com padding/fonte mais compactos abaixo de 400px de largura do card; o checkbox de soma funciona igual em qualquer largura.
+- Bottom nav: `.nav-item.active` agora é uma pílula preenchida em gradiente (`var(--gradient-btn)`, `border-radius: 999px`).
+- Scrollbar customizada em `.modal-content` (tema roxo) + listener global de `Escape` em `ui.js` que fecha qualquer `.modal-overlay` visível no app.
+- Painel de Controle: nova variável `--matrix-label-text` (branco no claro, roxo bem escuro no escuro) para contraste dos labels; ordem das linhas fixada em Orçamento Fixo → Restante Contas → Soma de Contas → Pago → Saldo Estimado → Falta/Sobra.
+- "Repetir todo mês até" virou toggle estilo iOS (`.ios-toggle`), mais perto do texto.
+- Busca removida de Contas Fixas; Receitas ganhou botão de editar (lápis, abre `#modalEditarFaturamento`); campo Valor de Receitas sem as setinhas de number input (`.no-spin`); botão Adicionar de Receitas menor (`.btn-flat-sm`).
+- Animações de entrada: `js/anim.js` aplica `.reveal-init`/`.reveal-in` com `IntersectionObserver` em todo `.card` — sobem suavemente ao logar e ao rolar a tela; itens de "Acumulado por Categoria" entram com fade escalonado.
+- **Importação de extrato bancário em PDF** (`js/extrato.js`) — novo card abaixo de Contas Fixas. Como o app é 100% client-side (sem backend/Cloud Functions, decisão já registrada acima), o parser roda no navegador com **pdf.js** em vez de PHP: extrai o texto do PDF por posição (Y/X), reconstrói linhas e interpreta o padrão Tipo/Descrição/Valor do extrato (testado e validado contra um extrato real do Nubank — 193 transações reconhecidas, somas de entrada/saída batendo exatamente com o total oficial do PDF). Reimportar o mesmo PDF não duplica (chave de deduplicação por data+tipo+item+valor+direção); só adiciona o que for novo. Mesma UI de checkbox-soma de Contas Fixas, dados guardados por mês (`extrato: []` no documento do mês, ao lado de `fixas`/`faturamentos`).
+
+**Achado de teste importante:** ao validar tudo isso no servidor local (XAMPP/Apache), vários arquivos `.js`/`.css` sem parâmetro de versão ficaram em cache do navegador entre uma edição e outra, mascarando temporariamente o código novo. Não afeta a produção (Vercel já manda `cache-control: public, max-age=0, must-revalidate` com ETag, forçando revalidação a cada carregamento) — mas é um bom candidato a explicar relatos de "isso não funciona" logo após um deploy: um navegador com a aba já aberta de antes continua rodando o JS antigo até um recarregamento completo.
 
 ## Arquivos-chave do repositório hoje
 - `index.html`, `css/style.css`, `js/*.js` — estrutura atual pós-Fases 0, 1, 2, 4–10, 13 (ver seções acima para o mapa completo de arquivos)

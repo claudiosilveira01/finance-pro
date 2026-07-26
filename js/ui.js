@@ -21,3 +21,11 @@
         function fecharModalConfig() {
             document.getElementById('modalConfig').style.display = 'none';
         }
+
+        // Esc fecha qualquer modal aberto no sistema
+        document.addEventListener('keydown', e => {
+            if (e.key !== 'Escape') return;
+            document.querySelectorAll('.modal-overlay').forEach(overlay => {
+                if (getComputedStyle(overlay).display !== 'none') overlay.style.display = 'none';
+            });
+        });

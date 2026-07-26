@@ -21,6 +21,9 @@
     <script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js" integrity="sha384-qovJwSBbRDPP5cEjCp8S0UP66wrvnjaa60XMOGzTNanrThcrGfXfnZkvgY8N1KT3" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@5.0.8/dist/jspdf.plugin.autotable.min.js" integrity="sha384-5jk55M0XWoAw7LyhlXJe19ErOr3doBAPzxw9vahPFbvolqWa2yDk4fhHa2zuYeOa" crossorigin="anonymous"></script>
 
+    <!-- pdf.js: leitura client-side do PDF do extrato bancário (sem backend) -->
+    <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.16.105/build/pdf.min.js" integrity="sha384-uLiAv4VcjM5H2Jsqzl8EajEaxPugj1CIzQaCjQ8c5//vC+elhxO5pZfXGxoLQi1W" crossorigin="anonymous"></script>
+
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -118,8 +121,11 @@
             </div>
 
             <div id="fixaRecorrenteSection">
-                <label style="display:flex; align-items:center; gap:8px; margin: 2px 2px 10px; cursor:pointer; font-size:0.88rem; color:var(--text-main); font-weight:600;">
-                    <input type="checkbox" id="fixaRecorrente" onchange="document.getElementById('fixaRecorrenteAte').disabled = !this.checked;" style="width:18px; height:18px; flex:none;">
+                <label class="toggle-row">
+                    <span class="ios-toggle">
+                        <input type="checkbox" id="fixaRecorrente" onchange="document.getElementById('fixaRecorrenteAte').disabled = !this.checked;">
+                        <span class="ios-toggle-track"></span>
+                    </span>
                     <i class="ph ph-arrows-clockwise" style="font-size:16px; color:var(--text-highlight);"></i>
                     Repetir todo mês até
                 </label>
@@ -133,6 +139,25 @@
             <div style="display:flex; gap:10px; margin-top:8px;">
                 <button class="btn-flat" id="btnCancelarEdicaoFixa" onclick="cancelarEdicaoFixa()" style="flex:1; background: var(--bg-light); color: var(--text-main); box-shadow: none;"><i class="ph ph-x"></i> Cancelar</button>
                 <button class="btn-flat" id="btnSalvarFixa" onclick="salvarContaFixa()" style="flex:1;"><i class="ph ph-plus"></i> Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Editar Receita -->
+    <div class="modal-overlay" id="modalEditarFaturamento">
+        <div class="modal-content" style="position: relative;">
+            <button class="modal-close-x" onclick="fecharModalEditarFaturamento()"><i class="ph ph-x"></i></button>
+            <div class="card-title"><span class="card-title-left"><i class="ph ph-pencil-simple"></i> Editar Receita</span></div>
+            <div class="input-inline">
+                <input type="text" id="editFatNome" style="flex:2;" placeholder="Origem (Ex: Salário, Venda)">
+                <input type="number" id="editFatValor" class="no-spin" style="flex:1;" placeholder="R$">
+            </div>
+            <div class="input-inline">
+                <input type="date" id="editFatData" style="flex:1;">
+            </div>
+            <div style="display:flex; gap:10px; margin-top:8px;">
+                <button class="btn-flat" onclick="fecharModalEditarFaturamento()" style="flex:1; background: var(--bg-light); color: var(--text-main); box-shadow: none;"><i class="ph ph-x"></i> Cancelar</button>
+                <button class="btn-flat" onclick="salvarEdicaoFaturamento()" style="flex:1;"><i class="ph ph-check"></i> Salvar</button>
             </div>
         </div>
     </div>
@@ -213,13 +238,11 @@
                             <button class="fab-inline" onclick="abrirModalNovaFixa()" title="Nova Conta Fixa"><i class="ph ph-plus"></i></button>
                         </span>
                     </div>
-                    <div class="input-inline" style="margin-bottom:10px;">
-                        <input type="text" id="buscaFixas" oninput="calcularEAtualizarVisual()" style="flex:1;" placeholder="🔍 Buscar por nome ou categoria...">
-                    </div>
                     <div class="table-responsive">
                         <table>
                             <thead>
                                 <tr>
+                                    <th class="th-check"></th>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'nome')">Item <i class="ph ph-caret-up-down"></i></th>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'vencimento')">Venc. <i class="ph ph-caret-up-down"></i></th>
                                     <th class="sortable" onclick="ordenarTabela('fixas', 'valor')">Valor <i class="ph ph-caret-up-down"></i></th>
@@ -228,6 +251,38 @@
                             </thead>
                             <tbody id="listaFixas"></tbody>
                         </table>
+                    </div>
+                </div>
+
+                <!-- CARD: IMPORTAR EXTRATO BANCÁRIO (PDF) -->
+                <div id="tab-extrato" class="card">
+                    <div class="card-title">
+                        <span class="card-title-left"><i class="ph ph-bank"></i> Extrato Bancário</span>
+                        <span style="display:flex; gap:8px;">
+                            <input type="file" id="extratoPdfInput" accept="application/pdf" style="display:none;" onchange="processarExtratoPdf(this.files[0])">
+                            <button class="fab-inline" onclick="document.getElementById('extratoPdfInput').click()" title="Importar PDF do extrato"><i class="ph ph-upload-simple"></i></button>
+                        </span>
+                    </div>
+                    <p id="extratoVazioMsg" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Envie o PDF do extrato do seu banco para importar e categorizar as movimentações automaticamente.</p>
+                    <div id="extratoProgresso" style="display:none; font-size:0.85rem; color:var(--text-highlight); font-weight:600; margin-bottom:10px;"><i class="ph ph-spinner-gap"></i> A processar PDF...</div>
+                    <div class="table-responsive" id="extratoTabelaWrapper" style="display:none;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="th-check"></th>
+                                    <th>Item</th>
+                                    <th>Tipo</th>
+                                    <th>Entrada/Saída</th>
+                                    <th>Valor</th>
+                                    <th style="width:36px;"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="listaExtrato"></tbody>
+                        </table>
+                    </div>
+                    <div id="extratoResumo" style="display:none; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); flex-wrap:wrap; gap:10px; margin-top:12px;">
+                        <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">SOMA SELECIONADA</span>
+                        <span id="extratoSomaSelecionada" style="font-weight:800; font-size:1.1rem; color:var(--text-highlight-alt);">R$ 0,00</span>
                     </div>
                 </div>
 
@@ -266,9 +321,9 @@
                         </div>
                         <div class="input-inline">
                             <input type="text" id="fatNome" style="flex:2;" placeholder="Origem (Ex: Salário, Venda)">
-                            <input type="number" id="fatValor" style="flex:1.5;" placeholder="R$">
+                            <input type="number" id="fatValor" class="no-spin" style="flex:1.5;" placeholder="R$">
                             <input type="date" id="fatData" style="flex:1.5;">
-                            <button class="btn-flat" style="background:var(--gradient-green)" onclick="addFaturamento()"><i class="ph ph-plus"></i> Adicionar</button>
+                            <button class="btn-flat btn-flat-sm" style="background:var(--gradient-green)" onclick="addFaturamento()"><i class="ph ph-plus"></i> Adicionar</button>
                         </div>
                         <div class="table-responsive" style="margin-bottom: 15px;">
                             <table>
@@ -277,7 +332,7 @@
                                         <th class="sortable" onclick="ordenarTabela('faturamentos', 'data')">Data <i class="ph ph-caret-up-down"></i></th>
                                         <th>Origem</th>
                                         <th class="sortable" onclick="ordenarTabela('faturamentos', 'valor')">Valor <i class="ph ph-caret-up-down"></i></th>
-                                        <th style="width: 40px;"></th>
+                                        <th style="width: 70px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="listaFaturamentos"></tbody>
@@ -296,12 +351,12 @@
                     <div class="card">
                         <div class="card-title"><span class="card-title-left"><i class="ph ph-gauge"></i> Painel de Controle</span></div>
                         <div class="matrix-grid">
+                            <div class="matrix-label">ORÇAMENTO FIXO</div><div class="matrix-value" id="mOrcamento">R$ 0,00</div>
+                            <div class="matrix-label">RESTANTE CONTAS</div><div class="matrix-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</div>
+                            <div class="matrix-label">SOMA DE CONTAS</div><div class="matrix-value" id="mSomaSelecionadas" style="color: var(--blue-accent);">R$ 0,00</div>
+                            <div class="matrix-label">PAGO</div><div class="matrix-value" id="mPago" style="color: var(--green-success);">R$ 0,00</div>
                             <div class="matrix-label">SALDO ESTIMADO</div>
                             <div class="matrix-value" id="mSaldoEstimado" style="background-color: var(--bg-blue-light); font-size: 1.2rem; color: var(--text-highlight-alt); font-weight: 800;">R$ 0,00</div>
-
-                            <div class="matrix-label">ORÇAMENTO FIXO</div><div class="matrix-value" id="mOrcamento">R$ 0,00</div>
-                            <div class="matrix-label">PAGO</div><div class="matrix-value" id="mPago" style="color: var(--green-success);">R$ 0,00</div>
-                            <div class="matrix-label">RESTANTE CONTAS</div><div class="matrix-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</div>
                             <div class="matrix-label">FALTA / SOBRA</div><div class="matrix-value" id="mResultado" style="font-size: 1.2rem;">R$ 0,00</div>
                         </div>
                     </div>
@@ -355,6 +410,8 @@
     <script src="js/ui.js"></script>
     <script src="js/render.js"></script>
     <script src="js/exportar.js"></script>
+    <script src="js/extrato.js"></script>
+    <script src="js/anim.js"></script>
     <script src="js/app.js"></script>
 </body>
 </html>

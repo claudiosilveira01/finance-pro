@@ -13,18 +13,17 @@
                 if(totalPorCategoria[c.categoria] !== undefined) totalPorCategoria[c.categoria] += c.valor;
             });
 
-            const termoBuscaFixas = (document.getElementById('buscaFixas')?.value || '').trim().toLowerCase();
-            const fixasParaRenderizar = termoBuscaFixas
-                ? fixasOrdenadas.filter(c => c.nome.toLowerCase().includes(termoBuscaFixas) || c.categoria.toLowerCase().includes(termoBuscaFixas))
-                : fixasOrdenadas;
-
             const tbodyFixas = document.getElementById('listaFixas');
             tbodyFixas.innerHTML = '';
-            fixasParaRenderizar.forEach(c => {
+            let somaSelecionadaFixas = 0;
+            fixasOrdenadas.forEach(c => {
                 let alerta = calcularAlertaVencimento(c.vencimento, c.pago);
+                const marcado = fixasSelecionadas.has(c.id);
+                if (marcado) somaSelecionadaFixas += c.valor;
 
                 tbodyFixas.innerHTML += `
                     <tr>
+                        <td class="td-check"><input type="checkbox" class="row-check" ${marcado ? 'checked' : ''} onchange="toggleSelecaoFixa(${c.id})"></td>
                         <td data-label="Item">
                             <button class="item-link" onclick="editarContaFixa(${c.id})">${c.nome}</button>
                             <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${c.categoria}${c.obs ? ' · ' + c.obs : ''}</div>
@@ -35,25 +34,25 @@
                     </tr>
                 `;
             });
+            [...fixasSelecionadas].forEach(id => { if (!fixasOrdenadas.some(c => c.id === id)) fixasSelecionadas.delete(id); });
+            document.getElementById('mSomaSelecionadas').innerText = `R$ ${somaSelecionadaFixas.toFixed(2)}`;
 
-            // Tabela Faturamentos — mesmo princípio: total sempre completo, filtro só afeta as linhas exibidas
+            // Tabela Faturamentos
             let fatOrdenados = aplicarOrdenacao(window.activeFaturamentos, ordFaturamentos);
             fatOrdenados.forEach(f => { totalFaturamentos += f.valor; });
 
-            const termoBuscaFat = (document.getElementById('buscaFaturamentos')?.value || '').trim().toLowerCase();
-            const fatParaRenderizar = termoBuscaFat
-                ? fatOrdenados.filter(f => f.nome.toLowerCase().includes(termoBuscaFat))
-                : fatOrdenados;
-
             const tbodyFat = document.getElementById('listaFaturamentos');
             tbodyFat.innerHTML = '';
-            fatParaRenderizar.forEach(f => {
+            fatOrdenados.forEach(f => {
                 tbodyFat.innerHTML += `
                     <tr>
                         <td data-label="Data" style="color:var(--text-muted); font-size:0.85rem">${formatarData(f.data)}</td>
                         <td data-label="Origem" style="font-weight: 500">${f.nome}</td>
                         <td data-label="Valor" style="color:var(--green-success); font-weight:700;">+ R$ ${f.valor.toFixed(2)}</td>
-                        <td data-label="" style="text-align:right;"><button class="btn-action btn-delete" onclick="deletarItemGeral(${f.id}, 'faturamento')"><i class="ph ph-trash"></i></button></td>
+                        <td data-label="" style="text-align:right; white-space:nowrap;">
+                            <button class="btn-action" onclick="editarFaturamento(${f.id})" title="Editar"><i class="ph ph-pencil-simple"></i></button>
+                            <button class="btn-action btn-delete" onclick="deletarItemGeral(${f.id}, 'faturamento')" title="Excluir"><i class="ph ph-trash"></i></button>
+                        </td>
                     </tr>
                 `;
             });
@@ -75,20 +74,23 @@
             divAcumulados.innerHTML = '';
             
             let catArray = Object.entries(totalPorCategoria).sort((a,b) => b[1] - a[1]);
+            let catIdx = 0;
             catArray.forEach(([cat, valor]) => {
                 if(valor > 0) {
                     let icone = obterIconeCategoria(cat);
                     divAcumulados.innerHTML += `
-                        <div class="acumulado-item">
+                        <div class="acumulado-item item-anim" style="animation-delay:${catIdx * 0.04}s">
                             <span style="display:flex; align-items:center; gap:8px;">
                                 <i class="ph ph-${icone}" style="font-size:18px; color:var(--text-muted);"></i> ${cat}
                             </span>
                             <span style="color:var(--text-highlight); font-weight:700">R$ ${valor.toFixed(2)}</span>
                         </div>`;
+                    catIdx++;
                 }
             });
 
             renderizarAssinaturas();
+            renderizarExtrato();
 
             let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
             updateChart(chartDataArray);

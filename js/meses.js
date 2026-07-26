@@ -8,12 +8,16 @@
                     let data = doc.data();
                     window.activeFixas = data.fixas || [];
                     window.activeFaturamentos = data.faturamentos || [];
+                    window.activeExtrato = data.extrato || [];
                     document.getElementById('saldoInput').value = data.saldo || 0;
                 } else {
                     window.activeFixas = [];
                     window.activeFaturamentos = [];
+                    window.activeExtrato = [];
                     document.getElementById('saldoInput').value = 0;
                 }
+                fixasSelecionadas.clear();
+                extratoSelecionados.clear();
                 diaCalendarioSelecionado = null;
                 calcularEAtualizarVisual();
                 document.getElementById('loadingDiv').style.display = 'none';
@@ -25,6 +29,7 @@
             let dados = {
                 fixas: window.activeFixas,
                 faturamentos: window.activeFaturamentos || [],
+                extrato: window.activeExtrato || [],
                 saldo: parseFloat(document.getElementById('saldoInput').value) || 0
             };
             getMesesCollectionRef().doc(mesAtualKey).set(dados).catch(err => {
