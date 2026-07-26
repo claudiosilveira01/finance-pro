@@ -4,7 +4,7 @@
             meuGraficoPizza = new Chart(ctxPizza, {
                 type: 'doughnut',
                 data: { labels: categoriasAtuais, datasets: [{ data: Array(categoriasAtuais.length).fill(0), backgroundColor: coresCategorias, borderWidth: 0 }] },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: { duration: 900, easing: 'easeOutQuart' } }
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: { duration: 1700, easing: 'easeOutQuart' } }
             });
 
             const ctxBar = document.getElementById('barChartCategorias').getContext('2d');
@@ -14,7 +14,7 @@
                 options: {
                     responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    animation: { duration: 900, easing: 'easeOutQuart' },
+                    animation: { duration: 1700, easing: 'easeOutQuart' },
                     scales: {
                         y: { display: false, beginAtZero: true },
                         x: { ticks: { display: false }, grid: { display: false } }

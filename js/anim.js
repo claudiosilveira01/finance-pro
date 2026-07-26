@@ -27,7 +27,7 @@
 
     // Efeito de contagem: anima o número de 0 até o valor final (usado no Painel de Controle)
     const contadoresAtivos = {};
-    function animarNumero(elId, valorFinal, duracao = 650) {
+    function animarNumero(elId, valorFinal, duracao = 1800) {
         const el = document.getElementById(elId);
         if (!el) return;
         if (contadoresAtivos[elId]) cancelAnimationFrame(contadoresAtivos[elId]);

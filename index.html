@@ -279,32 +279,9 @@
                             <tbody id="listaFixas"></tbody>
                         </table>
                     </div>
-                </div>
-
-                <!-- CARD: IMPORTAR EXTRATO BANCÁRIO (PDF) -->
-                <div id="tab-extrato" class="card">
-                    <div class="card-title">
-                        <span class="card-title-left"><i class="ph ph-bank"></i> Extrato Bancário</span>
-                        <span style="display:flex; gap:8px;">
-                            <input type="file" id="extratoPdfInput" accept="application/pdf" style="display:none;" onchange="processarExtratoPdf(this.files[0])">
-                            <button class="fab-inline" onclick="document.getElementById('extratoPdfInput').click()" title="Importar PDF do extrato"><i class="ph ph-upload-simple"></i></button>
-                        </span>
-                    </div>
-                    <p id="extratoVazioMsg" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0;">Envie o PDF do extrato do seu banco para importar e categorizar as movimentações automaticamente.</p>
-                    <div id="extratoProgresso" style="display:none; font-size:0.85rem; color:var(--text-highlight); font-weight:600;"><i class="ph ph-spinner-gap"></i> A processar PDF...</div>
-                    <div id="extratoResumoCompacto" style="display:none;">
-                        <div class="extrato-resumo-grid">
-                            <div class="extrato-resumo-box">
-                                <span class="label">Entradas</span>
-                                <span class="valor" id="extratoTotalEntradas" style="color:var(--green-success);">+ R$ 0,00</span>
-                            </div>
-                            <div class="extrato-resumo-box">
-                                <span class="label">Saídas</span>
-                                <span class="valor" id="extratoTotalSaidas" style="color:var(--red-danger);">- R$ 0,00</span>
-                            </div>
-                        </div>
-                        <div id="extratoResumoPorTipo" class="extrato-tipo-lista"></div>
-                        <button class="btn-flat" style="width:100%; justify-content:center;" onclick="abrirModalExtratoDetalhes()"><i class="ph ph-list-magnifying-glass"></i> <span id="extratoBtnDetalhesTexto">Ver detalhes</span></button>
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); flex-wrap:wrap; gap:10px; margin-top:12px;">
+                        <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">SOMA SELECIONADA</span>
+                        <span id="mSomaSelecionadasCard" style="font-weight:800; font-size:1.1rem; color:var(--text-highlight-alt);">R$ 0,00</span>
                     </div>
                 </div>
 
@@ -333,6 +310,43 @@
                             </div>
                             <button class="card-action-btn" onclick="abrirModalConfig()" title="Configurações"><i class="ph ph-gear"></i></button>
                             <button class="card-action-btn card-action-btn-danger" onclick="fazerLogout()" title="Sair"><i class="ph ph-sign-out"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- PAINEL DE CONTROLE -->
+                    <div class="card">
+                        <div class="card-title"><span class="card-title-left"><i class="ph ph-gauge"></i> Painel de Controle</span></div>
+                        <div class="stats-list">
+                            <div class="stat-row item-anim" style="animation-delay:0.02s">
+                                <span class="stat-icon"><i class="ph ph-wallet"></i></span>
+                                <span class="stat-label">Orçamento Fixo</span>
+                                <span class="stat-value" id="mOrcamento">R$ 0,00</span>
+                            </div>
+                            <div class="stat-row item-anim" style="animation-delay:0.08s">
+                                <span class="stat-icon" style="color:var(--red-danger);"><i class="ph ph-hourglass-medium"></i></span>
+                                <span class="stat-label">Restante Contas</span>
+                                <span class="stat-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</span>
+                            </div>
+                            <div class="stat-row item-anim" style="animation-delay:0.14s">
+                                <span class="stat-icon" style="color:var(--blue-accent);"><i class="ph ph-list-checks"></i></span>
+                                <span class="stat-label">Soma de Contas</span>
+                                <span class="stat-value" id="mSomaSelecionadas" style="color: var(--blue-accent);">R$ 0,00</span>
+                            </div>
+                            <div class="stat-row item-anim" style="animation-delay:0.2s">
+                                <span class="stat-icon" style="color:var(--green-success);"><i class="ph ph-check-circle"></i></span>
+                                <span class="stat-label">Pago</span>
+                                <span class="stat-value" id="mPago" style="color: var(--green-success);">R$ 0,00</span>
+                            </div>
+                            <div class="stat-row stat-hero item-anim" style="animation-delay:0.26s">
+                                <span class="stat-icon"><i class="ph ph-piggy-bank"></i></span>
+                                <span class="stat-label">Saldo Estimado</span>
+                                <span class="stat-value" id="mSaldoEstimado">R$ 0,00</span>
+                            </div>
+                            <div class="stat-row item-anim" style="animation-delay:0.32s">
+                                <span class="stat-icon"><i class="ph ph-scales"></i></span>
+                                <span class="stat-label">Falta / Sobra</span>
+                                <span class="stat-value" id="mResultado" style="font-size: 1.15rem;">R$ 0,00</span>
+                            </div>
                         </div>
                     </div>
 
@@ -369,17 +383,30 @@
                         </div>
                     </div>
 
-                    <!-- PAINEL DE CONTROLE -->
-                    <div class="card">
-                        <div class="card-title"><span class="card-title-left"><i class="ph ph-gauge"></i> Painel de Controle</span></div>
-                        <div class="matrix-grid">
-                            <div class="matrix-label">ORÇAMENTO FIXO</div><div class="matrix-value" id="mOrcamento">R$ 0,00</div>
-                            <div class="matrix-label">RESTANTE CONTAS</div><div class="matrix-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</div>
-                            <div class="matrix-label">SOMA DE CONTAS</div><div class="matrix-value" id="mSomaSelecionadas" style="color: var(--blue-accent);">R$ 0,00</div>
-                            <div class="matrix-label">PAGO</div><div class="matrix-value" id="mPago" style="color: var(--green-success);">R$ 0,00</div>
-                            <div class="matrix-label">SALDO ESTIMADO</div>
-                            <div class="matrix-value" id="mSaldoEstimado" style="background-color: var(--bg-blue-light); font-size: 1.2rem; color: var(--text-highlight-alt); font-weight: 800;">R$ 0,00</div>
-                            <div class="matrix-label">FALTA / SOBRA</div><div class="matrix-value" id="mResultado" style="font-size: 1.2rem;">R$ 0,00</div>
+                    <!-- CARD: IMPORTAR EXTRATO BANCÁRIO (PDF) -->
+                    <div id="tab-extrato" class="card">
+                        <div class="card-title">
+                            <span class="card-title-left"><i class="ph ph-bank"></i> Extrato Bancário</span>
+                            <span style="display:flex; gap:8px;">
+                                <input type="file" id="extratoPdfInput" accept="application/pdf" style="display:none;" onchange="processarExtratoPdf(this.files[0])">
+                                <button class="fab-inline" onclick="document.getElementById('extratoPdfInput').click()" title="Importar PDF do extrato"><i class="ph ph-upload-simple"></i></button>
+                            </span>
+                        </div>
+                        <p id="extratoVazioMsg" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0;">Envie o PDF do extrato do seu banco para importar e categorizar as movimentações automaticamente.</p>
+                        <div id="extratoProgresso" style="display:none; font-size:0.85rem; color:var(--text-highlight); font-weight:600;"><i class="ph ph-spinner-gap"></i> A processar PDF...</div>
+                        <div id="extratoResumoCompacto" style="display:none;">
+                            <div class="extrato-resumo-grid">
+                                <div class="extrato-resumo-box">
+                                    <span class="label">Entradas</span>
+                                    <span class="valor" id="extratoTotalEntradas" style="color:var(--green-success);">+ R$ 0,00</span>
+                                </div>
+                                <div class="extrato-resumo-box">
+                                    <span class="label">Saídas</span>
+                                    <span class="valor" id="extratoTotalSaidas" style="color:var(--red-danger);">- R$ 0,00</span>
+                                </div>
+                            </div>
+                            <div id="extratoResumoPorTipo" class="extrato-tipo-lista"></div>
+                            <button class="btn-flat" style="width:100%; justify-content:center;" onclick="abrirModalExtratoDetalhes()"><i class="ph ph-list-magnifying-glass"></i> <span id="extratoBtnDetalhesTexto">Ver detalhes</span></button>
                         </div>
                     </div>
 

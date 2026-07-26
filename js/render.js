@@ -26,16 +26,17 @@
                         <td class="td-check"><input type="checkbox" class="row-check" ${marcado ? 'checked' : ''} onchange="toggleSelecaoFixa(${c.id})"></td>
                         <td data-label="Item">
                             <button class="item-link" onclick="editarContaFixa(${c.id})">${c.nome}</button>
-                            <div style="color:var(--text-muted); font-size:0.78rem; margin-top:2px;">${c.categoria}${c.obs ? ' · ' + c.obs : ''}</div>
+                            <div class="fixa-sub">${c.categoria}${c.obs ? ' · ' + c.obs : ''}</div>
                         </td>
                         <td data-label="Venc."><span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span></td>
-                        <td data-label="Valor"><strong style="white-space:nowrap;">R$ ${c.valor.toFixed(2)}</strong></td>
+                        <td data-label="Valor"><strong class="fixa-valor">R$ ${c.valor.toFixed(2)}</strong></td>
                         <td data-label="Pago?"><button class="status-badge ${c.pago?'sim':'nao'}" onclick="togglePagoFixa(${c.id})">${c.pago?'Sim':'Não'}</button></td>
                     </tr>
                 `;
             });
             [...fixasSelecionadas].forEach(id => { if (!fixasOrdenadas.some(c => c.id === id)) fixasSelecionadas.delete(id); });
             animarNumero('mSomaSelecionadas', somaSelecionadaFixas);
+            animarNumero('mSomaSelecionadasCard', somaSelecionadaFixas);
 
             // Tabela Faturamentos
             let fatOrdenados = aplicarOrdenacao(window.activeFaturamentos, ordFaturamentos);
