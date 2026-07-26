@@ -162,6 +162,33 @@
         </div>
     </div>
 
+    <!-- Modal: Detalhes do Extrato Bancário -->
+    <div class="modal-overlay" id="modalExtratoDetalhes">
+        <div class="modal-content modal-wide" style="position: relative;">
+            <button class="modal-close-x" onclick="fecharModalExtratoDetalhes()"><i class="ph ph-x"></i></button>
+            <div class="card-title"><span class="card-title-left"><i class="ph ph-bank"></i> Movimentações do Extrato</span></div>
+            <div class="table-responsive" id="extratoTabelaWrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="th-check"></th>
+                            <th>Item</th>
+                            <th>Tipo</th>
+                            <th>Entrada/Saída</th>
+                            <th>Valor</th>
+                            <th style="width:36px;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="listaExtrato"></tbody>
+                </table>
+            </div>
+            <div id="extratoResumo" style="display:none; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); flex-wrap:wrap; gap:10px; margin-top:12px;">
+                <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">SOMA SELECIONADA</span>
+                <span id="extratoSomaSelecionada" style="font-weight:800; font-size:1.1rem; color:var(--text-highlight-alt);">R$ 0,00</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Modal: Configurações do Sistema -->
     <div class="modal-overlay" id="modalConfig">
         <div class="modal-content modal-wide" style="position: relative;">
@@ -263,26 +290,20 @@
                             <button class="fab-inline" onclick="document.getElementById('extratoPdfInput').click()" title="Importar PDF do extrato"><i class="ph ph-upload-simple"></i></button>
                         </span>
                     </div>
-                    <p id="extratoVazioMsg" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:10px;">Envie o PDF do extrato do seu banco para importar e categorizar as movimentações automaticamente.</p>
-                    <div id="extratoProgresso" style="display:none; font-size:0.85rem; color:var(--text-highlight); font-weight:600; margin-bottom:10px;"><i class="ph ph-spinner-gap"></i> A processar PDF...</div>
-                    <div class="table-responsive" id="extratoTabelaWrapper" style="display:none;">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th class="th-check"></th>
-                                    <th>Item</th>
-                                    <th>Tipo</th>
-                                    <th>Entrada/Saída</th>
-                                    <th>Valor</th>
-                                    <th style="width:36px;"></th>
-                                </tr>
-                            </thead>
-                            <tbody id="listaExtrato"></tbody>
-                        </table>
-                    </div>
-                    <div id="extratoResumo" style="display:none; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); flex-wrap:wrap; gap:10px; margin-top:12px;">
-                        <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">SOMA SELECIONADA</span>
-                        <span id="extratoSomaSelecionada" style="font-weight:800; font-size:1.1rem; color:var(--text-highlight-alt);">R$ 0,00</span>
+                    <p id="extratoVazioMsg" style="font-size:0.85rem; color:var(--text-muted); margin-bottom:0;">Envie o PDF do extrato do seu banco para importar e categorizar as movimentações automaticamente.</p>
+                    <div id="extratoProgresso" style="display:none; font-size:0.85rem; color:var(--text-highlight); font-weight:600;"><i class="ph ph-spinner-gap"></i> A processar PDF...</div>
+                    <div id="extratoResumoCompacto" style="display:none;">
+                        <div class="extrato-resumo-grid">
+                            <div class="extrato-resumo-box">
+                                <span class="label">Entradas</span>
+                                <span class="valor" id="extratoTotalEntradas" style="color:var(--green-success);">+ R$ 0,00</span>
+                            </div>
+                            <div class="extrato-resumo-box">
+                                <span class="label">Saídas</span>
+                                <span class="valor" id="extratoTotalSaidas" style="color:var(--red-danger);">- R$ 0,00</span>
+                            </div>
+                        </div>
+                        <button class="btn-flat" style="width:100%; justify-content:center;" onclick="abrirModalExtratoDetalhes()"><i class="ph ph-list-magnifying-glass"></i> <span id="extratoBtnDetalhesTexto">Ver detalhes</span></button>
                     </div>
                 </div>
 
@@ -326,7 +347,7 @@
                             <button class="btn-flat btn-flat-sm" style="background:var(--gradient-green)" onclick="addFaturamento()"><i class="ph ph-plus"></i> Adicionar</button>
                         </div>
                         <div class="table-responsive" style="margin-bottom: 15px;">
-                            <table>
+                            <table class="tabela-compacta">
                                 <thead>
                                     <tr>
                                         <th class="sortable" onclick="ordenarTabela('faturamentos', 'data')">Data <i class="ph ph-caret-up-down"></i></th>

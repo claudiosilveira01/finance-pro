@@ -250,23 +250,37 @@ function excluirTransacaoExtrato(id) {
     renderizarExtrato();
 }
 
+function abrirModalExtratoDetalhes() {
+    document.getElementById('modalExtratoDetalhes').style.display = 'flex';
+}
+
+function fecharModalExtratoDetalhes() {
+    document.getElementById('modalExtratoDetalhes').style.display = 'none';
+}
+
 function renderizarExtrato() {
     const lista = window.activeExtrato || [];
     const tbody = document.getElementById('listaExtrato');
-    const wrapper = document.getElementById('extratoTabelaWrapper');
     const vazio = document.getElementById('extratoVazioMsg');
+    const resumoCompacto = document.getElementById('extratoResumoCompacto');
     const resumo = document.getElementById('extratoResumo');
     if (!tbody) return;
 
     if (lista.length === 0) {
-        wrapper.style.display = 'none';
+        resumoCompacto.style.display = 'none';
         resumo.style.display = 'none';
         vazio.style.display = 'block';
         return;
     }
     vazio.style.display = 'none';
-    wrapper.style.display = 'block';
+    resumoCompacto.style.display = 'block';
     resumo.style.display = 'flex';
+
+    const totalEntradas = lista.filter(t => t.direcao === 'entrada').reduce((s, t) => s + t.valor, 0);
+    const totalSaidas = lista.filter(t => t.direcao === 'saida').reduce((s, t) => s + t.valor, 0);
+    document.getElementById('extratoTotalEntradas').innerText = `+ R$ ${totalEntradas.toFixed(2)}`;
+    document.getElementById('extratoTotalSaidas').innerText = `- R$ ${totalSaidas.toFixed(2)}`;
+    document.getElementById('extratoBtnDetalhesTexto').innerText = `Ver detalhes (${lista.length} transaç${lista.length === 1 ? 'ão' : 'ões'})`;
 
     tbody.innerHTML = '';
     lista.forEach(t => {

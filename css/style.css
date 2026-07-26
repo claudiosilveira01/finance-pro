@@ -115,10 +115,24 @@
             .item-link { font-size: 0.85rem; }
         }
 
-        /* Checkbox de seleção nas linhas (Contas Fixas / Extrato) — soma dos marcados */
-        .row-check { width: 19px; height: 19px; accent-color: var(--purple-main); cursor: pointer; margin: 0; flex: none; }
+        /* Checkbox de seleção nas linhas (Contas Fixas / Extrato) — soma dos marcados.
+           Redondo e no tema do sistema (não usa o checkbox nativo quadrado do navegador). */
+        .row-check { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border-color); background: var(--card-bg); cursor: pointer; margin: 0; flex: none; position: relative; transition: 0.15s; }
+        .row-check:hover { border-color: var(--purple-light); }
+        .row-check:checked { background: var(--gradient-btn); border-color: transparent; }
+        .row-check:checked::after { content: ""; position: absolute; top: 50%; left: 50%; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: translate(-50%, -60%) rotate(45deg); }
         td.td-check { width: 30px; padding-right: 0; }
         th.th-check { width: 30px; }
+
+        /* Tabela compacta (usada em Receitas): linhas mais baixas que a tabela padrão */
+        .tabela-compacta th, .tabela-compacta td { padding: 6px 6px; }
+        .tabela-compacta .btn-action { padding: 4px; }
+
+        /* Resumo compacto do card de Extrato Bancário — os detalhes ficam num modal à parte */
+        .extrato-resumo-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+        .extrato-resumo-box { flex: 1 1 120px; background: var(--bg-light); border-radius: var(--radius-sm); padding: 12px 14px; text-align: center; }
+        .extrato-resumo-box .label { display: block; font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em; margin-bottom: 4px; }
+        .extrato-resumo-box .valor { font-size: 1.05rem; font-weight: 800; }
         th { background: var(--purple-main); color: white; padding: 10px 6px; font-weight: 600; white-space: nowrap; font-size: 0.8rem; letter-spacing: 0.01em; }
         th.sortable { cursor: pointer; user-select: none; transition: filter 0.2s; }
         th.sortable:hover { filter: brightness(1.12); }
