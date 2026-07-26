@@ -89,10 +89,11 @@
             }
 
             let html = `<h4 style="font-size:0.85rem; margin-bottom:8px; color:var(--text-highlight);">${titulo}</h4>`;
-            
+            let atrasoItem = 0;
+
             listaContas.forEach(f => {
                 html += `
-                <div class="sub-item">
+                <div class="sub-item item-anim" style="animation-delay:${atrasoItem}s">
                     <span>
                         <i class="ph ph-${obterIconeCategoria(f.categoria)}" style="font-size:16px; vertical-align:middle; color:var(--text-muted);"></i>
                         ${f.nome} <strong style="color:var(--text-highlight-alt)"> - R$ ${f.valor.toFixed(2)}</strong>
@@ -100,17 +101,19 @@
                     </span>
                     <span class="vencimento-tag" style="color:white; background-color:${f.pago ? 'var(--green-success)' : 'var(--red-danger)'}">Dia ${f.vencimento} ${f.pago ? '✓' : ''}</span>
                 </div>`;
+                atrasoItem += 0.05;
             });
-            
+
             listaSubs.forEach(s => {
                 html += `
-                <div class="sub-item">
+                <div class="sub-item item-anim" style="animation-delay:${atrasoItem}s">
                     <span>
                         <i class="ph ph-star" style="font-size:16px; vertical-align:middle; color:var(--sub-color);"></i>
                         ${s.nome} <strong style="color:var(--sub-color)"> - R$ ${(s.valor||0).toFixed(2)}</strong>
                     </span>
                     <span class="vencimento-tag" style="color:white; background-color:var(--sub-color)">Dia ${s.vencimento}</span>
                 </div>`;
+                atrasoItem += 0.05;
             });
 
             container.innerHTML = html;

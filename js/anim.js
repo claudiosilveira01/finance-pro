@@ -24,4 +24,29 @@
     }
 
     window.iniciarAnimacoesDeEntrada = iniciarAnimacoesDeEntrada;
+
+    // Efeito de contagem: anima o número de 0 até o valor final (usado no Painel de Controle)
+    const contadoresAtivos = {};
+    function animarNumero(elId, valorFinal, duracao = 650) {
+        const el = document.getElementById(elId);
+        if (!el) return;
+        if (contadoresAtivos[elId]) cancelAnimationFrame(contadoresAtivos[elId]);
+
+        const inicio = performance.now();
+        const passo = (agora) => {
+            const progresso = Math.min((agora - inicio) / duracao, 1);
+            const facilitado = 1 - Math.pow(1 - progresso, 3); // ease-out cubic
+            const valorAtual = valorFinal * facilitado;
+            el.innerText = `R$ ${valorAtual.toFixed(2)}`;
+            if (progresso < 1) {
+                contadoresAtivos[elId] = requestAnimationFrame(passo);
+            } else {
+                el.innerText = `R$ ${valorFinal.toFixed(2)}`;
+                delete contadoresAtivos[elId];
+            }
+        };
+        contadoresAtivos[elId] = requestAnimationFrame(passo);
+    }
+
+    window.animarNumero = animarNumero;
 })();

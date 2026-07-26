@@ -282,6 +282,27 @@ function renderizarExtrato() {
     document.getElementById('extratoTotalSaidas').innerText = `- R$ ${totalSaidas.toFixed(2)}`;
     document.getElementById('extratoBtnDetalhesTexto').innerText = `Ver detalhes (${lista.length} transaç${lista.length === 1 ? 'ão' : 'ões'})`;
 
+    // Resumo por tipo de transação (Pix recebido, Compra no débito, Aplicação RDB, etc.)
+    const porTipo = {};
+    lista.forEach(t => {
+        if (!porTipo[t.tipo]) porTipo[t.tipo] = { soma: 0, count: 0, direcao: t.direcao };
+        porTipo[t.tipo].soma += t.valor;
+        porTipo[t.tipo].count++;
+    });
+    const divTipos = document.getElementById('extratoResumoPorTipo');
+    divTipos.innerHTML = '';
+    Object.entries(porTipo)
+        .sort((a, b) => b[1].soma - a[1].soma)
+        .forEach(([tipo, info], idx) => {
+            const cor = info.direcao === 'entrada' ? 'var(--green-success)' : 'var(--red-danger)';
+            const sinal = info.direcao === 'entrada' ? '+' : '-';
+            divTipos.innerHTML += `
+                <div class="acumulado-item item-anim" style="animation-delay:${idx * 0.05}s">
+                    <span>${tipo} <span style="color:var(--text-muted); font-weight:400;">(${info.count})</span></span>
+                    <span style="color:${cor}; font-weight:700;">${sinal} R$ ${info.soma.toFixed(2)}</span>
+                </div>`;
+        });
+
     tbody.innerHTML = '';
     lista.forEach(t => {
         const cor = t.direcao === 'entrada' ? 'var(--green-success)' : 'var(--red-danger)';

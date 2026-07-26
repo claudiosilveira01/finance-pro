@@ -35,7 +35,7 @@
                 `;
             });
             [...fixasSelecionadas].forEach(id => { if (!fixasOrdenadas.some(c => c.id === id)) fixasSelecionadas.delete(id); });
-            document.getElementById('mSomaSelecionadas').innerText = `R$ ${somaSelecionadaFixas.toFixed(2)}`;
+            animarNumero('mSomaSelecionadas', somaSelecionadaFixas);
 
             // Tabela Faturamentos
             let fatOrdenados = aplicarOrdenacao(window.activeFaturamentos, ordFaturamentos);
@@ -61,13 +61,13 @@
             const saldoEstimado = saldoCaixaInicial + totalFaturamentos;
             let resultadoFinal = saldoEstimado - restante;
 
-            document.getElementById('mSaldoEstimado').innerText = `R$ ${saldoEstimado.toFixed(2)}`;
-            document.getElementById('mOrcamento').innerText = `R$ ${orcamento.toFixed(2)}`;
-            document.getElementById('mPago').innerText = `R$ ${pago.toFixed(2)}`;
-            document.getElementById('mRestante').innerText = `R$ ${restante.toFixed(2)}`;
-            
+            animarNumero('mSaldoEstimado', saldoEstimado);
+            animarNumero('mOrcamento', orcamento);
+            animarNumero('mPago', pago);
+            animarNumero('mRestante', restante);
+
             const elRes = document.getElementById('mResultado');
-            elRes.innerText = `R$ ${resultadoFinal.toFixed(2)}`;
+            animarNumero('mResultado', resultadoFinal);
             elRes.style.color = resultadoFinal >= 0 ? 'var(--green-success)' : 'var(--red-danger)';
 
             const divAcumulados = document.getElementById('listaAcumulados');
