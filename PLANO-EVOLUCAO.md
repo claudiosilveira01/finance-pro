@@ -106,15 +106,20 @@ com segurança. Solução adotada, sem Cloud Function nem plano Blaze:
 
 - **Cliente** (`js/pwa.js`): botão "Ativar notificações de vencimento" nas Configurações pede a
   permissão do navegador, registra o dispositivo no Firebase Cloud Messaging (FCM) e salva o
-  token gerado em `config/geral.pushTokens` — um **mapa `deviceId -> token`**, não uma lista solta.
-  O `deviceId` é gerado uma vez e guardado no `localStorage` (sobrevive a reinstalar o PWA, já
-  que é o mesmo navegador por baixo do capô), então reativar notificações no mesmo aparelho
-  **substitui** a entrada dele em vez de empilhar um token novo ao lado do antigo. Isso corrigiu
-  um bug real: reinstalar o app pra pegar um ícone novo gerava um token novo sem invalidar o
-  antigo (que continuava "vivo" pro FCM), e o usuário passou a receber notificação em dobro.
-  Chave pública VAPID gerada no Firebase Console (Configurações do projeto → Cloud Messaging →
-  Certificados push da Web) e embutida no código (é uma chave pública, sem problema de segurança
-  em deixá-la no cliente).
+  token gerado em `config/geral.pushTokens` — um **mapa `deviceId -> token`**, não uma lista solta,
+  pra reativar no mesmo aparelho substituir a entrada dele em vez de empilhar um token novo ao
+  lado do antigo (era isso que causava notificação em dobro depois de reinstalar o app).
+  `deviceId` é gerado uma vez e guardado no `localStorage`. Chave pública VAPID gerada no Firebase
+  Console (Configurações do projeto → Cloud Messaging → Certificados push da Web) e embutida no
+  código (é uma chave pública, sem problema de segurança em deixá-la no cliente).
+  **Limitação descoberta na prática:** no iPhone, remover o PWA da tela de início e adicionar de
+  novo (precisou ser feito pra atualizar o ícone) **apaga o `localStorage` da instância antiga**,
+  então o `deviceId` se perde mesmo assim e um novo é gerado — o mapa `deviceId -> token` volta a
+  acumular entradas órfãs nesse cenário específico (reinstalar), só não mais no caso mais comum
+  (reabrir o app depois de dias). Corrigido na hora limpando `pushTokens` direto no Firestore; pra
+  não depender de mim numa próxima vez, foi adicionado o botão "Notificação duplicada ou com
+  problema? Resetar" nas Configurações — apaga todos os dispositivos cadastrados de uma vez
+  (`resetarNotificacoesVencimento()`), bastando reativar de novo em cada aparelho depois.
 - **Apps Script** (`automacao-email-nubank/Code.gs`, mesmo projeto da automação do Nubank):
   nova função `verificarVencimentosEEnviarPush()`, chamada no fim de `processarExtratosNubank()`
   — reaproveita o mesmo gatilho de tempo (a cada 1h), sem precisar configurar um segundo gatilho.

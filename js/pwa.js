@@ -70,6 +70,22 @@ function atualizarBotaoNotificacoes(ativo) {
     btn.disabled = ativo;
 }
 
+// Escape-hatch manual: reinstalar o PWA no iPhone pode apagar o armazenamento local do app
+// (inclusive a identidade do aparelho salva ali), então o app perde a referência de qual chave
+// de notificação é a antiga — ela fica esquecida no Firestore e passa a duplicar aviso. Esse botão
+// apaga todos os dispositivos cadastrados de uma vez, sem precisar mexer direto no banco de dados.
+async function resetarNotificacoesVencimento() {
+    if (!currentUser) return;
+    try {
+        await getConfigDocRef().set({ pushTokens: {} }, { merge: true });
+        localStorage.removeItem('pushDeviceId');
+        atualizarBotaoNotificacoes(false);
+        mostrarToast('Notificações resetadas. Ative de novo em cada dispositivo que quiser avisar.', 'success', 7000);
+    } catch (err) {
+        mostrarToast('Erro ao resetar notificações. Tente novamente.', 'error');
+    }
+}
+
 // Se a permissão já foi concedida antes (ex.: usuário reabrindo o app noutro dia), reconfirma o
 // token em silêncio — sem pedir permissão de novo nem mostrar toast de sucesso.
 function verificarNotificacoesAtivas() {
