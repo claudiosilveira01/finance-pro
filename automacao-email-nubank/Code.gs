@@ -275,6 +275,23 @@ function podarNotificacoesAntigas_(mapa, mesAtualKey) {
   return podado;
 }
 
+/**
+ * Só pra teste manual: manda uma notificação de mentira agora, pros dispositivos já
+ * ativados, sem precisar de nenhuma conta vencendo. Selecione "testarPush" no menu ao
+ * lado do botão Executar e clique em Executar.
+ */
+function testarPush() {
+  const token = obterTokenFirestore_();
+  const config = obterConfigGeral_(token);
+  const pushTokens = config.pushTokens || [];
+  if (pushTokens.length === 0) {
+    Logger.log('Nenhum dispositivo com notificação ativada ainda.');
+    return;
+  }
+  pushTokens.forEach(fcmToken => enviarPush_(token, fcmToken, 'Teste — Planner Financeiro', 'Se isso chegou no seu celular, as notificações estão funcionando! 🎉'));
+  Logger.log(`Push de teste enviado para ${pushTokens.length} dispositivo(s).`);
+}
+
 function enviarPush_(tokenGoogle, fcmToken, titulo, corpo) {
   const projectId = PropertiesService.getScriptProperties().getProperty('FIRESTORE_PROJECT_ID');
   const resposta = UrlFetchApp.fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
