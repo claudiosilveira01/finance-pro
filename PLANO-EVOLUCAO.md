@@ -106,10 +106,15 @@ com segurança. Solução adotada, sem Cloud Function nem plano Blaze:
 
 - **Cliente** (`js/pwa.js`): botão "Ativar notificações de vencimento" nas Configurações pede a
   permissão do navegador, registra o dispositivo no Firebase Cloud Messaging (FCM) e salva o
-  token gerado em `config/geral.pushTokens` (array — cada dispositivo instalado, iPhone e
-  desktop, guarda o seu próprio token). Chave pública VAPID gerada no Firebase Console
-  (Configurações do projeto → Cloud Messaging → Certificados push da Web) e embutida no código
-  (é uma chave pública, sem problema de segurança em deixá-la no cliente).
+  token gerado em `config/geral.pushTokens` — um **mapa `deviceId -> token`**, não uma lista solta.
+  O `deviceId` é gerado uma vez e guardado no `localStorage` (sobrevive a reinstalar o PWA, já
+  que é o mesmo navegador por baixo do capô), então reativar notificações no mesmo aparelho
+  **substitui** a entrada dele em vez de empilhar um token novo ao lado do antigo. Isso corrigiu
+  um bug real: reinstalar o app pra pegar um ícone novo gerava um token novo sem invalidar o
+  antigo (que continuava "vivo" pro FCM), e o usuário passou a receber notificação em dobro.
+  Chave pública VAPID gerada no Firebase Console (Configurações do projeto → Cloud Messaging →
+  Certificados push da Web) e embutida no código (é uma chave pública, sem problema de segurança
+  em deixá-la no cliente).
 - **Apps Script** (`automacao-email-nubank/Code.gs`, mesmo projeto da automação do Nubank):
   nova função `verificarVencimentosEEnviarPush()`, chamada no fim de `processarExtratosNubank()`
   — reaproveita o mesmo gatilho de tempo (a cada 1h), sem precisar configurar um segundo gatilho.
@@ -119,7 +124,8 @@ com segurança. Solução adotada, sem Cloud Function nem plano Blaze:
   messages:send`) pra cada token salvo, autenticado com a mesma conta de serviço já usada pro
   Firestore — só precisou ampliar o escopo do JWT assinado (`obterTokenFirestore_`) pra incluir
   também `firebase.messaging`, sem precisar de nenhum papel IAM novo (o service account padrão
-  do Firebase Admin SDK já cobre isso).
+  do Firebase Admin SDK já cobre isso). Quando o FCM responde que um token não existe mais (404),
+  o `deviceId` correspondente é removido sozinho do mapa (`removerDispositivosInvalidos_`).
 - **Dedup**: `config/geral.notificacoesEnviadas` guarda uma chave por aviso já enviado
   (`tipo-id-mês-diasRestantes`), podada automaticamente pra manter só os últimos 2 meses — evita
   reenviar o mesmo aviso a cada execução horária do gatilho.

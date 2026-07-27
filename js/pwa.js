@@ -34,14 +34,27 @@ async function ativarNotificacoesVencimento() {
     }
 }
 
+// Identidade fixa do aparelho, guardada no armazenamento local do navegador — sobrevive a
+// reinstalar o PWA (é o mesmo Safari/Chrome por baixo). Sem isso, reinstalar o app criava uma
+// chave de notificação nova e deixava a antiga esquecida, causando notificação em dobro.
+function _obterDeviceId() {
+    let id = localStorage.getItem('pushDeviceId');
+    if (!id) {
+        id = 'dev-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+        localStorage.setItem('pushDeviceId', id);
+    }
+    return id;
+}
+
 async function _registrarTokenNotificacao(mostrarSucesso) {
     const registration = await navigator.serviceWorker.ready;
     const messaging = firebase.messaging();
     const token = await messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: registration });
     if (!token) return;
 
+    const deviceId = _obterDeviceId();
     await getConfigDocRef().set({
-        pushTokens: firebase.firestore.FieldValue.arrayUnion(token)
+        pushTokens: { [deviceId]: token }
     }, { merge: true });
 
     atualizarBotaoNotificacoes(true);

@@ -198,8 +198,9 @@ function verificarVencimentosEEnviarPush() {
   try {
     const token = obterTokenFirestore_();
     const config = obterConfigGeral_(token);
-    const pushTokens = config.pushTokens || [];
-    if (pushTokens.length === 0) {
+    const pushTokensMap = config.pushTokens || {};
+    const deviceIds = Object.keys(pushTokensMap);
+    if (deviceIds.length === 0) {
       Logger.log('Nenhum dispositivo com notificação ativada ainda.');
       return;
     }
@@ -243,18 +244,18 @@ function verificarVencimentosEEnviarPush() {
       return;
     }
 
-    const tokensInvalidos = new Set();
+    const deviceIdsInvalidos = new Set();
     avisos.forEach(aviso => {
-      pushTokens.forEach(fcmToken => {
-        const ok = enviarPush_(token, fcmToken, aviso.titulo, aviso.corpo);
-        if (!ok) tokensInvalidos.add(fcmToken);
+      deviceIds.forEach(devId => {
+        const ok = enviarPush_(token, pushTokensMap[devId], aviso.titulo, aviso.corpo);
+        if (!ok) deviceIdsInvalidos.add(devId);
       });
       jaNotificados[aviso.chave] = true;
     });
 
     salvarNotificacoesEnviadas_(podarNotificacoesAntigas_(jaNotificados, mesAtualKey), token);
-    removerTokensInvalidos_(tokensInvalidos, pushTokens, token);
-    Logger.log(`${avisos.length} aviso(s) de vencimento enviado(s) para ${pushTokens.length} dispositivo(s).`);
+    removerDispositivosInvalidos_(deviceIdsInvalidos, pushTokensMap, token);
+    Logger.log(`${avisos.length} aviso(s) de vencimento enviado(s) para ${deviceIds.length} dispositivo(s).`);
   } catch (erro) {
     Logger.log('ERRO (push de vencimento): ' + erro.message + '\n' + erro.stack);
     // Não relança — uma falha aqui não deve derrubar a importação do extrato, que já rodou antes.
@@ -262,23 +263,27 @@ function verificarVencimentosEEnviarPush() {
 }
 
 /**
- * Remove do Firestore os tokens que o FCM rejeitou como inexistentes (celular/app reinstalado,
- * notificação desativada etc.) — evita que a lista de dispositivos fique acumulando lixo e
- * mandando notificação duplicada/desnecessária pra sempre.
+ * Remove do Firestore os dispositivos cujo token o FCM rejeitou como inexistente (app
+ * reinstalado, notificação desativada etc.) — evita acumular lixo e notificação duplicada.
+ * Cada aparelho tem uma identidade fixa (pushTokens é um mapa deviceId -> token, não uma lista
+ * solta), então reativar num aparelho já conhecido SUBSTITUI a entrada dele em vez de somar.
  */
-function removerTokensInvalidos_(tokensInvalidosSet, pushTokens, token) {
-  if (tokensInvalidosSet.size === 0) return;
-  const restantes = pushTokens.filter(t => !tokensInvalidosSet.has(t));
-  salvarPushTokens_(restantes, token);
-  Logger.log(`${tokensInvalidosSet.size} dispositivo(s) inválido(s) removido(s) automaticamente.`);
+function removerDispositivosInvalidos_(deviceIdsInvalidosSet, pushTokensMap, token) {
+  if (deviceIdsInvalidosSet.size === 0) return;
+  const restante = {};
+  Object.keys(pushTokensMap).forEach(devId => {
+    if (!deviceIdsInvalidosSet.has(devId)) restante[devId] = pushTokensMap[devId];
+  });
+  salvarPushTokens_(restante, token);
+  Logger.log(`${deviceIdsInvalidosSet.size} dispositivo(s) inválido(s) removido(s) automaticamente.`);
 }
 
-function salvarPushTokens_(tokens, token) {
+function salvarPushTokens_(pushTokensMap, token) {
   UrlFetchApp.fetch(urlConfigGeral_() + '?updateMask.fieldPaths=pushTokens', {
     method: 'patch',
     headers: { Authorization: 'Bearer ' + token },
     contentType: 'application/json',
-    payload: JSON.stringify({ fields: { pushTokens: paraFirestoreValue_(tokens) } }),
+    payload: JSON.stringify({ fields: { pushTokens: paraFirestoreValue_(pushTokensMap) } }),
     muteHttpExceptions: true
   });
 }
@@ -310,18 +315,19 @@ function podarNotificacoesAntigas_(mapa, mesAtualKey) {
 function testarPush() {
   const token = obterTokenFirestore_();
   const config = obterConfigGeral_(token);
-  const pushTokens = config.pushTokens || [];
-  if (pushTokens.length === 0) {
+  const pushTokensMap = config.pushTokens || {};
+  const deviceIds = Object.keys(pushTokensMap);
+  if (deviceIds.length === 0) {
     Logger.log('Nenhum dispositivo com notificação ativada ainda.');
     return;
   }
-  const tokensInvalidos = new Set();
-  pushTokens.forEach(fcmToken => {
-    const ok = enviarPush_(token, fcmToken, 'Teste — Planner Financeiro', 'Se isso chegou no seu celular, as notificações estão funcionando! 🎉');
-    if (!ok) tokensInvalidos.add(fcmToken);
+  const deviceIdsInvalidos = new Set();
+  deviceIds.forEach(devId => {
+    const ok = enviarPush_(token, pushTokensMap[devId], 'Teste — Planner Financeiro', 'Se isso chegou no seu celular, as notificações estão funcionando! 🎉');
+    if (!ok) deviceIdsInvalidos.add(devId);
   });
-  removerTokensInvalidos_(tokensInvalidos, pushTokens, token);
-  Logger.log(`Push de teste enviado para ${pushTokens.length - tokensInvalidos.size} dispositivo(s) válido(s).`);
+  removerDispositivosInvalidos_(deviceIdsInvalidos, pushTokensMap, token);
+  Logger.log(`Push de teste enviado para ${deviceIds.length - deviceIdsInvalidos.size} dispositivo(s) válido(s).`);
 }
 
 /** Manda o push; retorna false se o FCM disse que esse token não existe mais (celular/app reinstalado). */
