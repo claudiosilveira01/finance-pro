@@ -243,17 +243,44 @@ function verificarVencimentosEEnviarPush() {
       return;
     }
 
+    const tokensInvalidos = new Set();
     avisos.forEach(aviso => {
-      pushTokens.forEach(fcmToken => enviarPush_(token, fcmToken, aviso.titulo, aviso.corpo));
+      pushTokens.forEach(fcmToken => {
+        const ok = enviarPush_(token, fcmToken, aviso.titulo, aviso.corpo);
+        if (!ok) tokensInvalidos.add(fcmToken);
+      });
       jaNotificados[aviso.chave] = true;
     });
 
     salvarNotificacoesEnviadas_(podarNotificacoesAntigas_(jaNotificados, mesAtualKey), token);
+    removerTokensInvalidos_(tokensInvalidos, pushTokens, token);
     Logger.log(`${avisos.length} aviso(s) de vencimento enviado(s) para ${pushTokens.length} dispositivo(s).`);
   } catch (erro) {
     Logger.log('ERRO (push de vencimento): ' + erro.message + '\n' + erro.stack);
     // Não relança — uma falha aqui não deve derrubar a importação do extrato, que já rodou antes.
   }
+}
+
+/**
+ * Remove do Firestore os tokens que o FCM rejeitou como inexistentes (celular/app reinstalado,
+ * notificação desativada etc.) — evita que a lista de dispositivos fique acumulando lixo e
+ * mandando notificação duplicada/desnecessária pra sempre.
+ */
+function removerTokensInvalidos_(tokensInvalidosSet, pushTokens, token) {
+  if (tokensInvalidosSet.size === 0) return;
+  const restantes = pushTokens.filter(t => !tokensInvalidosSet.has(t));
+  salvarPushTokens_(restantes, token);
+  Logger.log(`${tokensInvalidosSet.size} dispositivo(s) inválido(s) removido(s) automaticamente.`);
+}
+
+function salvarPushTokens_(tokens, token) {
+  UrlFetchApp.fetch(urlConfigGeral_() + '?updateMask.fieldPaths=pushTokens', {
+    method: 'patch',
+    headers: { Authorization: 'Bearer ' + token },
+    contentType: 'application/json',
+    payload: JSON.stringify({ fields: { pushTokens: paraFirestoreValue_(tokens) } }),
+    muteHttpExceptions: true
+  });
 }
 
 /** Quantos dias faltam pro dia "diaVenc" do mês atual (0 = hoje, negativo = já passou). */
@@ -288,10 +315,16 @@ function testarPush() {
     Logger.log('Nenhum dispositivo com notificação ativada ainda.');
     return;
   }
-  pushTokens.forEach(fcmToken => enviarPush_(token, fcmToken, 'Teste — Planner Financeiro', 'Se isso chegou no seu celular, as notificações estão funcionando! 🎉'));
-  Logger.log(`Push de teste enviado para ${pushTokens.length} dispositivo(s).`);
+  const tokensInvalidos = new Set();
+  pushTokens.forEach(fcmToken => {
+    const ok = enviarPush_(token, fcmToken, 'Teste — Planner Financeiro', 'Se isso chegou no seu celular, as notificações estão funcionando! 🎉');
+    if (!ok) tokensInvalidos.add(fcmToken);
+  });
+  removerTokensInvalidos_(tokensInvalidos, pushTokens, token);
+  Logger.log(`Push de teste enviado para ${pushTokens.length - tokensInvalidos.size} dispositivo(s) válido(s).`);
 }
 
+/** Manda o push; retorna false se o FCM disse que esse token não existe mais (celular/app reinstalado). */
 function enviarPush_(tokenGoogle, fcmToken, titulo, corpo) {
   const projectId = PropertiesService.getScriptProperties().getProperty('FIRESTORE_PROJECT_ID');
   const resposta = UrlFetchApp.fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
@@ -303,9 +336,12 @@ function enviarPush_(tokenGoogle, fcmToken, titulo, corpo) {
     }),
     muteHttpExceptions: true
   });
-  if (resposta.getResponseCode() >= 400) {
-    Logger.log('Falha ao enviar push (token pode estar expirado): ' + resposta.getContentText());
+  const codigo = resposta.getResponseCode();
+  if (codigo >= 400) {
+    Logger.log('Falha ao enviar push: ' + resposta.getContentText());
   }
+  // 404/400 = token não existe mais pro FCM (não é um erro passageiro de rede).
+  return codigo !== 404 && codigo !== 400;
 }
 
 function obterConfigGeral_(token) {
