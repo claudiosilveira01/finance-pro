@@ -13,6 +13,7 @@ Decisões de escopo já fechadas com o usuário (não reabrir):
 - **Permissões no compartilhamento:** existe um **"dono"** com controle extra (só ele remove membros ou apaga dados do mês/orçamento inteiro); demais membros editam contas normalmente.
 - Item "id: Date.now() pode colidir" foi descartado pelo usuário — fora de escopo.
 - Assinaturas continuam **informativas por padrão** (não entram automaticamente no orçamento); em vez de integração automática, cada assinatura ganha um botão para o usuário decidir, caso a caso, se aquela assinatura deve virar uma conta fixa avulsa (Fase 6).
+- **Princípio permanente (a partir da rodada "Redesign Extrato/Assinaturas/Acumulado", pedido explícito do usuário):** toda mudança de UI/UX, desta rodada em diante, precisa ser validada também no mobile (telas estreitas, ~320–390px) — não só no desktop. Nunca reabrir isso como "opcional".
 
 ---
 
@@ -218,3 +219,56 @@ Na primeira execução (autorizada manualmente pelo usuário), a automação enc
 **todos** os e-mails de extrato que já existiam na caixa de entrada, de dezembro/2024 a
 junho/2026, escrevendo corretamente em cada mês do Firestore e sem duplicar quando o mesmo
 período apareceu em mais de um e-mail. Gatilho de tempo criado (a cada 1 hora).
+
+## Redesign Extrato/Assinaturas/Acumulado ✅ concluída e validada
+
+Pedido do usuário (com prints dos cards Extrato Bancário e Suas Assinaturas), com liberdade
+explícita ("se achar que deve incluir uma função legal vc faz aí eu valido") pra uma melhoria
+extra no card Extrato.
+
+**Card Extrato Bancário** (`js/extrato.js`, `index.html`, `css/style.css`):
+- Mapa `EXTRATO_TIPO_DISPLAY` traduz cada tipo de transação bruto (usado no parser/merge, não
+  alterado) pra um rótulo curto + ícone só de exibição — ex.: "Transferência recebida pelo Pix"
+  → "Recebido Pix" + ícone de seta. Cobre os 17 tipos reconhecidos pelo parser; tipo desconhecido
+  cai num fallback genérico.
+- Resumo por tipo agora sempre agrupado em **Entradas/Saídas**; dentro de cada grupo, ordena por
+  nome (A-Z, padrão) ou por valor (maior primeiro) — botão de classificação (`.mini-toggle-btn`)
+  alterna entre os dois modos e persiste só na sessão (não precisa ser salvo no Firestore).
+- Função extra (a critério do Claude, a validar): cada linha do resumo por tipo ganhou uma barra
+  de fundo proporcional ao valor daquele tipo em relação ao maior valor do card
+  (`.tipo-item-bar`), dando uma leitura visual rápida de qual tipo pesa mais.
+
+**Card Suas Assinaturas** (`js/assinaturas.js`, `css/style.css`):
+- Nova ordenação: sempre por dia de vencimento (crescente), tanto no card do Dashboard quanto em
+  Configurações.
+- Campo novo `faturadoEm` (string `"AAAA-MM"`) em cada assinatura — em vez de um booleano fixo,
+  guarda o `mesAtualKey` em que foi marcada como faturada. O badge "Faturado"/"Faturar" compara
+  `faturadoEm === mesAtualKey`, então o status reresseta sozinho a cada mês (sem precisar de
+  nenhuma rotina de limpeza) e continua correto ao navegar entre meses no app. A tag de
+  vencimento continua **sempre visível** ao lado do badge, nunca é substituída por ele.
+- Campo novo `categoria` (opcional) — reaproveita a lista global `categoriasAtuais`; usada só
+  pra "classificação" da assinatura (ícone da categoria substitui o sino padrão na linha).
+- Os dois botões soltos de ação (adicionar às fixas / excluir) viraram um único botão "⋮" que
+  abre um menu de contexto compacto (`abrirMenuContexto()`, novo utilitário em `js/modal.js`,
+  reaproveitável) com as 4 opções pedidas: Faturar, Adicionar às Contas Fixas (reaproveita
+  `abrirModalAssinaturaParaFixa()` já existente), Classificação (usa `abrirModalSelecao()` já
+  existente) e Excluir. O menu se posiciona perto do botão clicado, sempre dentro da viewport, e
+  fecha ao clicar fora ou apertar Esc (mesmo listener global de Esc que já fechava modais).
+
+**Card Acumulado por Categoria** (`index.html`, `js/config.js`, `js/config-global.js`, `js/ui.js`):
+- Novo toggle em Configurações → "Exibição de Cards" (`.ios-toggle`, mesmo padrão visual já usado
+  em "Repetir todo mês"), controlado por `ocultarCardAcumulado` (novo campo em `config/geral` no
+  Firestore, salvo por `salvarConfigGlobal()` igual aos demais). Aplicado via
+  `aplicarVisibilidadeAcumulado()`, chamada ao carregar a config e a cada toggle.
+
+**Validação mobile:** testado programaticamente em 375px e no limite de 320px (menor tela comum)
+usando um servidor estático local (`HttpListener` do PowerShell, já que não há Node/Python
+instalados nesta máquina) e o navegador headless, injetando dados de teste diretamente no estado
+do app (sem tocar o Firestore de produção) pra exercitar os cards sem precisar de login real.
+Achado e corrigido nessa validação: linhas do resumo por tipo do Extrato com valores de 4+
+dígitos estouravam ~6-9px a largura do card em telas de 320px — causa clássica de flexbox
+(`min-width: auto` padrão em item flex impede encolher abaixo do conteúdo); corrigido com
+`min-width: 0` no rótulo e `flex-shrink: 0` no valor. Confirmado sem overflow horizontal em
+nenhum dos cards novos/alterados depois do ajuste. O badge "Faturado" (`.status-badge.wide`)
+herda o encolhimento de fonte do `@container` já existente pra `.status-badge` (por
+especificidade: 2 classes vencem 1), então fica compacto no mobile sem precisar duplicar regras.

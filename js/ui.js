@@ -30,10 +30,24 @@
             document.getElementById('modalConfig').style.display = 'none';
         }
 
-        // Esc fecha qualquer modal aberto no sistema
+        // Esc fecha qualquer modal ou menu de contexto aberto no sistema
         document.addEventListener('keydown', e => {
             if (e.key !== 'Escape') return;
+            fecharMenuContexto();
             document.querySelectorAll('.modal-overlay').forEach(overlay => {
                 if (getComputedStyle(overlay).display !== 'none') overlay.style.display = 'none';
             });
         });
+
+        // Card "Acumulado por Categoria": visibilidade controlada em Configurações (pouco usado por alguns usuários)
+        function alternarVisibilidadeAcumulado(ocultar) {
+            ocultarCardAcumulado = ocultar;
+            aplicarVisibilidadeAcumulado();
+            salvarConfigGlobal();
+        }
+        function aplicarVisibilidadeAcumulado() {
+            const card = document.getElementById('cardAcumulado');
+            if (card) card.style.display = ocultarCardAcumulado ? 'none' : '';
+            const toggle = document.getElementById('toggleOcultarAcumulado');
+            if (toggle) toggle.checked = ocultarCardAcumulado;
+        }

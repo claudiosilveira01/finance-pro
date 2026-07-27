@@ -35,6 +35,8 @@
         let diaCalendarioSelecionado = null;
         let fixasSelecionadas = new Set();
         let extratoSelecionados = new Set();
+        let extratoOrdemTipo = 'alfabetica'; // 'alfabetica' | 'valor' — classificação do resumo por tipo no card Extrato
+        let ocultarCardAcumulado = false;
 
         // Controla quando as animações de entrada (badges, listas, odômetro lento) tocam:
         // só na carga inicial, troca de mês ou troca de aba no mobile — nunca ao selecionar/marcar itens.

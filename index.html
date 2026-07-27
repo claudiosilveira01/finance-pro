@@ -202,6 +202,17 @@
 
             <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-chart-pie" style="vertical-align:-2px;"></i> Exibição de Cards</h4>
+            <label class="toggle-row" style="margin-bottom:0;">
+                <span class="ios-toggle">
+                    <input type="checkbox" id="toggleOcultarAcumulado" onchange="alternarVisibilidadeAcumulado(this.checked)">
+                    <span class="ios-toggle-track"></span>
+                </span>
+                Ocultar card "Acumulado por Categoria"
+            </label>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
             <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-calendar-plus" style="vertical-align:-2px;"></i> Adicionar Novo Mês</h4>
             <div class="control-row">
                 <input type="month" id="novoMesInput">
@@ -405,13 +416,19 @@
                                     <span class="valor" id="extratoTotalSaidas" style="color:var(--red-danger);">- R$ 0,00</span>
                                 </div>
                             </div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin:12px 0 8px;">
+                                <span style="font-size:0.72rem; font-weight:700; color:var(--text-muted); text-transform:uppercase; letter-spacing:0.03em;">Por tipo de transação</span>
+                                <button class="mini-toggle-btn" id="extratoOrdemBtn" onclick="alternarOrdemTipoExtrato()" title="Alternar classificação">
+                                    <i class="ph ph-sort-ascending"></i> <span id="extratoOrdemTexto">A-Z</span>
+                                </button>
+                            </div>
                             <div id="extratoResumoPorTipo" class="extrato-tipo-lista"></div>
                             <button class="btn-flat" style="width:100%; justify-content:center;" onclick="abrirModalExtratoDetalhes()"><i class="ph ph-list-magnifying-glass"></i> <span id="extratoBtnDetalhesTexto">Ver detalhes</span></button>
                         </div>
                     </div>
 
                     <!-- ACUMULADO POR CATEGORIA (SÓ FIXAS) -->
-                    <div class="card">
+                    <div class="card" id="cardAcumulado">
                         <div class="card-title"><span class="card-title-left"><i class="ph ph-chart-pie"></i> Acumulado por Categoria</span></div>
                         <div class="charts-wrapper">
                             <div class="chart-container"><canvas id="chartCategorias"></canvas></div>

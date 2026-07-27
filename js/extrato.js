@@ -26,6 +26,31 @@ const EXTRATO_TIPOS = [
     'Saque'
 ].sort((a, b) => b.length - a.length);
 
+// Rótulo curto + ícone para cada tipo de transação, só para exibição (o "tipo" salvo continua o original,
+// usado no parser/merge/CSV — mudar isso quebraria a deduplicação de reimportações).
+const EXTRATO_TIPO_DISPLAY = {
+    'Transferência recebida pelo Pix via Open Banking': { label: 'Recebido Pix', icone: 'arrow-down-left' },
+    'Transferência enviada pelo Pix via Open Banking': { label: 'Enviado Pix', icone: 'arrow-up-right' },
+    'Transferência recebida pelo Pix': { label: 'Recebido Pix', icone: 'arrow-down-left' },
+    'Transferência enviada pelo Pix': { label: 'Enviado Pix', icone: 'arrow-up-right' },
+    'Transferência Recebida': { label: 'Transferência Recebida', icone: 'arrow-down-left' },
+    'Transferência Enviada': { label: 'Transferência Enviada', icone: 'arrow-up-right' },
+    'Compra no débito': { label: 'Compra Débito', icone: 'credit-card' },
+    'Compra no crédito': { label: 'Compra Crédito', icone: 'credit-card' },
+    'Pagamento de boleto efetuado': { label: 'Boleto Pago', icone: 'barcode' },
+    'Pagamento de fatura': { label: 'Fatura Paga', icone: 'receipt' },
+    'Aplicação RDB': { label: 'Aplicação RDB', icone: 'trend-up' },
+    'Resgate RDB': { label: 'Resgate RDB', icone: 'trend-down' },
+    'Crédito em conta': { label: 'Crédito em Conta', icone: 'plus-circle' },
+    'Débito em conta': { label: 'Débito em Conta', icone: 'minus-circle' },
+    'Depósito': { label: 'Depósito', icone: 'download-simple' },
+    'Estorno': { label: 'Estorno', icone: 'arrow-counter-clockwise' },
+    'Saque': { label: 'Saque', icone: 'money' }
+};
+function _extratoTipoDisplay(tipo) {
+    return EXTRATO_TIPO_DISPLAY[tipo] || { label: tipo, icone: 'arrows-left-right' };
+}
+
 const EXTRATO_MESES = { JAN:'01', FEV:'02', MAR:'03', ABR:'04', MAI:'05', JUN:'06', JUL:'07', AGO:'08', SET:'09', OUT:'10', NOV:'11', DEZ:'12' };
 const EXTRATO_MONEY_RE = /^(.*?)\s*(\d{1,3}(?:\.\d{3})*,\d{2})$/;
 const EXTRATO_DATA_RE = /^(\d{2})\s+([A-ZÇÃÕ]{3})\s+(\d{4})\b/i;
@@ -250,6 +275,11 @@ function excluirTransacaoExtrato(id) {
     renderizarExtrato();
 }
 
+function alternarOrdemTipoExtrato() {
+    extratoOrdemTipo = extratoOrdemTipo === 'valor' ? 'alfabetica' : 'valor';
+    renderizarExtrato();
+}
+
 function abrirModalExtratoDetalhes() {
     document.getElementById('modalExtratoDetalhes').style.display = 'flex';
 }
@@ -282,27 +312,49 @@ function renderizarExtrato() {
     document.getElementById('extratoTotalSaidas').innerText = `- R$ ${totalSaidas.toFixed(2)}`;
     document.getElementById('extratoBtnDetalhesTexto').innerText = `Ver detalhes (${lista.length} transaç${lista.length === 1 ? 'ão' : 'ões'})`;
 
-    // Resumo por tipo de transação (Pix recebido, Compra no débito, Aplicação RDB, etc.)
+    // Resumo por tipo de transação (Pix recebido, Compra no débito, Aplicação RDB, etc.) —
+    // sempre agrupado Entrada/Saída; dentro de cada grupo, ordena por nome (A-Z) ou por valor,
+    // conforme o botão de classificação escolhido pelo usuário.
     const porTipo = {};
     lista.forEach(t => {
         if (!porTipo[t.tipo]) porTipo[t.tipo] = { soma: 0, count: 0, direcao: t.direcao };
         porTipo[t.tipo].soma += t.valor;
         porTipo[t.tipo].count++;
     });
-    const divTipos = document.getElementById('extratoResumoPorTipo');
-    divTipos.innerHTML = '';
-    Object.entries(porTipo)
-        .sort((a, b) => b[1].soma - a[1].soma)
-        .forEach(([tipo, info], idx) => {
+    const maiorValor = Math.max(...Object.values(porTipo).map(i => i.soma), 1);
+    const entradas = [], saidas = [];
+    Object.entries(porTipo).forEach(entry => (entry[1].direcao === 'entrada' ? entradas : saidas).push(entry));
+    const comparador = extratoOrdemTipo === 'valor'
+        ? (a, b) => b[1].soma - a[1].soma
+        : (a, b) => _extratoTipoDisplay(a[0]).label.localeCompare(_extratoTipoDisplay(b[0]).label, 'pt-BR');
+    entradas.sort(comparador);
+    saidas.sort(comparador);
+
+    const renderGrupo = (grupo, rotulo) => {
+        if (!grupo.length) return '';
+        const linhas = grupo.map(([tipo, info], idx) => {
+            const disp = _extratoTipoDisplay(tipo);
             const cor = info.direcao === 'entrada' ? 'var(--green-success)' : 'var(--red-danger)';
             const sinal = info.direcao === 'entrada' ? '+' : '-';
             const classeAnim = animarNaCarga ? ' item-anim' : '';
-            divTipos.innerHTML += `
-                <div class="acumulado-item${classeAnim}" style="animation-delay:${idx * 0.05}s">
-                    <span>${tipo} <span style="color:var(--text-muted); font-weight:400;">(${info.count})</span></span>
-                    <span style="color:${cor}; font-weight:700;">${sinal} R$ ${info.soma.toFixed(2)}</span>
+            const pct = Math.min(100, (info.soma / maiorValor) * 100);
+            return `
+                <div class="tipo-item${classeAnim}" style="animation-delay:${idx * 0.04}s; color:${cor}">
+                    <div class="tipo-item-bar" style="width:${pct}%"></div>
+                    <span class="tipo-item-label"><i class="ph ph-${disp.icone}"></i> ${disp.label} <span style="color:var(--text-muted); font-weight:400;">(${info.count})</span></span>
+                    <span class="tipo-item-valor" style="color:${cor};">${sinal} R$ ${info.soma.toFixed(2)}</span>
                 </div>`;
-        });
+        }).join('');
+        return `<div class="tipo-grupo-label">${rotulo}</div>${linhas}`;
+    };
+
+    const divTipos = document.getElementById('extratoResumoPorTipo');
+    divTipos.innerHTML = renderGrupo(entradas, 'Entradas') + renderGrupo(saidas, 'Saídas');
+
+    const ordTexto = document.getElementById('extratoOrdemTexto');
+    if (ordTexto) ordTexto.innerText = extratoOrdemTipo === 'valor' ? 'Maior valor' : 'A-Z';
+    const ordIcone = document.getElementById('extratoOrdemBtn')?.querySelector('.ph');
+    if (ordIcone) ordIcone.className = `ph ${extratoOrdemTipo === 'valor' ? 'ph-sort-descending' : 'ph-sort-ascending'}`;
 
     tbody.innerHTML = '';
     lista.forEach(t => {

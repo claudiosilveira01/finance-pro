@@ -27,19 +27,24 @@
             calcularEAtualizarVisual();
         }
 
-        // Alimenta os dois lugares onde a lista de assinaturas aparece: o card do Dashboard e Configurações
+        // Alimenta os dois lugares onde a lista de assinaturas aparece: o card do Dashboard e Configurações.
+        // Sempre ordenada por dia de vencimento; "faturado" é por mês (faturadoEm guarda o mesAtualKey em
+        // que foi marcado), então navegar entre meses mostra corretamente o status daquele mês específico.
         function renderizarAssinaturas() {
             let totalAssin = 0;
-            const itensHtml = assinaturasConfig.map(s => {
+            const ordenadas = [...assinaturasConfig].sort((a, b) => (a.vencimento || 0) - (b.vencimento || 0));
+            const itensHtml = ordenadas.map(s => {
                 totalAssin += (s.valor || 0);
                 let valorFormatado = s.valor ? ` - R$ ${s.valor.toFixed(2)}` : '';
                 let alerta = calcularAlertaVencimento(s.vencimento, false);
+                const faturado = s.faturadoEm === mesAtualKey;
+                const icone = s.categoria ? obterIconeCategoria(s.categoria) : 'bell';
                 return `<div class="sub-item">
-                    <span><i class="ph ph-bell" style="color:var(--sub-color); vertical-align:-2px;"></i> ${s.nome} <strong style="color:var(--text-highlight)">${valorFormatado}</strong></span>
-                    <div style="display:flex; align-items:center; gap:10px;">
+                    <span><i class="ph ph-${icone}" style="color:var(--sub-color); vertical-align:-2px;"></i> ${s.nome} <strong style="color:var(--text-highlight)">${valorFormatado}</strong></span>
+                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                        <button class="status-badge wide ${faturado ? 'sim' : 'nao'}" onclick="toggleFaturadoAssinatura(${s.id})" title="Marcar/desmarcar como faturado neste mês">${faturado ? 'Faturado' : 'Faturar'}</button>
                         <span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span>
-                        <button class="btn-action" onclick="abrirModalAssinaturaParaFixa(${s.id})" title="Adicionar às Contas Fixas"><i class="ph ph-list-plus" style="font-size:1.1rem;"></i></button>
-                        <button class="btn-action btn-delete" onclick="deletarAssinatura(${s.id})" title="Excluir"><i class="ph ph-trash" style="font-size:1.1rem;"></i></button>
+                        <button class="btn-action" onclick="abrirMenuAssinatura(${s.id}, this)" title="Mais opções"><i class="ph ph-dots-three-vertical" style="font-size:1.2rem;"></i></button>
                     </div>
                 </div>`;
             }).join('');
@@ -51,6 +56,49 @@
 
             const totalEl = document.getElementById('totalAssinaturas');
             if(totalEl) totalEl.innerText = `R$ ${totalAssin.toFixed(2)}`;
+        }
+
+        // Alterna o status de faturado da assinatura para o mês atualmente selecionado no app.
+        function toggleFaturadoAssinatura(id) {
+            const sub = assinaturasConfig.find(s => s.id === id);
+            if(!sub) return;
+            const jaFaturado = sub.faturadoEm === mesAtualKey;
+            sub.faturadoEm = jaFaturado ? null : mesAtualKey;
+            salvarConfigGlobal();
+            renderizarAssinaturas();
+            mostrarToast(jaFaturado ? `"${sub.nome}" voltou para não faturada.` : `"${sub.nome}" marcada como faturada em ${mesAtualKey}.`, 'success');
+        }
+
+        // Menu de ações por assinatura: Faturar, Adicionar às Contas Fixas, Classificação, Excluir.
+        function abrirMenuAssinatura(id, btnEl) {
+            const sub = assinaturasConfig.find(s => s.id === id);
+            if(!sub) return;
+            const faturado = sub.faturadoEm === mesAtualKey;
+            abrirMenuContexto([
+                { label: faturado ? 'Desfazer Faturamento' : 'Faturar', icone: faturado ? 'arrow-counter-clockwise' : 'check-circle', onClick: () => toggleFaturadoAssinatura(id) },
+                { label: 'Adicionar às Contas Fixas', icone: 'list-plus', onClick: () => abrirModalAssinaturaParaFixa(id) },
+                { label: 'Classificação', icone: 'tag', onClick: () => definirCategoriaAssinatura(id) },
+                { label: 'Excluir', icone: 'trash', perigo: true, onClick: () => deletarAssinatura(id) }
+            ], btnEl);
+        }
+
+        // Define/edita a categoria (classificação) de uma assinatura, reaproveitando as categorias globais existentes.
+        function definirCategoriaAssinatura(id) {
+            const sub = assinaturasConfig.find(s => s.id === id);
+            if(!sub) return;
+            abrirModalSelecao({
+                titulo: 'Classificação da Assinatura',
+                mensagem: `Escolha a categoria de "${sub.nome}":`,
+                opcoes: categoriasAtuais,
+                valorInicial: sub.categoria || categoriasAtuais[0],
+                textoConfirmar: 'Salvar',
+                onConfirmar: (categoria) => {
+                    sub.categoria = categoria;
+                    salvarConfigGlobal();
+                    renderizarAssinaturas();
+                    mostrarToast(`"${sub.nome}" classificada como ${categoria}.`, 'success');
+                }
+            });
         }
 
         // Abre modal pré-preenchido para transformar uma assinatura informativa numa conta fixa avulsa do mês atual

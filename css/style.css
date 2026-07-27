@@ -153,6 +153,10 @@
         .status-badge:hover { filter: brightness(1.1); transform: translateY(-1px); }
         .status-badge.sim { background-color: var(--green-success); }
         .status-badge.nao { background-color: var(--red-danger); }
+        /* Variante de largura livre (ex.: badge "Faturado" das Assinaturas) — precisa de mais espaço
+           que os 62px fixos do badge "Pago?" da tabela; 2 classes vencem a especificidade do
+           @container abaixo, então a fonte continua encolhendo no mobile normalmente. */
+        .status-badge.wide { width: auto; padding: 5px 11px; white-space: nowrap; }
 
         .vencimento-tag { font-weight: 700; font-size: 0.72rem; padding: 3px 7px; border-radius: 999px; display: inline-block; white-space: nowrap; }
 
@@ -194,6 +198,33 @@
         .sub-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; flex-wrap: wrap; gap: 6px; }
         .sub-item:last-child { border-bottom: none; }
         .sub-date { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; background: var(--border-color); padding: 4px 8px; border-radius: 999px; }
+
+        /* === Resumo por tipo do Extrato Bancário: linha com barra de fundo proporcional ao valor === */
+        .tipo-grupo-label { font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 10px 2px 6px; }
+        .tipo-grupo-label:first-child { margin-top: 0; }
+        .tipo-item { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 12px; margin-bottom: 6px; background: var(--bg-light); border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500; overflow: hidden; transition: background 0.2s; }
+        .tipo-item:last-child { margin-bottom: 0; }
+        .tipo-item:hover { background: var(--bg-blue-light); }
+        .tipo-item-bar { position: absolute; left: 0; top: 0; bottom: 0; background: currentColor; opacity: 0.12; transition: width 0.5s cubic-bezier(0.2, 0.8, 0.3, 1); }
+        .tipo-item-label, .tipo-item-valor { position: relative; z-index: 1; }
+        /* min-width:0 é necessário pro item flex poder encolher/quebrar abaixo da largura intrínseca
+           do texto — sem isso, valores com 4+ dígitos estouram a linha em telas bem estreitas (320px). */
+        .tipo-item-label { display: flex; align-items: center; gap: 7px; color: var(--text-main); min-width: 0; }
+        .tipo-item-label .ph { font-size: 16px; flex-shrink: 0; }
+        .tipo-item-valor { white-space: nowrap; font-weight: 700; flex-shrink: 0; }
+
+        /* Botão compacto de alternância (ex.: ordenar por tipo no Extrato) */
+        .mini-toggle-btn { display: flex; align-items: center; gap: 5px; background: var(--bg-light); border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.72rem; font-weight: 700; padding: 5px 10px; border-radius: 999px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .mini-toggle-btn:hover { background: var(--bg-blue-light); color: var(--blue-accent); border-color: var(--blue-accent); }
+        .mini-toggle-btn .ph { font-size: 13px; }
+
+        /* === Menu de contexto compacto (kebab) — ex.: ações por assinatura === */
+        .kebab-menu { position: fixed; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); z-index: 1500; min-width: 200px; overflow: hidden; animation: modal-subir 0.15s ease-out; }
+        .kebab-menu-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; font-size: 0.85rem; font-weight: 600; color: var(--text-main); cursor: pointer; transition: background 0.15s; }
+        .kebab-menu-item:hover { background: var(--bg-light); }
+        .kebab-menu-item .ph { font-size: 17px; color: var(--text-muted); flex-shrink: 0; width: 17px; text-align: center; }
+        .kebab-menu-item.danger { color: var(--red-danger); }
+        .kebab-menu-item.danger .ph { color: var(--red-danger); }
 
         /* === BOTTOM NAV (3 itens) === */
         .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0)); z-index: 100; box-shadow: 0 -4px 20px rgba(31, 22, 79, 0.06); }
