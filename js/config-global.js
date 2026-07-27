@@ -9,6 +9,7 @@
                     ocultarCardAcumulado = data.ocultarCardAcumulado || false;
                 }
                 aplicarVisibilidadeAcumulado();
+                verificarNotificacoesAtivas();
                 
                 const dataHoje = new Date();
                 const mesString = String(dataHoje.getMonth() + 1).padStart(2, '0');

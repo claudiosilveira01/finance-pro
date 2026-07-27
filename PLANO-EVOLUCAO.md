@@ -84,17 +84,49 @@ CSV manual (`js/exportar.js`) com BOM UTF-8, delimitador `;` (padrão Excel-BR) 
 
 ## ⏳ O que falta fazer
 
-### Fase 3 — PWA instalável — **EM STAND-BY, a pedido do usuário**
-- `manifest.json` + `service-worker.js` (cache-first do app shell; **nunca** interceptar `firestore.googleapis.com`/`identitytoolkit.googleapis.com`).
-- Ícones PNG (192/512, incluindo variante maskable): já foram **gerados** via `<canvas>` no navegador (fundo roxo `#431c5d` + emoji 📊, incluindo safe-zone para maskable) e a lógica de extração para PNG real (via `[Convert]::FromBase64String` no PowerShell) foi validada — mas a etapa de design foi pausada pelo usuário antes de salvar os arquivos finais e integrá-los ao `manifest.json`. Retomar a partir daqui quando o usuário sinalizar.
-- `js/app.js` recebe o registro do service worker.
-- `CACHE_NAME` versionado manualmente a cada deploy que mude arquivo cacheado.
+### Fase 3 — PWA instalável ✅ concluída (retomada a pedido do usuário)
+Estava em stand-by; retomada porque virou pré-requisito da Fase 11 (usuário instalou o app na
+tela inicial do iPhone e pediu notificação de vencimento — no iOS, push só funciona assim).
 
-### Fase 11 — Notificações push no navegador — **bloqueada pela Fase 3**
-- Depende do service worker da Fase 3 para usar `registration.showNotification()`.
-- Nova config `notificacoes: {ativado, diasAntecedencia}` em `config/geral`.
-- Checagem ao carregar o app + `setInterval` enquanto aberto; dedupe via `localStorage` + `tag` para não repetir no mesmo dia.
-- Limitação já aceita: não dispara com o navegador totalmente fechado.
+- `manifest.json` na raiz (nome, ícones, `display: standalone`, cor tema roxa).
+- Ícones gerados via PowerShell/`System.Drawing` (192, 512, e 180 pra `apple-touch-icon`) —
+  fundo em gradiente roxo igual ao `--gradient-btn` do app + glifo de linha ascendente branco,
+  sem depender de nenhum arquivo de logo pré-existente (não havia nenhum no repositório).
+- `firebase-messaging-sw.js` na raiz faz o papel de service worker: registra o app como instalável
+  (handler de `fetch` simples, sem cache agressivo — os dados vêm ao vivo do Firestore, cachear
+  HTML/JS desatualizado geraria mais problema que benefício) **e** recebe as notificações push em
+  segundo plano (ver Fase 11). Registrado em `js/pwa.js`, carregado no fim do `index.html`.
+- Meta tags de iOS (`apple-mobile-web-app-capable` etc.) no `<head>` do `index.html`.
+
+### Fase 11 — Notificações push de vencimento ✅ concluída e em produção
+Pedido do usuário: avisar no celular quando uma assinatura ou conta fixa está vencendo — 3 dias
+antes e no dia. Cogitou-se WhatsApp via Evolution API (Docker), mas foi descartado porque o
+container só roda quando o PC do usuário está ligado, e não daria pra expor isso pra internet
+com segurança. Solução adotada, sem Cloud Function nem plano Blaze:
+
+- **Cliente** (`js/pwa.js`): botão "Ativar notificações de vencimento" nas Configurações pede a
+  permissão do navegador, registra o dispositivo no Firebase Cloud Messaging (FCM) e salva o
+  token gerado em `config/geral.pushTokens` (array — cada dispositivo instalado, iPhone e
+  desktop, guarda o seu próprio token). Chave pública VAPID gerada no Firebase Console
+  (Configurações do projeto → Cloud Messaging → Certificados push da Web) e embutida no código
+  (é uma chave pública, sem problema de segurança em deixá-la no cliente).
+- **Apps Script** (`automacao-email-nubank/Code.gs`, mesmo projeto da automação do Nubank):
+  nova função `verificarVencimentosEEnviarPush()`, chamada no fim de `processarExtratosNubank()`
+  — reaproveita o mesmo gatilho de tempo (a cada 1h), sem precisar configurar um segundo gatilho.
+  Verifica assinaturas (`config/geral.assinaturas`, pulando as já `faturadoEm` do mês) e contas
+  fixas do mês atual (`meses/{mesAtual}.fixas`, pulando as já `pago`); quando o vencimento cai em
+  3 dias ou no dia (`DIAS_DE_AVISO = [3, 0]`), chama a API do FCM (`fcm.googleapis.com/v1/.../
+  messages:send`) pra cada token salvo, autenticado com a mesma conta de serviço já usada pro
+  Firestore — só precisou ampliar o escopo do JWT assinado (`obterTokenFirestore_`) pra incluir
+  também `firebase.messaging`, sem precisar de nenhum papel IAM novo (o service account padrão
+  do Firebase Admin SDK já cobre isso).
+- **Dedup**: `config/geral.notificacoesEnviadas` guarda uma chave por aviso já enviado
+  (`tipo-id-mês-diasRestantes`), podada automaticamente pra manter só os últimos 2 meses — evita
+  reenviar o mesmo aviso a cada execução horária do gatilho.
+- **Limitação aceita**: o aviso "3 dias antes" só é confiável se o gatilho do Apps Script rodar
+  nesse dia (roda de hora em hora, então na prática sempre roda) — diferente da tentativa anterior
+  via WhatsApp, aqui não depende de nenhum computador/servidor do usuário estar ligado, porque
+  quem envia é o Google (Apps Script + FCM), não uma máquina local.
 
 ### Fase 12 — Compartilhamento de orçamento multi-usuário — **CANCELADA pelo usuário**
 Decisão do usuário: não implementar. Seção mantida abaixo só como registro histórico do que havia sido desenhado, caso o usuário reconsidere no futuro.

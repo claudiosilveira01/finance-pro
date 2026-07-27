@@ -18,6 +18,11 @@
  * mas ainda é preciso pedir o extrato no app do Nubank pra esse e-mail
  * existir.
  *
+ * Também roda, no mesmo gatilho, o aviso de vencimento: verifica assinaturas
+ * e contas fixas do mês e manda notificação push (Firebase Cloud Messaging)
+ * pros dispositivos que ativaram "Notificações de vencimento" no app —
+ * 3 dias antes e no dia do vencimento.
+ *
  * Veja o arquivo SETUP.md (nesta mesma pasta) para o passo a passo completo
  * de configuração (conta de serviço do Google Cloud, propriedades do script,
  * gatilho de tempo).
@@ -89,6 +94,10 @@ function processarExtratosNubank() {
     Logger.log('ERRO: ' + erro.message + '\n' + erro.stack);
     throw erro;
   }
+
+  // Reaproveita o mesmo gatilho de tempo pra também checar vencimentos e mandar
+  // notificação — assim não precisa configurar um segundo gatilho no Apps Script.
+  verificarVencimentosEEnviarPush();
 }
 
 function obterOuCriarLabel_(nome) {
@@ -175,6 +184,132 @@ function salvarTransacoesNoFirestore_(transacoes, token) {
 }
 
 // ============================================================================
+// AVISO DE VENCIMENTO: verifica assinaturas e contas fixas do mês atual e manda
+// notificação push (via Firebase Cloud Messaging) pros dispositivos que
+// ativaram "Notificações de vencimento" nas Configurações do app.
+// Avisa 3 dias antes e no dia do vencimento (ver DIAS_DE_AVISO).
+// ============================================================================
+
+const DIAS_DE_AVISO = [3, 0];
+
+function verificarVencimentosEEnviarPush() {
+  try {
+    const token = obterTokenFirestore_();
+    const config = obterConfigGeral_(token);
+    const pushTokens = config.pushTokens || [];
+    if (pushTokens.length === 0) {
+      Logger.log('Nenhum dispositivo com notificação ativada ainda.');
+      return;
+    }
+
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const mesAtualKey = Utilities.formatDate(hoje, Session.getScriptTimeZone(), 'yyyy-MM');
+
+    const jaNotificados = config.notificacoesEnviadas || {};
+    const avisos = [];
+
+    (config.assinaturas || []).forEach(sub => {
+      if (sub.faturadoEm === mesAtualKey) return; // já marcada como faturada este mês
+      const diasRestantes = diasAteVencimento_(hoje, sub.vencimento);
+      if (DIAS_DE_AVISO.indexOf(diasRestantes) === -1) return;
+      const chave = `assinatura-${sub.id}-${mesAtualKey}-${diasRestantes}`;
+      if (jaNotificados[chave]) return;
+      avisos.push({
+        chave,
+        titulo: diasRestantes === 0 ? `Vence hoje: ${sub.nome}` : `Vence em ${diasRestantes} dias: ${sub.nome}`,
+        corpo: sub.valor ? `Assinatura — R$ ${sub.valor.toFixed(2)}` : 'Assinatura'
+      });
+    });
+
+    const mesDoc = obterDocumentoMes_(mesAtualKey, token);
+    (mesDoc.fixas || []).forEach(fixa => {
+      if (fixa.pago) return;
+      const diasRestantes = diasAteVencimento_(hoje, fixa.vencimento);
+      if (DIAS_DE_AVISO.indexOf(diasRestantes) === -1) return;
+      const chave = `fixa-${fixa.id}-${mesAtualKey}-${diasRestantes}`;
+      if (jaNotificados[chave]) return;
+      avisos.push({
+        chave,
+        titulo: diasRestantes === 0 ? `Vence hoje: ${fixa.nome}` : `Vence em ${diasRestantes} dias: ${fixa.nome}`,
+        corpo: `Conta fixa — R$ ${fixa.valor.toFixed(2)}`
+      });
+    });
+
+    if (avisos.length === 0) {
+      Logger.log('Nenhum vencimento pra avisar hoje.');
+      return;
+    }
+
+    avisos.forEach(aviso => {
+      pushTokens.forEach(fcmToken => enviarPush_(token, fcmToken, aviso.titulo, aviso.corpo));
+      jaNotificados[aviso.chave] = true;
+    });
+
+    salvarNotificacoesEnviadas_(podarNotificacoesAntigas_(jaNotificados, mesAtualKey), token);
+    Logger.log(`${avisos.length} aviso(s) de vencimento enviado(s) para ${pushTokens.length} dispositivo(s).`);
+  } catch (erro) {
+    Logger.log('ERRO (push de vencimento): ' + erro.message + '\n' + erro.stack);
+    // Não relança — uma falha aqui não deve derrubar a importação do extrato, que já rodou antes.
+  }
+}
+
+/** Quantos dias faltam pro dia "diaVenc" do mês atual (0 = hoje, negativo = já passou). */
+function diasAteVencimento_(hoje, diaVenc) {
+  const dataVenc = new Date(hoje.getFullYear(), hoje.getMonth(), diaVenc);
+  return Math.round((dataVenc - hoje) / 86400000);
+}
+
+/** Mantém só o registro dos últimos 2 meses, pra esse mapa não crescer pra sempre no Firestore. */
+function podarNotificacoesAntigas_(mapa, mesAtualKey) {
+  const [ano, mes] = mesAtualKey.split('-').map(Number);
+  const mesAnteriorKey = Utilities.formatDate(new Date(ano, mes - 2, 1), Session.getScriptTimeZone(), 'yyyy-MM');
+  const podado = {};
+  Object.keys(mapa).forEach(chave => {
+    if (chave.indexOf('-' + mesAtualKey + '-') !== -1 || chave.indexOf('-' + mesAnteriorKey + '-') !== -1) {
+      podado[chave] = mapa[chave];
+    }
+  });
+  return podado;
+}
+
+function enviarPush_(tokenGoogle, fcmToken, titulo, corpo) {
+  const projectId = PropertiesService.getScriptProperties().getProperty('FIRESTORE_PROJECT_ID');
+  const resposta = UrlFetchApp.fetch(`https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`, {
+    method: 'post',
+    headers: { Authorization: 'Bearer ' + tokenGoogle },
+    contentType: 'application/json',
+    payload: JSON.stringify({
+      message: { token: fcmToken, notification: { title: titulo, body: corpo } }
+    }),
+    muteHttpExceptions: true
+  });
+  if (resposta.getResponseCode() >= 400) {
+    Logger.log('Falha ao enviar push (token pode estar expirado): ' + resposta.getContentText());
+  }
+}
+
+function obterConfigGeral_(token) {
+  const resposta = UrlFetchApp.fetch(urlConfigGeral_(), {
+    method: 'get',
+    headers: { Authorization: 'Bearer ' + token },
+    muteHttpExceptions: true
+  });
+  if (resposta.getResponseCode() === 404) return {};
+  return deFirestoreDocumento_(JSON.parse(resposta.getContentText()));
+}
+
+function salvarNotificacoesEnviadas_(mapa, token) {
+  UrlFetchApp.fetch(urlConfigGeral_() + '?updateMask.fieldPaths=notificacoesEnviadas', {
+    method: 'patch',
+    headers: { Authorization: 'Bearer ' + token },
+    contentType: 'application/json',
+    payload: JSON.stringify({ fields: { notificacoesEnviadas: paraFirestoreValue_(mapa) } }),
+    muteHttpExceptions: true
+  });
+}
+
+// ============================================================================
 // Firestore REST API — autenticação via conta de serviço (bypassa as regras
 // de segurança do cliente, igual o Firebase Admin SDK faria; por isso a
 // chave da conta de serviço precisa ficar só nas Propriedades do Script,
@@ -194,7 +329,7 @@ function obterTokenFirestore_() {
 
   const naoAssinado = base64url({ alg: 'RS256', typ: 'JWT' }) + '.' + base64url({
     iss: clientEmail,
-    scope: 'https://www.googleapis.com/auth/datastore',
+    scope: 'https://www.googleapis.com/auth/datastore https://www.googleapis.com/auth/firebase.messaging',
     aud: 'https://oauth2.googleapis.com/token',
     exp: agora + 3600,
     iat: agora
