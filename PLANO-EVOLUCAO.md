@@ -183,7 +183,7 @@ Depois do redesign da Fase 13, o usuário reportou bugs reais de responsividade 
 - A partir da rodada "animações + fonte + mobile", o Claude passou a commitar e enviar ao
   GitHub automaticamente ao final de cada rodada de mudanças testada, a pedido do usuário
 
-## Automação: extrato do Nubank por e-mail ✅ código pronto, configuração pendente com o usuário
+## Automação: extrato do Nubank por e-mail ✅ concluída e em produção
 
 O usuário pediu uma forma de o extrato bancário ser importado sozinho, sem precisar abrir o
 app e subir o PDF manualmente. Como o e-mail que o Nubank manda ("Extrato da sua conta do
@@ -203,6 +203,18 @@ testar manualmente, e criar o gatilho de tempo). O parser foi validado rodando n
 contra o CSV real de um extrato (01–17/abr/2026, 69 transações): bateu exatamente com os
 totais oficiais do período (entradas +1.296,54 / saídas -1.117,47), sem duplicatas.
 
-**Pendente:** a configuração em si (criar a conta de serviço no Google Cloud, pegar o UID,
-colar o código no Apps Script, testar, criar o gatilho) depende do usuário — envolve acesso
-ao Google Cloud Console e ao Firebase Console que o Claude não tem.
+**Configuração concluída** (Claude + usuário, via Claude in Chrome no navegador real do
+usuário): reaproveitada a conta de serviço padrão `firebase-adminsdk-fbsvc@finance-pro-v1`
+(já existia, criada automaticamente pelo Firebase) em vez de criar uma nova — só foi
+adicionado o papel extra "Usuário do Cloud Datastore" a ela. Chave JSON gerada, usada só
+para preencher as Propriedades do Script (o valor da chave privada foi colado manualmente
+pelo usuário — a automação do navegador é bloqueada por segurança para digitar segredos
+desse tipo) e depois apagada do disco. Projeto do Apps Script criado sob a conta
+`claudio.silveira.gg@gmail.com` (a que recebe os e-mails do Nubank de verdade), então **não
+foi necessário nenhum encaminhamento de e-mail** entre contas — a conta de serviço já resolve
+o acesso ao Firestore independente de qual conta Google é dona do script.
+
+Na primeira execução (autorizada manualmente pelo usuário), a automação encontrou e importou
+**todos** os e-mails de extrato que já existiam na caixa de entrada, de dezembro/2024 a
+junho/2026, escrevendo corretamente em cada mês do Firestore e sem duplicar quando o mesmo
+período apareceu em mais de um e-mail. Gatilho de tempo criado (a cada 1 hora).
