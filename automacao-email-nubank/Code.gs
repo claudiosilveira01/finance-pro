@@ -64,40 +64,42 @@ const MESES_NOMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
  * por exemplo) apontando pra esta função.
  */
 function processarExtratosNubank() {
+  let erroExtrato = null;
   try {
     const label = obterOuCriarLabel_(CONFIG.LABEL_PROCESSADO);
     const threads = GmailApp.search(CONFIG.GMAIL_QUERY + ' -label:"' + CONFIG.LABEL_PROCESSADO + '"');
 
     if (threads.length === 0) {
       Logger.log('Nenhum e-mail novo de extrato do Nubank encontrado.');
-      return;
-    }
+    } else {
+      const token = obterTokenFirestore_();
 
-    const token = obterTokenFirestore_();
-
-    threads.forEach(thread => {
-      thread.getMessages().forEach(msg => {
-        const anexoCsv = msg.getAttachments().find(a => a.getName().toLowerCase().endsWith('.csv'));
-        if (!anexoCsv) {
-          Logger.log('Mensagem sem anexo .csv, pulando: "' + msg.getSubject() + '"');
-          return;
-        }
-        const transacoes = parseCsvNubank_(anexoCsv.getDataAsString('UTF-8'));
-        Logger.log(`Encontradas ${transacoes.length} transação(ões) em "${msg.getSubject()}".`);
-        if (transacoes.length > 0) salvarTransacoesNoFirestore_(transacoes, token);
+      threads.forEach(thread => {
+        thread.getMessages().forEach(msg => {
+          const anexoCsv = msg.getAttachments().find(a => a.getName().toLowerCase().endsWith('.csv'));
+          if (!anexoCsv) {
+            Logger.log('Mensagem sem anexo .csv, pulando: "' + msg.getSubject() + '"');
+            return;
+          }
+          const transacoes = parseCsvNubank_(anexoCsv.getDataAsString('UTF-8'));
+          Logger.log(`Encontradas ${transacoes.length} transação(ões) em "${msg.getSubject()}".`);
+          if (transacoes.length > 0) salvarTransacoesNoFirestore_(transacoes, token);
+        });
+        thread.addLabel(label);
       });
-      thread.addLabel(label);
-    });
 
-    Logger.log('Concluído.');
+      Logger.log('Concluído.');
+    }
   } catch (erro) {
     Logger.log('ERRO: ' + erro.message + '\n' + erro.stack);
-    throw erro;
+    erroExtrato = erro; // guardado pra relançar só depois de checar os vencimentos abaixo
   }
 
-  // Reaproveita o mesmo gatilho de tempo pra também checar vencimentos e mandar
-  // notificação — assim não precisa configurar um segundo gatilho no Apps Script.
+  // Reaproveita o mesmo gatilho de tempo pra também checar vencimentos e mandar notificação —
+  // roda sempre, mesmo sem e-mail novo ou se a importação acima falhou (são coisas independentes).
   verificarVencimentosEEnviarPush();
+
+  if (erroExtrato) throw erroExtrato;
 }
 
 function obterOuCriarLabel_(nome) {
