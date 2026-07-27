@@ -178,4 +178,31 @@ Depois do redesign da Fase 13, o usuário reportou bugs reais de responsividade 
 - `index.html`, `css/style.css`, `js/*.js` — estrutura atual pós-Fases 0, 1, 2, 4–10, 13 (ver seções acima para o mapa completo de arquivos)
 - `firestore.rules` — versão pessoal (Fase 0), ainda não publicada no Console do Firebase; não haverá versão "compartilhada" já que a Fase 12 foi cancelada
 - `PLANO-EVOLUCAO.md` — este documento
-- Nenhuma alteração foi commitada ou enviada ao GitHub — o usuário faz isso manualmente pelo VS Code
+- `automacao-email-nubank/` — script de Google Apps Script + guia de configuração para
+  importar o extrato do Nubank automaticamente a partir do e-mail (ver seção própria abaixo)
+- A partir da rodada "animações + fonte + mobile", o Claude passou a commitar e enviar ao
+  GitHub automaticamente ao final de cada rodada de mudanças testada, a pedido do usuário
+
+## Automação: extrato do Nubank por e-mail ✅ código pronto, configuração pendente com o usuário
+
+O usuário pediu uma forma de o extrato bancário ser importado sozinho, sem precisar abrir o
+app e subir o PDF manualmente. Como o e-mail que o Nubank manda ("Extrato da sua conta do
+Nubank", de `todomundo@nubank.com.br`) vem com anexo `.csv` estruturado (`Data,Valor,
+Identificador,Descrição`) além do `.pdf`, o parser da automação lê o CSV — muito mais simples
+e confiável que reconstruir texto de PDF, e essencial porque o ambiente que roda isso sem o
+navegador aberto (Google Apps Script) não tem como executar o pdf.js usado no upload manual.
+
+**Importante:** esse e-mail é enviado sob demanda pelo Nubank (quando alguém pede um extrato
+no app dele), não numa rotina mensal automática — a automação cobre "e-mail chegou → sistema
+atualizado sozinho", mas pedir o extrato no app do Nubank continua sendo manual.
+
+Entregue em `automacao-email-nubank/`: `Code.gs` (parser do CSV + escrita no Firestore via
+API REST, autenticado com uma conta de serviço do Google Cloud) e `SETUP.md` (passo a passo:
+criar a conta de serviço, pegar o UID do Firebase Auth, configurar o projeto no Apps Script,
+testar manualmente, e criar o gatilho de tempo). O parser foi validado rodando no navegador
+contra o CSV real de um extrato (01–17/abr/2026, 69 transações): bateu exatamente com os
+totais oficiais do período (entradas +1.296,54 / saídas -1.117,47), sem duplicatas.
+
+**Pendente:** a configuração em si (criar a conta de serviço no Google Cloud, pegar o UID,
+colar o código no Apps Script, testar, criar o gatilho) depende do usuário — envolve acesso
+ao Google Cloud Console e ao Firebase Console que o Claude não tem.
