@@ -315,3 +315,31 @@ dígitos estouravam ~6-9px a largura do card em telas de 320px — causa clássi
 nenhum dos cards novos/alterados depois do ajuste. O badge "Faturado" (`.status-badge.wide`)
 herda o encolhimento de fonte do `@container` já existente pra `.status-badge` (por
 especificidade: 2 classes vencem 1), então fica compacto no mobile sem precisar duplicar regras.
+
+## Extrato Bancário: correção de soma errada + mais detalhes (2026-07-28)
+
+Usuário reportou que o total do card Extrato não batia com o CSV real do banco (comparação feita
+com um extrato de 01–27/jul/2026: total real Entradas +R$8.708,50 / Saídas -R$8.714,81, contra o
+que o app mostrava). Hipótese mais provável: os dois caminhos de importação (upload manual de PDF,
+que dedupa por `data+tipo+item+valor+direção`, e a automação por e-mail/CSV, que dedupa por
+`idOrigem`) podem deixar a mesma transação real entrar duas vezes se o texto do "item" não bater
+exatamente entre PDF e CSV. Adicionado ao `Code.gs`: `diagnosticarExtratoMes_`/`
+removerDuplicatasExtrato_` (chave de duplicata = todos os campos + idOrigem, preservando pares
+legítimos que compartilham Identificador do Nubank, como "Valor adicionado por cartão de crédito"
++ Pix pareado) e atalhos `diagnosticarExtratoJulho`/`limparDuplicatasExtratoJulho` pro mês em
+questão. Correção efetiva dos dados de julho pendente de execução manual no Apps Script.
+
+Junto, entregue o resto do pedido (card Extrato):
+- Modal "Ver detalhes" (`#modalExtratoDetalhes`) ampliado pra `.modal-xl` (980px), com coluna
+  Data, busca por texto (item/tipo), filtro Entrada/Saída e ordenação por coluna (reaproveita
+  `ordenarTabela`/`aplicarOrdenacao` já usados em Fixas/Faturamentos, novo estado `ordExtrato`).
+- Clicar num tipo no resumo (`.tipo-item`) abre `#modalExtratoPorTipo`, só com as transações
+  daquele tipo, ordenadas por data desc, com total.
+- Botão de apagar todo o extrato do mês (`confirmarLimparExtratoDoMes`/`limparExtratoDoMes`),
+  com confirmação, no cabeçalho do card.
+
+**Novo processo, a pedido do usuário:** a partir de 2026-07-27, respostas em chat passam a ser só
+um relatório final objetivo por tarefa (sem comentário a cada passo), pra economizar tokens.
+Também foi criado um documento espelho no Google Drive ("Planner Financeiro - Contexto Completo.md",
+id `1TnlCpBoVQtEs1sZ5DVE5p7oycRb0hsNK`) pra ele ter contexto completo do projeto fora do Claude
+Code — deve ser atualizado junto com este arquivo a cada mudança relevante.
