@@ -409,6 +409,51 @@ function obterTokenFirestore_() {
   return corpo.access_token;
 }
 
+// ============================================================================
+// DIAGNÓSTICO/LIMPEZA: usado pra investigar o card Extrato Bancário somando valor
+// diferente do extrato real do banco. Chave de duplicata = data+tipo+item+valor+
+// direção+idOrigem (todos iguais) — não usa só idOrigem porque o Nubank reaproveita
+// o mesmo Identificador pra duas transações legítimas em pares "Valor adicionado
+// por cartão de crédito" + "Pix enviado" (uma entrada e uma saída do mesmo valor).
+// ============================================================================
+
+function diagnosticarExtratoMes_(mesKey) {
+  const token = obterTokenFirestore_();
+  const doc = obterDocumentoMes_(mesKey, token);
+  const extrato = doc.extrato || [];
+  const porChave = {};
+  extrato.forEach(t => {
+    const chave = [t.data, t.tipo, t.item, t.valor, t.direcao, t.idOrigem].join('|');
+    (porChave[chave] = porChave[chave] || []).push(t);
+  });
+  const duplicadas = Object.entries(porChave).filter(([, arr]) => arr.length > 1);
+  let entradas = 0, saidas = 0;
+  extrato.forEach(t => { if (t.direcao === 'entrada') entradas += t.valor; else saidas += t.valor; });
+  Logger.log(`[${mesKey}] Total de transações no Firestore: ${extrato.length}`);
+  Logger.log(`[${mesKey}] Entradas: R$ ${entradas.toFixed(2)} | Saídas: R$ ${(-saidas).toFixed(2)}`);
+  Logger.log(`[${mesKey}] Grupos duplicados: ${duplicadas.length}`);
+  duplicadas.forEach(([chave, arr]) => Logger.log(`  x${arr.length}: ${chave}`));
+}
+
+function removerDuplicatasExtrato_(mesKey) {
+  const token = obterTokenFirestore_();
+  const doc = obterDocumentoMes_(mesKey, token);
+  const extrato = doc.extrato || [];
+  const vistos = new Set();
+  const limpo = [];
+  extrato.forEach(t => {
+    const chave = [t.data, t.tipo, t.item, t.valor, t.direcao, t.idOrigem].join('|');
+    if (vistos.has(chave)) return;
+    vistos.add(chave);
+    limpo.push(t);
+  });
+  salvarExtratoDoMes_(mesKey, limpo, token);
+  Logger.log(`[${mesKey}] ${extrato.length} -> ${limpo.length} transações (${extrato.length - limpo.length} duplicatas removidas).`);
+}
+
+function diagnosticarExtratoJulho() { diagnosticarExtratoMes_('2026-07'); }
+function limparDuplicatasExtratoJulho() { removerDuplicatasExtrato_('2026-07'); }
+
 function urlDocumentoMes_(mesKey) {
   const props = PropertiesService.getScriptProperties();
   const projectId = props.getProperty('FIRESTORE_PROJECT_ID');

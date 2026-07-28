@@ -174,18 +174,28 @@
 
     <!-- Modal: Detalhes do Extrato Bancário -->
     <div class="modal-overlay" id="modalExtratoDetalhes">
-        <div class="modal-content modal-wide" style="position: relative;">
+        <div class="modal-content modal-xl" style="position: relative;">
             <button class="modal-close-x" onclick="fecharModalExtratoDetalhes()"><i class="ph ph-x"></i></button>
             <div class="card-title"><span class="card-title-left"><i class="ph ph-bank"></i> Movimentações do Extrato</span></div>
+            <div class="modal-filtro-row">
+                <input type="text" id="extratoFiltroTexto" placeholder="Buscar por item ou tipo..." oninput="renderizarExtrato()">
+                <select id="extratoFiltroDirecao" onchange="renderizarExtrato()">
+                    <option value="">Entradas e Saídas</option>
+                    <option value="entrada">Só Entradas</option>
+                    <option value="saida">Só Saídas</option>
+                </select>
+                <span class="modal-stat-mini" id="extratoContagemFiltrada">0 transações</span>
+            </div>
             <div class="table-responsive" id="extratoTabelaWrapper">
                 <table>
                     <thead>
                         <tr>
                             <th class="th-check"></th>
-                            <th>Item</th>
+                            <th class="sortable" onclick="ordenarTabela('extrato', 'data')">Data <i class="ph ph-caret-up-down"></i></th>
+                            <th class="sortable" onclick="ordenarTabela('extrato', 'item')">Item <i class="ph ph-caret-up-down"></i></th>
                             <th>Tipo</th>
                             <th>Entrada/Saída</th>
-                            <th>Valor</th>
+                            <th class="sortable" onclick="ordenarTabela('extrato', 'valor')">Valor <i class="ph ph-caret-up-down"></i></th>
                             <th style="width:36px;"></th>
                         </tr>
                     </thead>
@@ -196,6 +206,15 @@
                 <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">SOMA SELECIONADA</span>
                 <span id="extratoSomaSelecionada" style="font-weight:800; font-size:1.1rem; color:var(--text-highlight-alt);">R$ 0,00</span>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal: transações filtradas por tipo (clicando num tipo no resumo do card Extrato) -->
+    <div class="modal-overlay" id="modalExtratoPorTipo">
+        <div class="modal-content modal-wide" style="position: relative;">
+            <button class="modal-close-x" onclick="fecharModalExtratoPorTipo()"><i class="ph ph-x"></i></button>
+            <div class="card-title"><span class="card-title-left" id="extratoPorTipoTitulo"><i class="ph ph-funnel"></i> Transações</span></div>
+            <div id="listaExtratoPorTipo"></div>
         </div>
     </div>
 
@@ -423,6 +442,7 @@
                             <span class="card-title-left"><i class="ph ph-bank"></i> Extrato Bancário</span>
                             <span style="display:flex; gap:8px;">
                                 <input type="file" id="extratoPdfInput" accept="application/pdf" style="display:none;" onchange="processarExtratoPdf(this.files[0])">
+                                <button class="card-action-btn card-action-btn-danger" onclick="confirmarLimparExtratoDoMes()" title="Limpar todo o extrato deste mês"><i class="ph ph-trash"></i></button>
                                 <button class="fab-inline" onclick="document.getElementById('extratoPdfInput').click()" title="Importar PDF do extrato"><i class="ph ph-upload-simple"></i></button>
                             </span>
                         </div>

@@ -1,8 +1,8 @@
 // Ordenação das tabelas de fixas e faturamentos
         function ordenarTabela(tabela, coluna) {
-            if(tabela === 'fixas') { ordFixas.asc = (ordFixas.col === coluna) ? !ordFixas.asc : true; ordFixas.col = coluna; } 
-            else if(tabela === 'faturamentos') { ordFaturamentos.asc = (ordFaturamentos.col === coluna) ? !ordFaturamentos.asc : true; ordFaturamentos.col = coluna; }
-            calcularEAtualizarVisual();
+            if(tabela === 'fixas') { ordFixas.asc = (ordFixas.col === coluna) ? !ordFixas.asc : true; ordFixas.col = coluna; calcularEAtualizarVisual(); }
+            else if(tabela === 'faturamentos') { ordFaturamentos.asc = (ordFaturamentos.col === coluna) ? !ordFaturamentos.asc : true; ordFaturamentos.col = coluna; calcularEAtualizarVisual(); }
+            else if(tabela === 'extrato') { ordExtrato.asc = (ordExtrato.col === coluna) ? !ordExtrato.asc : true; ordExtrato.col = coluna; renderizarExtrato(); }
         }
 
         function aplicarOrdenacao(array, config) {

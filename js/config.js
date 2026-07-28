@@ -28,6 +28,7 @@
         let mesAtualKey = "";
         let ordFixas = { col: '', asc: true };
         let ordFaturamentos = { col: '', asc: true };
+        let ordExtrato = { col: 'data', asc: false };
         let meuGraficoPizza;
         let meuGraficoBarra;
         let idEditandoFixa = null;

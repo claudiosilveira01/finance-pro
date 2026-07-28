@@ -280,6 +280,63 @@ function alternarOrdemTipoExtrato() {
     renderizarExtrato();
 }
 
+// Modal com só as transações de um tipo específico (clicando numa linha do resumo por tipo).
+function abrirModalExtratoPorTipo(tipo) {
+    const lista = (window.activeExtrato || []).filter(t => t.tipo === tipo).sort((a, b) => b.data.localeCompare(a.data));
+    if (lista.length === 0) return;
+
+    const disp = _extratoTipoDisplay(tipo);
+    const titulo = document.getElementById('extratoPorTipoTitulo');
+    titulo.innerHTML = `<i class="ph ph-${disp.icone}"></i> ${disp.label} (${lista.length})`;
+
+    const linhas = lista.map(t => {
+        const cor = t.direcao === 'entrada' ? 'var(--green-success)' : 'var(--red-danger)';
+        const sinal = t.direcao === 'entrada' ? '+' : '-';
+        return `<div class="sub-item">
+            <span>${formatarData(t.data)} — ${t.item}</span>
+            <strong style="color:${cor};">${sinal} R$ ${t.valor.toFixed(2)}</strong>
+        </div>`;
+    }).join('');
+    const total = lista.reduce((s, t) => s + (t.direcao === 'entrada' ? t.valor : -t.valor), 0);
+    const corTotal = total >= 0 ? 'var(--green-success)' : 'var(--red-danger)';
+
+    document.getElementById('listaExtratoPorTipo').innerHTML = `
+        ${linhas}
+        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); margin-top:14px;">
+            <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">TOTAL</span>
+            <span style="font-weight:800; font-size:1.1rem; color:${corTotal};">R$ ${total.toFixed(2)}</span>
+        </div>`;
+    document.getElementById('modalExtratoPorTipo').style.display = 'flex';
+}
+
+function fecharModalExtratoPorTipo() {
+    document.getElementById('modalExtratoPorTipo').style.display = 'none';
+}
+
+// Apaga todas as transações do extrato do mês atual (pedido explícito de confirmação antes).
+function confirmarLimparExtratoDoMes() {
+    const lista = window.activeExtrato || [];
+    if (lista.length === 0) {
+        mostrarToast('Não há transações no extrato deste mês.', 'warning');
+        return;
+    }
+    abrirModalConfirmacao({
+        titulo: 'Limpar extrato do mês',
+        mensagem: `Isso vai apagar todas as ${lista.length} transações do extrato de ${mesAtualKey}. Essa ação não pode ser desfeita. Confirma?`,
+        textoConfirmar: 'Apagar tudo',
+        corConfirmar: 'var(--red-danger)',
+        onConfirmar: limparExtratoDoMes
+    });
+}
+
+function limparExtratoDoMes() {
+    window.activeExtrato = [];
+    extratoSelecionados.clear();
+    salvarDadosDoMesAtual();
+    renderizarExtrato();
+    mostrarToast('Extrato do mês apagado.', 'success');
+}
+
 function abrirModalExtratoDetalhes() {
     document.getElementById('modalExtratoDetalhes').style.display = 'flex';
 }
@@ -339,7 +396,7 @@ function renderizarExtrato() {
             const classeAnim = animarNaCarga ? ' item-anim' : '';
             const pct = Math.min(100, (info.soma / maiorValor) * 100);
             return `
-                <div class="tipo-item${classeAnim}" style="animation-delay:${idx * 0.04}s; color:${cor}">
+                <div class="tipo-item${classeAnim}" style="animation-delay:${idx * 0.04}s; color:${cor}; cursor:pointer;" onclick="abrirModalExtratoPorTipo('${tipo.replace(/'/g, "\\'")}')" title="Ver só as transações deste tipo">
                     <div class="tipo-item-bar" style="width:${pct}%"></div>
                     <span class="tipo-item-label"><i class="ph ph-${disp.icone}"></i> ${disp.label} <span style="color:var(--text-muted); font-weight:400;">(${info.count})</span></span>
                     <span class="tipo-item-valor" style="color:${cor};">${sinal} R$ ${info.soma.toFixed(2)}</span>
@@ -356,13 +413,23 @@ function renderizarExtrato() {
     const ordIcone = document.getElementById('extratoOrdemBtn')?.querySelector('.ph');
     if (ordIcone) ordIcone.className = `ph ${extratoOrdemTipo === 'valor' ? 'ph-sort-descending' : 'ph-sort-ascending'}`;
 
+    // Modal de detalhes: busca por texto + filtro de direção + ordenação por coluna.
+    const filtroTexto = (document.getElementById('extratoFiltroTexto')?.value || '').trim().toLowerCase();
+    const filtroDirecao = document.getElementById('extratoFiltroDirecao')?.value || '';
+    let listaFiltrada = lista.filter(t =>
+        (!filtroDirecao || t.direcao === filtroDirecao) &&
+        (!filtroTexto || t.item.toLowerCase().includes(filtroTexto) || t.tipo.toLowerCase().includes(filtroTexto))
+    );
+    listaFiltrada = aplicarOrdenacao(listaFiltrada, ordExtrato);
+
     tbody.innerHTML = '';
-    lista.forEach(t => {
+    listaFiltrada.forEach(t => {
         const cor = t.direcao === 'entrada' ? 'var(--green-success)' : 'var(--red-danger)';
         const sinal = t.direcao === 'entrada' ? '+' : '-';
         tbody.innerHTML += `
             <tr>
                 <td class="td-check"><input type="checkbox" class="row-check" ${extratoSelecionados.has(t.id) ? 'checked' : ''} onchange="toggleSelecaoExtrato(${t.id})"></td>
+                <td data-label="Data" style="color:var(--text-muted); font-size:0.85rem; white-space:nowrap;">${formatarData(t.data)}</td>
                 <td data-label="Item">${t.item}</td>
                 <td data-label="Tipo" style="color:var(--text-muted); font-size:0.82rem;">${t.tipo}</td>
                 <td data-label="Entrada/Saída" style="color:${cor}; font-weight:700;">${t.direcao === 'entrada' ? 'Entrada' : 'Saída'}</td>
@@ -370,6 +437,8 @@ function renderizarExtrato() {
                 <td style="text-align:right;"><button class="btn-action btn-delete" onclick="excluirTransacaoExtrato(${t.id})" title="Excluir"><i class="ph ph-trash"></i></button></td>
             </tr>`;
     });
+    const contagemEl = document.getElementById('extratoContagemFiltrada');
+    if (contagemEl) contagemEl.innerText = `${listaFiltrada.length} transaç${listaFiltrada.length === 1 ? 'ão' : 'ões'}`;
 
     let soma = 0;
     [...extratoSelecionados].forEach(id => {

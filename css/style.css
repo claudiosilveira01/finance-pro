@@ -277,6 +277,11 @@
         .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(15, 11, 31, 0.55); backdrop-filter: blur(3px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 16px; animation: modal-fade 0.2s ease-out; }
         .modal-content { background: var(--card-bg); padding: clamp(18px, 4vw, 24px); border-radius: var(--radius-lg); width: 100%; max-width: 420px; max-height: 85vh; overflow-y: auto; box-shadow: var(--shadow-lg); animation: modal-subir 0.25s cubic-bezier(0.2, 0.8, 0.3, 1); container-type: inline-size; }
         .modal-content.modal-wide { max-width: 640px; }
+        .modal-content.modal-xl { max-width: 980px; max-height: 90vh; }
+        .modal-filtro-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; margin-bottom: 14px; }
+        .modal-filtro-row input[type="text"] { flex: 1; min-width: 160px; }
+        .modal-filtro-row select { flex: 0 0 auto; }
+        .modal-stat-mini { background: var(--bg-light); border-radius: var(--radius-sm); padding: 8px 14px; font-size: 0.8rem; font-weight: 700; white-space: nowrap; }
         .modal-content { scrollbar-width: thin; scrollbar-color: var(--purple-light) transparent; }
         .modal-content::-webkit-scrollbar { width: 7px; }
         .modal-content::-webkit-scrollbar-track { background: transparent; }
