@@ -244,18 +244,32 @@ function verificarVencimentosEEnviarPush() {
       return;
     }
 
-    const deviceIdsInvalidos = new Set();
-    avisos.forEach(aviso => {
-      deviceIds.forEach(devId => {
-        const ok = enviarPush_(token, pushTokensMap[devId], aviso.titulo, aviso.corpo);
-        if (!ok) deviceIdsInvalidos.add(devId);
-      });
-      jaNotificados[aviso.chave] = true;
+    // Marca como notificado ANTES de disparar os pushes (não depois) — encolhe a janela em que
+    // uma segunda execução sobreposta (gatilho manual + automático, por exemplo) leria
+    // "ainda não notificado" e mandaria os mesmos avisos de novo.
+    avisos.forEach(aviso => { jaNotificados[aviso.chave] = true; });
+    salvarNotificacoesEnviadas_(podarNotificacoesAntigas_(jaNotificados, mesAtualKey), token);
+
+    // Agrupa por token de push (não por deviceId): se o mesmo aparelho físico ficou registrado sob
+    // dois deviceIds (ex.: PWA instalado na tela de início + aba do Safari, cada um com seu próprio
+    // localStorage/deviceId), os dois apontam pro mesmo token do FCM — sem isso, cada vencimento
+    // manda 2 notificações idênticas pro mesmo iPhone. Com o agrupamento, só 1 push sai por token.
+    const deviceIdsPorToken = {};
+    deviceIds.forEach(devId => {
+      const tok = pushTokensMap[devId];
+      (deviceIdsPorToken[tok] = deviceIdsPorToken[tok] || []).push(devId);
     });
 
-    salvarNotificacoesEnviadas_(podarNotificacoesAntigas_(jaNotificados, mesAtualKey), token);
+    const deviceIdsInvalidos = new Set();
+    avisos.forEach(aviso => {
+      Object.keys(deviceIdsPorToken).forEach(fcmToken => {
+        const ok = enviarPush_(token, fcmToken, aviso.titulo, aviso.corpo);
+        if (!ok) deviceIdsPorToken[fcmToken].forEach(devId => deviceIdsInvalidos.add(devId));
+      });
+    });
+
     removerDispositivosInvalidos_(deviceIdsInvalidos, pushTokensMap, token);
-    Logger.log(`${avisos.length} aviso(s) de vencimento enviado(s) para ${deviceIds.length} dispositivo(s).`);
+    Logger.log(`${avisos.length} aviso(s) de vencimento enviado(s) para ${Object.keys(deviceIdsPorToken).length} token(s) único(s) (${deviceIds.length} dispositivo(s) registrado(s)).`);
   } catch (erro) {
     Logger.log('ERRO (push de vencimento): ' + erro.message + '\n' + erro.stack);
     // Não relança — uma falha aqui não deve derrubar a importação do extrato, que já rodou antes.

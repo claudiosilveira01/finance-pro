@@ -24,13 +24,18 @@
                 }
 
                 mesAtualKey = anoMesAtualReal;
-                
+
                 renderizarMeses();
                 renderizarListasDeCategorias();
-                
+
                 document.getElementById('mesSeletor').value = mesAtualKey;
                 carregarMes(mesAtualKey);
                 if(callback) callback();
+            }).catch(err => {
+                document.getElementById('loadingDiv').style.display = 'none';
+                mostrarToast('Erro ao carregar seus dados. Verifique sua conexão.', 'error', 6000, {
+                    acao: { texto: 'Tentar de novo', callback: () => carregarConfigGlobal(callback) }
+                });
             });
         }
 

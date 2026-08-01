@@ -22,6 +22,11 @@
                 animarNaCarga = true;
                 calcularEAtualizarVisual();
                 document.getElementById('loadingDiv').style.display = 'none';
+            }).catch(err => {
+                document.getElementById('loadingDiv').style.display = 'none';
+                mostrarToast('Erro ao carregar os dados do mês. Verifique sua conexão.', 'error', 6000, {
+                    acao: { texto: 'Tentar de novo', callback: () => carregarMes(anoMes) }
+                });
             });
         }
 
