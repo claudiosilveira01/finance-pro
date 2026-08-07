@@ -100,6 +100,8 @@
         .input-inline > *, .control-row > * { flex: 1 1 140px; min-width: 0; }
         input, select, textarea { padding: 11px 14px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); font-size: 0.95rem; background: var(--bg-light); outline: none; color: var(--text-main); flex: 1; min-width: 100px; transition: border-color 0.2s, box-shadow 0.2s; }
         input:focus, select:focus, textarea:focus { border-color: var(--purple-light); box-shadow: 0 0 0 4px rgba(139, 124, 246, 0.16); }
+        input.campo-invalido, select.campo-invalido { border-color: var(--red-danger); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16); animation: shake-erro 0.4s; }
+        @keyframes shake-erro { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 
         ::-webkit-calendar-picker-indicator { filter: invert(var(--calendar-invert)); cursor: pointer; }
         ::placeholder { color: var(--text-muted); opacity: 0.7; font-weight: 400; }
