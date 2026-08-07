@@ -24,101 +24,40 @@ function temFiltrosAtivos() {
            filtrosFixas.vencimento !== '' || filtrosFixas.pago !== '';
 }
 
-// Filtros em cascata para contas fixas — aplicação cumulativa de múltiplos critérios
+// Modal de filtros
+function abrirModalFiltrosFixas() {
+    document.getElementById('modalFiltrosFixas').style.display = 'flex';
+}
+
+function fecharModalFiltrosFixas() {
+    document.getElementById('modalFiltrosFixas').style.display = 'none';
+}
+
+// Filtros em cascata para contas fixas
 function aplicarFiltrosFixas() {
-    // Lê valores dos INPUTS DIRETAMENTE (não do estado global)
     const valorMinInput = document.getElementById('filtroFixaValorMin').value;
     const valorMaxInput = document.getElementById('filtroFixaValorMax').value;
     const vencimentoInput = document.getElementById('filtroFixaVencimento').value;
     const pagoInput = document.getElementById('filtroFixaPago').value;
 
-    // Converte para os tipos corretos
     const valorMin = valorMinInput ? parseFloat(valorMinInput) : null;
     const valorMax = valorMaxInput ? parseFloat(valorMaxInput) : null;
     const vencimento = vencimentoInput || '';
     const pago = pagoInput || '';
 
-    // Armazena os filtros globalmente pra referência EXATA
     filtrosFixas = { valorMin, valorMax, vencimento, pago };
 
-    // Renderiza com filtros aplicados
-    const fixasFiltradas = obterFixasFiltradas();
-    renderizarFixasFiltradas(fixasFiltradas);
-    atualizarTotaisFixas(fixasFiltradas);
-}
-
-function renderizarFixasFiltradas(fixasFiltradas) {
-    const ordFixasAtual = ordFixas;
-    const fixasOrdenadas = aplicarOrdenacao(fixasFiltradas, ordFixasAtual);
-
-    const tbodyFixas = document.getElementById('listaFixas');
-    tbodyFixas.innerHTML = '';
-    let somaSelecionadaFixas = 0;
-
-    const animarAgora = false; // nunca anima durante filtro
-    const classeAnimBadge = '';
-
-    fixasOrdenadas.forEach(c => {
-        let alerta = calcularAlertaVencimento(c.vencimento, c.pago);
-        const marcado = fixasSelecionadas.has(c.id);
-        if (marcado) somaSelecionadaFixas += c.valor;
-
-        tbodyFixas.innerHTML += `
-            <tr>
-                <td class="td-check"><input type="checkbox" class="row-check" ${marcado ? 'checked' : ''} onchange="toggleSelecaoFixa(${c.id})"></td>
-                <td data-label="Item">
-                    <button class="item-link" onclick="editarContaFixa(${c.id})">${c.nome}</button>
-                    <div class="fixa-sub">${c.categoria}${c.obs ? ' · ' + c.obs : ''}</div>
-                </td>
-                <td data-label="Venc."><span class="vencimento-tag${classeAnimBadge}" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span></td>
-                <td data-label="Valor"><strong class="fixa-valor">R$ ${c.valor.toFixed(2)}</strong></td>
-                <td data-label="Pago?"><button class="status-badge${classeAnimBadge} ${c.pago?'sim':'nao'}" onclick="togglePagoFixa(${c.id})">${c.pago?'Sim':'Não'}</button></td>
-            </tr>
-        `;
-    });
-
-    [...fixasSelecionadas].forEach(id => { if (!fixasOrdenadas.some(c => c.id === id)) fixasSelecionadas.delete(id); });
-    animarNumero('mSomaSelecionadas', somaSelecionadaFixas, 500);
-    animarNumero('mSomaSelecionadasCard', somaSelecionadaFixas, 500);
-}
-
-function atualizarTotaisFixas(fixasFiltradas) {
-    // Calcula totais com base nas fixas filtradas
-    let orcamento = 0, pago = 0, restante = 0;
-
-    fixasFiltradas.forEach(c => {
-        orcamento += c.valor;
-        if(c.pago) pago += c.valor; else restante += c.valor;
-    });
-
-    animarNumero('mOrcamento', orcamento, 500);
-    animarNumero('mPago', pago, 500);
-    animarNumero('mRestante', restante, 500);
-
-    const saldoCaixaInicial = parseFloat(document.getElementById('saldoInput').value) || 0;
-    const totalFaturamentos = (window.activeFaturamentos || []).reduce((sum, f) => sum + f.valor, 0);
-    const saldoEstimado = saldoCaixaInicial + totalFaturamentos;
-    let resultadoFinal = saldoEstimado - restante;
-
-    animarNumero('mSaldoEstimado', saldoEstimado, 500);
-    animarNumero('mResultado', resultadoFinal, 500);
-
-    const elRes = document.getElementById('mResultado');
-    elRes.style.color = resultadoFinal >= 0 ? 'var(--green-success)' : 'var(--red-danger)';
+    calcularEAtualizarVisual();
 }
 
 function limparFiltrosFixas() {
-    // Limpa todos os inputs de filtro
     document.getElementById('filtroFixaValorMin').value = '';
     document.getElementById('filtroFixaValorMax').value = '';
     document.getElementById('filtroFixaVencimento').value = '';
     document.getElementById('filtroFixaPago').value = '';
 
-    // Reseta os filtros globais
     filtrosFixas = { valorMin: null, valorMax: null, vencimento: '', pago: '' };
 
-    // Renderiza todas as fixas novamente
     calcularEAtualizarVisual();
-
     mostrarToast('Filtros limpos.', 'success');
 }

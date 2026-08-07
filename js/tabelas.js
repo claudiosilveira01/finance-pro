@@ -1,21 +1,64 @@
 // Ordenação das tabelas de fixas e faturamentos
         function ordenarTabela(tabela, coluna) {
-            if(tabela === 'fixas') { ordFixas.asc = (ordFixas.col === coluna) ? !ordFixas.asc : true; ordFixas.col = coluna; calcularEAtualizarVisual(); }
-            else if(tabela === 'faturamentos') { ordFaturamentos.asc = (ordFaturamentos.col === coluna) ? !ordFaturamentos.asc : true; ordFaturamentos.col = coluna; calcularEAtualizarVisual(); }
-            else if(tabela === 'extrato') { ordExtrato.asc = (ordExtrato.col === coluna) ? !ordExtrato.asc : true; ordExtrato.col = coluna; renderizarExtrato(); }
+            if(tabela === 'fixas') {
+                atualizarOrdenacaoCascata(ordFixas, coluna);
+                calcularEAtualizarVisual();
+            } else if(tabela === 'faturamentos') {
+                atualizarOrdenacaoCascata(ordFaturamentos, coluna);
+                calcularEAtualizarVisual();
+            } else if(tabela === 'extrato') {
+                ordExtrato.asc = (ordExtrato.col === coluna) ? !ordExtrato.asc : true;
+                ordExtrato.col = coluna;
+                renderizarExtrato();
+            }
+        }
+
+        function atualizarOrdenacaoCascata(config, coluna) {
+            let existingIndex = config.levels.findIndex(l => l.col === coluna);
+            if(existingIndex >= 0) {
+                config.levels[existingIndex].asc = !config.levels[existingIndex].asc;
+            } else {
+                if(config.levels.length < 2) {
+                    config.levels.push({ col: coluna, asc: true });
+                } else {
+                    config.levels[1] = { col: coluna, asc: true };
+                }
+            }
         }
 
         function aplicarOrdenacao(array, config) {
-            if(!config.col) return array;
             let arr = [...array];
-            return arr.sort((a, b) => {
-                let valA = a[config.col]; let valB = b[config.col];
-                if(config.col === 'pago') { valA = a.pago ? 1 : 0; valB = b.pago ? 1 : 0; }
-                if(config.col === 'data') { valA = new Date(valA).getTime(); valB = new Date(valB).getTime(); }
-                if(typeof valA === 'string') valA = valA.toLowerCase();
-                if(typeof valB === 'string') valB = valB.toLowerCase();
-                if (valA < valB) return config.asc ? -1 : 1;
-                if (valA > valB) return config.asc ? 1 : -1;
-                return 0;
-            });
+
+            if(config.levels) {
+                if(config.levels.length === 0) return arr;
+                return arr.sort((a, b) => {
+                    for(let level of config.levels) {
+                        let valA = a[level.col];
+                        let valB = b[level.col];
+                        if(level.col === 'pago') { valA = a.pago ? 1 : 0; valB = b.pago ? 1 : 0; }
+                        if(level.col === 'data') { valA = new Date(valA).getTime(); valB = new Date(valB).getTime(); }
+                        if(typeof valA === 'string') valA = valA.toLowerCase();
+                        if(typeof valB === 'string') valB = valB.toLowerCase();
+                        if(valA !== valB) {
+                            if (valA < valB) return level.asc ? -1 : 1;
+                            if (valA > valB) return level.asc ? 1 : -1;
+                        }
+                    }
+                    return 0;
+                });
+            } else if(config.col) {
+                return arr.sort((a, b) => {
+                    let valA = a[config.col];
+                    let valB = b[config.col];
+                    if(config.col === 'pago') { valA = a.pago ? 1 : 0; valB = b.pago ? 1 : 0; }
+                    if(config.col === 'data') { valA = new Date(valA).getTime(); valB = new Date(valB).getTime(); }
+                    if(typeof valA === 'string') valA = valA.toLowerCase();
+                    if(typeof valB === 'string') valB = valB.toLowerCase();
+                    if (valA < valB) return config.asc ? -1 : 1;
+                    if (valA > valB) return config.asc ? 1 : -1;
+                    return 0;
+                });
+            }
+
+            return arr;
         }
