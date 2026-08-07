@@ -318,6 +318,22 @@
                             <button class="fab-inline" onclick="abrirModalNovaFixa()" title="Nova Conta Fixa"><i class="ph ph-plus"></i></button>
                         </span>
                     </div>
+                    <div class="modal-filtro-row" style="margin-bottom: 12px;">
+                        <input type="number" id="filtroFixaValorMin" placeholder="Valor mín..." oninput="aplicarFiltrosFixas()" style="flex: 1;">
+                        <input type="number" id="filtroFixaValorMax" placeholder="Valor máx..." oninput="aplicarFiltrosFixas()" style="flex: 1;">
+                        <select id="filtroFixaVencimento" onchange="aplicarFiltrosFixas()">
+                            <option value="">Todos os vencimentos</option>
+                            <option value="1-10">Dias 1-10</option>
+                            <option value="11-20">Dias 11-20</option>
+                            <option value="21-31">Dias 21-31</option>
+                        </select>
+                        <select id="filtroFixaPago" onchange="aplicarFiltrosFixas()">
+                            <option value="">Pagos e não pagos</option>
+                            <option value="sim">Apenas pagos</option>
+                            <option value="nao">Apenas não pagos</option>
+                        </select>
+                        <button class="btn-action" onclick="limparFiltrosFixas()" title="Limpar filtros"><i class="ph ph-funnel-x"></i> Limpar</button>
+                    </div>
                     <div class="table-responsive">
                         <table>
                             <thead>
@@ -515,6 +531,7 @@
     <script src="js/calendario.js"></script>
     <script src="js/calculadora.js"></script>
     <script src="js/tabelas.js"></script>
+    <script src="js/filtros.js"></script>
     <script src="js/charts.js"></script>
     <script src="js/ui.js"></script>
     <script src="js/render.js"></script>
