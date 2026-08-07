@@ -26,13 +26,19 @@ function temFiltrosAtivos() {
 
 // Filtros em cascata para contas fixas — aplicação cumulativa de múltiplos critérios
 function aplicarFiltrosFixas() {
-    // Lê valores dos inputs
-    const valorMin = parseFloat(document.getElementById('filtroFixaValorMin').value) || null;
-    const valorMax = parseFloat(document.getElementById('filtroFixaValorMax').value) || null;
-    const vencimento = document.getElementById('filtroFixaVencimento').value || '';
-    const pago = document.getElementById('filtroFixaPago').value || '';
+    // Lê valores dos INPUTS DIRETAMENTE (não do estado global)
+    const valorMinInput = document.getElementById('filtroFixaValorMin').value;
+    const valorMaxInput = document.getElementById('filtroFixaValorMax').value;
+    const vencimentoInput = document.getElementById('filtroFixaVencimento').value;
+    const pagoInput = document.getElementById('filtroFixaPago').value;
 
-    // Armazena os filtros globalmente pra referência
+    // Converte para os tipos corretos
+    const valorMin = valorMinInput ? parseFloat(valorMinInput) : null;
+    const valorMax = valorMaxInput ? parseFloat(valorMaxInput) : null;
+    const vencimento = vencimentoInput || '';
+    const pago = pagoInput || '';
+
+    // Armazena os filtros globalmente pra referência EXATA
     filtrosFixas = { valorMin, valorMax, vencimento, pago };
 
     // Renderiza com filtros aplicados
