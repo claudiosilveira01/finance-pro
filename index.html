@@ -119,11 +119,11 @@
             <button class="modal-close-x" onclick="fecharModalNovaFixa()"><i class="ph ph-x"></i></button>
             <div class="card-title" id="modalNovaFixaTitulo"><span class="card-title-left"><i class="ph ph-plus"></i> Nova Conta Fixa</span></div>
             <div class="input-inline">
-                <input type="text" id="fixaNome" style="flex:2;" placeholder="Item (Ex: Energia, Mensalidades)">
-                <input type="number" id="fixaValor" style="flex:1;" placeholder="R$">
+                <input type="text" id="fixaNome" style="flex:2;" placeholder="Item (Ex: Energia, Mensalidades)" oninput="this.classList.remove('campo-invalido')">
+                <input type="number" id="fixaValor" style="flex:1;" placeholder="R$" oninput="this.classList.remove('campo-invalido')">
             </div>
             <div class="input-inline">
-                <input type="number" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31">
+                <input type="number" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31" oninput="this.classList.remove('campo-invalido')">
                 <select id="fixaCategoria" style="flex:1.5;"></select>
             </div>
             <div class="input-inline">

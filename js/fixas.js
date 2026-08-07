@@ -24,13 +24,29 @@
         }
 
         function salvarContaFixa() {
-            const nome = document.getElementById('fixaNome').value.trim();
-            const valor = parseFloat(document.getElementById('fixaValor').value);
-            const venc = parseInt(document.getElementById('fixaVenc').value);
+            const elNome = document.getElementById('fixaNome');
+            const elValor = document.getElementById('fixaValor');
+            const elVenc = document.getElementById('fixaVenc');
             const cat = document.getElementById('fixaCategoria').value;
             const obs = document.getElementById('fixaObs').value.trim();
 
-            if(!nome || isNaN(valor) || isNaN(venc)) return;
+            const nome = elNome.value.trim();
+            const valor = parseFloat(elValor.value);
+            const venc = parseInt(elVenc.value);
+
+            [elNome, elValor, elVenc].forEach(el => el.classList.remove('campo-invalido'));
+
+            const camposInvalidos = [];
+            if(!nome) camposInvalidos.push(elNome);
+            if(isNaN(valor)) camposInvalidos.push(elValor);
+            if(isNaN(venc) || venc < 1 || venc > 31) camposInvalidos.push(elVenc);
+
+            if(camposInvalidos.length > 0) {
+                camposInvalidos.forEach(el => el.classList.add('campo-invalido'));
+                camposInvalidos[0].focus();
+                mostrarToast('Preencha nome, valor e dia de vencimento para salvar.', 'warning');
+                return;
+            }
 
             if (idEditandoFixa !== null) {
                 window.activeFixas = window.activeFixas.map(c =>
@@ -123,6 +139,7 @@
             document.getElementById('fixaValor').value = '';
             document.getElementById('fixaVenc').value = '';
             document.getElementById('fixaObs').value = '';
+            ['fixaNome', 'fixaValor', 'fixaVenc'].forEach(id => document.getElementById(id).classList.remove('campo-invalido'));
             document.getElementById('fixaRecorrente').checked = false;
             document.getElementById('fixaRecorrenteAte').value = '';
             document.getElementById('fixaRecorrenteAte').disabled = true;
