@@ -26,8 +26,8 @@
         let mesesDisponiveis = [];
 
         let mesAtualKey = "";
-        let ordFixas = { col: '', asc: true };
-        let ordFaturamentos = { col: '', asc: true };
+        let ordFixas = { levels: [] };
+        let ordFaturamentos = { levels: [] };
         let ordExtrato = { col: 'data', asc: false };
         let meuGraficoPizza;
         let meuGraficoBarra;

@@ -306,6 +306,47 @@
         </div>
     </div>
 
+    <!-- Modal: Filtros de Contas Fixas -->
+    <div class="modal-overlay" id="modalFiltrosFixas">
+        <div class="modal-content modal-wide" style="position: relative;">
+            <button class="modal-close-x" onclick="fecharModalFiltrosFixas()"><i class="ph ph-x"></i></button>
+            <div class="card-title"><span class="card-title-left"><i class="ph ph-funnel"></i> Filtros de Contas Fixas</span></div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
+                <div>
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--text-muted);">Valor Mínimo</label>
+                    <input type="number" id="filtroFixaValorMin" placeholder="R$ 0" oninput="aplicarFiltrosFixas()" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--text-muted);">Valor Máximo</label>
+                    <input type="number" id="filtroFixaValorMax" placeholder="R$ ∞" oninput="aplicarFiltrosFixas()" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--text-muted);">Vencimento</label>
+                    <select id="filtroFixaVencimento" onchange="aplicarFiltrosFixas()" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
+                        <option value="">Todos os vencimentos</option>
+                        <option value="1-10">Dias 1-10</option>
+                        <option value="11-20">Dias 11-20</option>
+                        <option value="21-31">Dias 21-31</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--text-muted);">Status</label>
+                    <select id="filtroFixaPago" onchange="aplicarFiltrosFixas()" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
+                        <option value="">Pagos e não pagos</option>
+                        <option value="sim">Apenas pagos</option>
+                        <option value="nao">Apenas não pagos</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 8px; justify-content: space-between;">
+                <button class="btn-flat" style="background: transparent; box-shadow: none; border: 1px solid var(--border-color); color: var(--text-main);" onclick="limparFiltrosFixas()"><i class="ph ph-funnel-x"></i> Limpar Filtros</button>
+                <button class="btn-flat" onclick="fecharModalFiltrosFixas()"><i class="ph ph-check"></i> Fechar</button>
+            </div>
+        </div>
+    </div>
+
     <div id="mainApp">
         <div class="main-container">
             <div class="col-left">
@@ -318,21 +359,8 @@
                             <button class="fab-inline" onclick="abrirModalNovaFixa()" title="Nova Conta Fixa"><i class="ph ph-plus"></i></button>
                         </span>
                     </div>
-                    <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center;">
-                        <input type="number" id="filtroFixaValorMin" placeholder="Valor mín..." oninput="aplicarFiltrosFixas()" style="flex: 0 1 100px; padding: 8px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
-                        <input type="number" id="filtroFixaValorMax" placeholder="Valor máx..." oninput="aplicarFiltrosFixas()" style="flex: 0 1 100px; padding: 8px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
-                        <select id="filtroFixaVencimento" onchange="aplicarFiltrosFixas()" style="flex: 0 1 140px; padding: 8px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
-                            <option value="">Todos vencimentos</option>
-                            <option value="1-10">Dias 1-10</option>
-                            <option value="11-20">Dias 11-20</option>
-                            <option value="21-31">Dias 21-31</option>
-                        </select>
-                        <select id="filtroFixaPago" onchange="aplicarFiltrosFixas()" style="flex: 0 1 140px; padding: 8px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
-                            <option value="">Pagos e não pagos</option>
-                            <option value="sim">Apenas pagos</option>
-                            <option value="nao">Apenas não pagos</option>
-                        </select>
-                        <button class="btn-action" onclick="limparFiltrosFixas()" title="Limpar filtros" style="padding: 6px 10px;"><i class="ph ph-funnel-x"></i></button>
+                    <div style="text-align: right; margin-bottom: 8px;">
+                        <button class="btn-action" onclick="abrirModalFiltrosFixas()" title="Abrir filtros"><i class="ph ph-funnel"></i> Filtros</button>
                     </div>
                     <div class="table-responsive">
                         <table>
