@@ -12,8 +12,9 @@
             let totalPorCategoria = {};
             categoriasAtuais.forEach(c => totalPorCategoria[c] = 0);
 
-            // Tabela Fixas — totais sempre somam o array completo, mesmo com filtro de busca ativo
-            let fixasOrdenadas = aplicarOrdenacao(window.activeFixas, ordFixas);
+            // Tabela Fixas — se houver filtros ativos, usa fixas filtradas; senão, usa todas
+            const fixasParaRender = temFiltrosAtivos && temFiltrosAtivos() ? obterFixasFiltradas() : window.activeFixas;
+            let fixasOrdenadas = aplicarOrdenacao(fixasParaRender, ordFixas);
 
             fixasOrdenadas.forEach(c => {
                 orcamento += c.valor;

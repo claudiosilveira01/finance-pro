@@ -24,7 +24,7 @@
         let categoriasAtuais = ["Alimentação", "Transporte", "Lazer", "Educação", "Assinaturas", "Saúde", "Comunicação", "Tributos", "PIX Terceiros", "Outros"];
         let assinaturasConfig = [];
         let mesesDisponiveis = [];
-        
+
         let mesAtualKey = "";
         let ordFixas = { col: '', asc: true };
         let ordFaturamentos = { col: '', asc: true };
@@ -38,6 +38,9 @@
         let extratoSelecionados = new Set();
         let extratoOrdemTipo = 'alfabetica'; // 'alfabetica' | 'valor' — classificação do resumo por tipo no card Extrato
         let ocultarCardAcumulado = false;
+
+        // Filtros em cascata para contas fixas
+        let filtrosFixas = { valorMin: null, valorMax: null, vencimento: '', pago: '' };
 
         // Controla quando as animações de entrada (badges, listas, odômetro lento) tocam:
         // só na carga inicial, troca de mês ou troca de aba no mobile — nunca ao selecionar/marcar itens.

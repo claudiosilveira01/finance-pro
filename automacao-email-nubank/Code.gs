@@ -213,7 +213,7 @@ function verificarVencimentosEEnviarPush() {
     const avisos = [];
 
     (config.assinaturas || []).forEach(sub => {
-      if (sub.faturadoEm === mesAtualKey) return; // já marcada como faturada este mês
+      if (sub.faturadoEm === mesAtualKey) return;
       const diasRestantes = diasAteVencimento_(hoje, sub.vencimento);
       if (DIAS_DE_AVISO.indexOf(diasRestantes) === -1) return;
       const chave = `assinatura-${sub.id}-${mesAtualKey}-${diasRestantes}`;
@@ -244,11 +244,25 @@ function verificarVencimentosEEnviarPush() {
       return;
     }
 
-    // Marca como notificado ANTES de disparar os pushes (não depois) — encolhe a janela em que
-    // uma segunda execução sobreposta (gatilho manual + automático, por exemplo) leria
-    // "ainda não notificado" e mandaria os mesmos avisos de novo.
-    avisos.forEach(aviso => { jaNotificados[aviso.chave] = true; });
+    // Double-check: relê config ANTES de marcar como notificado, pra evitar race condition
+    // se dois gatilhos rodarem simultaneamente (ex: manual + automático)
+    const configAntesEnvio = obterConfigGeral_(token);
+    const jaNotificadosAntesEnvio = configAntesEnvio.notificacoesEnviadas || {};
+
+    const avisosParaEnviar = avisos.filter(aviso => !jaNotificadosAntesEnvio[aviso.chave]);
+
+    if (avisosParaEnviar.length === 0) {
+      Logger.log('Todos os vencimentos já foram notificados (double-check).');
+      return;
+    }
+
+    // Marca como notificado ANTES de disparar os pushes (race condition window ainda existe,
+    // mas é bem menor agora). Atualiza os dicts para a tentativa de envio.
+    avisosParaEnviar.forEach(aviso => { jaNotificados[aviso.chave] = true; });
     salvarNotificacoesEnviadas_(podarNotificacoesAntigas_(jaNotificados, mesAtualKey), token);
+
+    // Use avisosParaEnviar ao invés de avisos para evitar reenviar os que já foram notificados
+    const avisosAFinal = avisosParaEnviar;
 
     // Agrupa por token de push (não por deviceId): se o mesmo aparelho físico ficou registrado sob
     // dois deviceIds (ex.: PWA instalado na tela de início + aba do Safari, cada um com seu próprio
@@ -261,7 +275,7 @@ function verificarVencimentosEEnviarPush() {
     });
 
     const deviceIdsInvalidos = new Set();
-    avisos.forEach(aviso => {
+    avisosAFinal.forEach(aviso => {
       Object.keys(deviceIdsPorToken).forEach(fcmToken => {
         const ok = enviarPush_(token, fcmToken, aviso.titulo, aviso.corpo);
         if (!ok) deviceIdsPorToken[fcmToken].forEach(devId => deviceIdsInvalidos.add(devId));
@@ -269,7 +283,7 @@ function verificarVencimentosEEnviarPush() {
     });
 
     removerDispositivosInvalidos_(deviceIdsInvalidos, pushTokensMap, token);
-    Logger.log(`${avisos.length} aviso(s) de vencimento enviado(s) para ${Object.keys(deviceIdsPorToken).length} token(s) único(s) (${deviceIds.length} dispositivo(s) registrado(s)).`);
+    Logger.log(`${avisosAFinal.length} aviso(s) de vencimento enviado(s) para ${Object.keys(deviceIdsPorToken).length} token(s) único(s) (${deviceIds.length} dispositivo(s) registrado(s)).`);
   } catch (erro) {
     Logger.log('ERRO (push de vencimento): ' + erro.message + '\n' + erro.stack);
     // Não relança — uma falha aqui não deve derrubar a importação do extrato, que já rodou antes.
