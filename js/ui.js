@@ -25,6 +25,7 @@
 
         function abrirModalConfig() {
             document.getElementById('modalConfig').style.display = 'flex';
+            if (typeof carregarConfigVerificacaoEmailNoModal === 'function') carregarConfigVerificacaoEmailNoModal();
         }
         function fecharModalConfig() {
             document.getElementById('modalConfig').style.display = 'none';

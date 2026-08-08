@@ -80,6 +80,39 @@ Rodar de novo é seguro — transações já importadas não duplicam (o script 
 Pronto — a partir de agora, toda vez que você pedir um extrato no app do Nubank, em
 até uma hora o Planner Financeiro já vai estar com os dados atualizados sozinho.
 
+## 7. Botão "Verificar Agora" no app (opcional)
+
+Se você não quiser esperar até 1 hora, o Planner Financeiro tem um botão que dispara
+essa mesma verificação na hora, direto do navegador. Pra habilitar:
+
+1. Gere um token secreto qualquer (uma senha longa e aleatória só sua). Pode usar,
+   por exemplo, `openssl rand -hex 20` no terminal, ou qualquer gerador de senha.
+2. No editor do Apps Script: ⚙️ **Configurações do projeto** → **Propriedades do
+   script** → **Adicionar propriedade do script**:
+   | Propriedade | Valor |
+   |---|---|
+   | `WEBAPP_SECRET_TOKEN` | o token gerado no passo 1 |
+3. **Implantar** (botão azul, canto superior direito) → **Nova implantação**.
+4. Ícone de engrenagem ao lado de "Selecionar tipo" → **App da Web**.
+5. Configure:
+   - **Executar como:** Eu (a sua conta)
+   - **Quem pode acessar:** Qualquer pessoa
+   
+   ("Qualquer pessoa" é necessário pra o navegador conseguir chamar a URL sem
+   precisar fazer login do Google — é por isso que o token do passo 1 existe: sem
+   ele na URL, a requisição é recusada dentro do próprio `doGet()`.)
+6. **Implantar** → autorize se pedido → copie a **URL do app da Web** gerada
+   (algo como `https://script.google.com/macros/s/AKfycb.../exec`).
+7. No Planner Financeiro: abra **Configurações do Sistema** (ícone de engrenagem) →
+   seção **Verificação Automática de Extrato** → cole a URL e o token → **Salvar**.
+   Esses dados ficam guardados só no navegador do seu aparelho (não são enviados
+   pro GitHub nem pro Firestore), então repita esse passo em cada dispositivo onde
+   quiser usar o botão.
+
+Sempre que você mudar o código do `Code.gs` depois disso, use **Implantar → Gerenciar
+implantações → editar (ícone de lápis) → Nova versão** pra a URL existente continuar
+valendo com o código atualizado (uma "Nova implantação" geraria uma URL diferente).
+
 ## Sobre segurança
 
 A chave da conta de serviço (passo 1) tem acesso de leitura/escrita a **todo** o
@@ -90,3 +123,12 @@ nesse projeto, o risco prático é baixo, mas trate esse arquivo `.json` como um
 senha: não envie por e-mail, não coloque em repositórios, e se desconfiar que
 vazou, revogue a chave em
 Google Cloud Console → IAM e administrador → Contas de serviço → (a conta) → Chaves.
+
+O `WEBAPP_SECRET_TOKEN` (passo 7) merece o mesmo cuidado: quem tiver a URL do App
+da Web **e** o token consegue disparar a importação/notificação a qualquer momento
+(embora não consiga ler nem escrever nada além do que o `doGet()` já faz de propósito
+— não é um acesso genérico ao Firestore). Como o repositório do finance-pro é
+**público**, a URL e o token do App da Web nunca devem ser commitados no código — por
+isso o app guarda os dois só no `localStorage` do navegador, digitados manualmente na
+tela de Configurações. Se desconfiar que vazaram, gere um token novo na Propriedade do
+Script e atualize a Configuração no app.

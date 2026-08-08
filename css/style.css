@@ -102,6 +102,8 @@
         input:focus, select:focus, textarea:focus { border-color: var(--purple-light); box-shadow: 0 0 0 4px rgba(139, 124, 246, 0.16); }
         input.campo-invalido, select.campo-invalido { border-color: var(--red-danger); box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.16); animation: shake-erro 0.4s; }
         @keyframes shake-erro { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+        .girando { display: inline-block; animation: girar 0.9s linear infinite; }
+        @keyframes girar { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
         ::-webkit-calendar-picker-indicator { filter: invert(var(--calendar-invert)); cursor: pointer; }
         ::placeholder { color: var(--text-muted); opacity: 0.7; font-weight: 400; }

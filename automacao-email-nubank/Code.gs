@@ -65,31 +65,9 @@ const MESES_NOMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
  */
 function processarExtratosNubank() {
   let erroExtrato = null;
+  let resultado = { novosEmails: 0, novasTransacoes: 0 };
   try {
-    const label = obterOuCriarLabel_(CONFIG.LABEL_PROCESSADO);
-    const threads = GmailApp.search(CONFIG.GMAIL_QUERY + ' -label:"' + CONFIG.LABEL_PROCESSADO + '"');
-
-    if (threads.length === 0) {
-      Logger.log('Nenhum e-mail novo de extrato do Nubank encontrado.');
-    } else {
-      const token = obterTokenFirestore_();
-
-      threads.forEach(thread => {
-        thread.getMessages().forEach(msg => {
-          const anexoCsv = msg.getAttachments().find(a => a.getName().toLowerCase().endsWith('.csv'));
-          if (!anexoCsv) {
-            Logger.log('Mensagem sem anexo .csv, pulando: "' + msg.getSubject() + '"');
-            return;
-          }
-          const transacoes = parseCsvNubank_(anexoCsv.getDataAsString('UTF-8'));
-          Logger.log(`Encontradas ${transacoes.length} transação(ões) em "${msg.getSubject()}".`);
-          if (transacoes.length > 0) salvarTransacoesNoFirestore_(transacoes, token);
-        });
-        thread.addLabel(label);
-      });
-
-      Logger.log('Concluído.');
-    }
+    resultado = processarExtratosNubankInterno_();
   } catch (erro) {
     Logger.log('ERRO: ' + erro.message + '\n' + erro.stack);
     erroExtrato = erro; // guardado pra relançar só depois de checar os vencimentos abaixo
@@ -100,6 +78,72 @@ function processarExtratosNubank() {
   verificarVencimentosEEnviarPush();
 
   if (erroExtrato) throw erroExtrato;
+  return resultado;
+}
+
+/**
+ * Núcleo da importação, isolado de processarExtratosNubank() pra poder ser chamado
+ * também pelo doGet() (botão "Verificar agora" do app) sem duplicar lógica.
+ * Retorna um resumo pra exibir pro usuário (quantos e-mails/transações novas).
+ */
+function processarExtratosNubankInterno_() {
+  const label = obterOuCriarLabel_(CONFIG.LABEL_PROCESSADO);
+  const threads = GmailApp.search(CONFIG.GMAIL_QUERY + ' -label:"' + CONFIG.LABEL_PROCESSADO + '"');
+
+  if (threads.length === 0) {
+    Logger.log('Nenhum e-mail novo de extrato do Nubank encontrado.');
+    return { novosEmails: 0, novasTransacoes: 0 };
+  }
+
+  const token = obterTokenFirestore_();
+  let novasTransacoesTotal = 0;
+
+  threads.forEach(thread => {
+    thread.getMessages().forEach(msg => {
+      const anexoCsv = msg.getAttachments().find(a => a.getName().toLowerCase().endsWith('.csv'));
+      if (!anexoCsv) {
+        Logger.log('Mensagem sem anexo .csv, pulando: "' + msg.getSubject() + '"');
+        return;
+      }
+      const transacoes = parseCsvNubank_(anexoCsv.getDataAsString('UTF-8'));
+      Logger.log(`Encontradas ${transacoes.length} transação(ões) em "${msg.getSubject()}".`);
+      if (transacoes.length > 0) novasTransacoesTotal += salvarTransacoesNoFirestore_(transacoes, token);
+    });
+    thread.addLabel(label);
+  });
+
+  Logger.log('Concluído.');
+  return { novosEmails: threads.length, novasTransacoes: novasTransacoesTotal };
+}
+
+/**
+ * Ponto de entrada HTTP — permite o botão "Verificar e-mail agora" do app disparar a
+ * importação sob demanda (em vez de esperar o gatilho de hora em hora). Implante como
+ * Web App (veja SETUP.md, seção 7) e configure WEBAPP_SECRET_TOKEN nas Propriedades do
+ * Script; sem o token certo na query string, a requisição é recusada.
+ */
+function doGet(e) {
+  const tokenEsperado = PropertiesService.getScriptProperties().getProperty('WEBAPP_SECRET_TOKEN');
+  const tokenRecebido = e && e.parameter && e.parameter.token;
+
+  if (!tokenEsperado || tokenRecebido !== tokenEsperado) {
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, erro: 'Não autorizado.' }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  try {
+    const resultado = processarExtratosNubankInterno_();
+    verificarVencimentosEEnviarPush();
+    return ContentService.createTextOutput(JSON.stringify({
+      ok: true,
+      novosEmails: resultado.novosEmails,
+      novasTransacoes: resultado.novasTransacoes
+    })).setMimeType(ContentService.MimeType.JSON);
+  } catch (erro) {
+    Logger.log('ERRO (doGet): ' + erro.message + '\n' + erro.stack);
+    return ContentService.createTextOutput(JSON.stringify({ ok: false, erro: erro.message }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
 function obterOuCriarLabel_(nome) {
@@ -160,7 +204,7 @@ function parseCsvNubank_(csvTexto) {
   return transacoes;
 }
 
-/** Agrupa por mês (AAAA-MM), mescla com o que já existe no Firestore (sem duplicar) e salva. */
+/** Agrupa por mês (AAAA-MM), mescla com o que já existe no Firestore (sem duplicar) e salva. Retorna quantas eram realmente novas. */
 function salvarTransacoesNoFirestore_(transacoes, token) {
   const porMes = {};
   transacoes.forEach(t => {
@@ -168,6 +212,7 @@ function salvarTransacoesNoFirestore_(transacoes, token) {
     (porMes[mesKey] = porMes[mesKey] || []).push(t);
   });
 
+  let totalNovas = 0;
   Object.keys(porMes).forEach(mesKey => {
     const doc = obterDocumentoMes_(mesKey, token);
     const extratoAtual = doc.extrato || [];
@@ -182,7 +227,9 @@ function salvarTransacoesNoFirestore_(transacoes, token) {
     salvarExtratoDoMes_(mesKey, extratoAtual.concat(novas), token);
     garantirMesNaLista_(mesKey, token);
     Logger.log(`Mês ${mesKey}: ${novas.length} transação(ões) nova(s) adicionada(s) (${porMes[mesKey].length - novas.length} já existiam).`);
+    totalNovas += novas.length;
   });
+  return totalNovas;
 }
 
 // ============================================================================

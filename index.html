@@ -290,6 +290,23 @@
             <div id="listaAssinaturasConfig" style="margin-top:12px;"></div>
 
             <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-envelope-simple-open" style="vertical-align:-2px;"></i> Verificação Automática de Extrato</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+                Normalmente a checagem do e-mail de extrato do Nubank roda sozinha de hora em hora. Cole aqui a URL e o token do App da Web (veja SETUP.md) para poder disparar essa checagem na hora, pelo botão do card "Extrato Bancário". Esses dados ficam salvos só neste aparelho.
+            </p>
+            <div class="control-row" style="margin-bottom: 8px;">
+                <input type="text" id="verifEmailUrl" placeholder="URL do App da Web (.../exec)">
+            </div>
+            <div class="control-row">
+                <input type="password" id="verifEmailToken" placeholder="Token secreto">
+                <button class="btn-flat" onclick="salvarConfigVerificacaoEmail()" title="Salvar" style="flex: 0 0 48px; padding: 11px;"><i class="ph ph-check"></i></button>
+            </div>
+            <button class="btn-action" style="font-size:0.75rem; color:var(--text-muted); margin-top:6px; padding:4px;" onclick="limparConfigVerificacaoEmail()">
+                <i class="ph ph-x"></i> Remover configuração deste aparelho
+            </button>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
             <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-download-simple" style="vertical-align:-2px;"></i> Exportar Dados</h4>
             <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px;">
                 <button class="btn-flat" style="flex:1; min-width:140px; justify-content:center;" onclick="exportarFixasCSV()"><i class="ph ph-file-text" style="font-size:18px;"></i> Fixas (CSV)</button>
@@ -487,6 +504,7 @@
                             <span style="display:flex; gap:8px;">
                                 <input type="file" id="extratoPdfInput" accept="application/pdf" style="display:none;" onchange="processarExtratoPdf(this.files[0])">
                                 <button class="card-action-btn card-action-btn-danger" onclick="confirmarLimparExtratoDoMes()" title="Limpar todo o extrato deste mês"><i class="ph ph-trash"></i></button>
+                                <button class="card-action-btn" id="btnVerificarEmailAgora" onclick="verificarExtratoEmailAgora()" title="Verificar agora se chegou e-mail de extrato do Nubank"><i class="ph ph-envelope-simple-open"></i></button>
                                 <button class="fab-inline" onclick="document.getElementById('extratoPdfInput').click()" title="Importar PDF do extrato"><i class="ph ph-upload-simple"></i></button>
                             </span>
                         </div>
@@ -565,6 +583,7 @@
     <script src="js/render.js"></script>
     <script src="js/exportar.js"></script>
     <script src="js/extrato.js"></script>
+    <script src="js/verificacaoEmail.js"></script>
     <script src="js/anim.js"></script>
     <script src="js/pwa.js"></script>
     <script src="js/app.js"></script>
