@@ -15,14 +15,17 @@
 
         function atualizarOrdenacaoCascata(config, coluna) {
             let existingIndex = config.levels.findIndex(l => l.col === coluna);
-            if(existingIndex >= 0) {
-                config.levels[existingIndex].asc = !config.levels[existingIndex].asc;
+            if(existingIndex === 0) {
+                // já é o critério principal — só inverte a direção
+                config.levels[0].asc = !config.levels[0].asc;
+            } else if(existingIndex > 0) {
+                // já existia como desempate — promove a principal, mantendo a direção
+                const [level] = config.levels.splice(existingIndex, 1);
+                config.levels.unshift(level);
             } else {
-                if(config.levels.length < 2) {
-                    config.levels.push({ col: coluna, asc: true });
-                } else {
-                    config.levels[1] = { col: coluna, asc: true };
-                }
+                // coluna nova vira o critério principal; a anterior (se houver) vira desempate
+                const anterior = config.levels[0];
+                config.levels = anterior ? [{ col: coluna, asc: true }, anterior] : [{ col: coluna, asc: true }];
             }
         }
 
