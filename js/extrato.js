@@ -45,7 +45,8 @@ const EXTRATO_TIPO_DISPLAY = {
     'Débito em conta': { label: 'Débito em Conta', icone: 'minus-circle' },
     'Depósito': { label: 'Depósito', icone: 'download-simple' },
     'Estorno': { label: 'Estorno', icone: 'arrow-counter-clockwise' },
-    'Saque': { label: 'Saque', icone: 'money' }
+    'Saque': { label: 'Saque', icone: 'money' },
+    'Valor adicionado na conta por cartão de crédito': { label: 'Adicionado via Crédito', icone: 'credit-card' }
 };
 function _extratoTipoDisplay(tipo) {
     return EXTRATO_TIPO_DISPLAY[tipo] || { label: tipo, icone: 'arrows-left-right' };
@@ -54,6 +55,11 @@ function _extratoTipoDisplay(tipo) {
 const EXTRATO_MESES = { JAN:'01', FEV:'02', MAR:'03', ABR:'04', MAI:'05', JUN:'06', JUL:'07', AGO:'08', SET:'09', OUT:'10', NOV:'11', DEZ:'12' };
 const EXTRATO_MONEY_RE = /^(.*?)\s*(\d{1,3}(?:\.\d{3})*,\d{2})$/;
 const EXTRATO_DATA_RE = /^(\d{2})\s+([A-ZÇÃÕ]{3})\s+(\d{4})\b/i;
+// O rótulo "Valor adicionado na conta por cartão de crédito" quebra em ponto variável entre as
+// colunas do PDF a cada ocorrência (kerning-dependente), então nunca bate como prefixo fixo em
+// EXTRATO_TIPOS — a transação inteira era descartada silenciosamente. A descrição fixa que sempre
+// a acompanha ("Valor adicionado para Pix no Crédito") não quebra, então é usada como âncora.
+const EXTRATO_CARTAO_CREDITO_RE = /(valor adicionado para pix no cr[ée]dito)\s*(\d{1,3}(?:\.\d{3})*,\d{2})$/i;
 
 const EXTRATO_RUIDO = [
     /^CPF\b/i,
@@ -163,6 +169,13 @@ function _extratoParseLinhas(linhas) {
         if (/Total de entradas/i.test(linha)) { descartarAberto(); direcao = 'entrada'; return; }
         if (/Total de sa[íi]das/i.test(linha)) { descartarAberto(); direcao = 'saida'; return; }
         if (mData) return;
+
+        const mCartaoCredito = linha.match(EXTRATO_CARTAO_CREDITO_RE);
+        if (mCartaoCredito) {
+            descartarAberto();
+            transacoes.push({ data: dataAtual, tipo: 'Valor adicionado na conta por cartão de crédito', item: 'Valor adicionado para Pix no Crédito', valor: _extratoParseValor(mCartaoCredito[2]), direcao });
+            return;
+        }
 
         const tipoDetectado = encontrarTipo(linha);
         if (tipoDetectado) {
