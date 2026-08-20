@@ -23,6 +23,16 @@
             }
         }
 
+        function inserirRestanteContas() {
+            if(!window.activeFixas) return;
+            const restante = window.activeFixas.reduce((acc, c) => acc + (c.pago ? 0 : c.valor), 0);
+
+            const visor = document.getElementById('calcVisor');
+            let atual = visor.value;
+            if(atual === 'Erro' || atual === '0') visor.value = '';
+            visor.value += restante.toFixed(2);
+        }
+
         function validarInputCalculadora(input) {
             input.value = input.value.replace(/[^0-9+\-*/.%]/g, '');
         }

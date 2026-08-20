@@ -275,7 +275,8 @@
         .calc-btn.op { background: var(--gradient-blue); color: white; }
         .calc-btn.eq { background: var(--gradient-green); color: white; }
         .calc-btn.clear { background: var(--gradient-red); color: white; }
-        .calc-btn.select-fixas { background: var(--gradient-btn); color: white; grid-column: span 4; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.9rem;}
+        .calc-btn.select-fixas { background: var(--gradient-btn); color: white; grid-column: span 2; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;}
+        .calc-btn.insert-restante { background: var(--gradient-red); color: white; grid-column: span 2; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 0.85rem;}
 
         /* === MODAIS === */
         .modal-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(15, 11, 31, 0.55); backdrop-filter: blur(3px); display: none; justify-content: center; align-items: center; z-index: 1000; padding: 16px; animation: modal-fade 0.2s ease-out; }
