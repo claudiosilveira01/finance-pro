@@ -222,17 +222,29 @@ function _extratoChave(t) {
     return `${t.data}|${t.tipo}|${t.item}|${t.valor}|${t.direcao}`;
 }
 
-// Mescla com o que já existe no mês: transações idênticas (mesma data/tipo/item/valor/direção)
-// são ignoradas; só as realmente novas são adicionadas — sem duplicar em reimportações.
+// Mescla com o que já existe no mês: reimportar o mesmo PDF não duplica nada, mas duas
+// transações REAIS e distintas com os mesmos data/tipo/item/valor/direção (ex.: dois Pix
+// idênticos pro mesmo favorecido, no mesmo dia) continuam sendo as duas contadas — em vez de
+// ignorar qualquer repetição da chave, cada nova transação só é tratada como duplicata se já
+// existir uma quantidade igual ou maior de transações com essa mesma chave (contadas por
+// posição/ordinal, não só presença). O ordinal também entra no hash do id, senão duas
+// transações com a mesma chave ficariam com o mesmo id e excluir uma pelo botão de lixeira
+// acabaria sempre afetando só a primeira das duas.
 function _extratoMesclar(existentes, novas) {
-    const chavesExistentes = new Set(existentes.map(_extratoChave));
+    const contagemExistente = {};
+    existentes.forEach(t => {
+        const chave = _extratoChave(t);
+        contagemExistente[chave] = (contagemExistente[chave] || 0) + 1;
+    });
+
+    const contagemNestaImportacao = {};
     let adicionadas = 0;
     const resultado = [...existentes];
     novas.forEach(t => {
         const chave = _extratoChave(t);
-        if (chavesExistentes.has(chave)) return;
-        chavesExistentes.add(chave);
-        resultado.push({ ...t, id: _extratoStrHash(chave) });
+        const ordinal = (contagemNestaImportacao[chave] = (contagemNestaImportacao[chave] || 0) + 1);
+        if (ordinal <= (contagemExistente[chave] || 0)) return; // já existe uma transação igual nessa posição — duplicata de reimportação
+        resultado.push({ ...t, id: _extratoStrHash(`${chave}|${ordinal}`) });
         adicionadas++;
     });
     return { resultado, adicionadas };

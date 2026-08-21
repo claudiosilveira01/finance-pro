@@ -203,6 +203,13 @@ externo (`automacao-email-nubank/Code.gs`), em busca de bugs, inconsistências e
   `Planner Financeiro - Contexto Completo.md` para o detalhe.
 - Botão de seletor de data do card Receitas que não abria o calendário no Safari/iOS
   (`showPicker()` num input de tamanho zero) — ver mesmo documento.
+- **Deduplicação do extrato podia descartar transações reais**: `_extratoChave()`/
+  `_extratoMesclar()` (`js/extrato.js`) tratavam duas transações reais e distintas com
+  data+tipo+item+valor+direção idênticos (ex.: dois Pix de R$ 20 pro mesmo favorecido, no mesmo
+  dia) como duplicata, descartando a segunda mesmo na primeira importação do PDF — e ainda dava
+  o mesmo `id` pras duas, então excluir uma pela lixeira sempre removia a primeira. Corrigido
+  contando por ordinal (a Nª ocorrência de uma chave repetida só é "duplicata" se já existir uma
+  quantidade igual ou maior dela no mês) — reimportar o mesmo PDF continua sem duplicar nada.
 
 ### Verificado e OK (sem ação necessária)
 - Nenhum `id` HTML duplicado em `index.html`.
@@ -211,22 +218,12 @@ externo (`automacao-email-nubank/Code.gs`), em busca de bugs, inconsistências e
 - Nenhum `console.log`/`TODO`/`FIXME` esquecido no código.
 - `automacao-email-nubank/Code.gs`: lógica de deduplicação (`idOrigem`), autenticação JWT e envio
   de push revisadas — sem problemas encontrados.
+- `diagnosticarExtratoMes_`/`removerDuplicatasExtrato_` (citadas no changelog de julho como
+  adicionadas ao `Code.gs`, mas ausentes do arquivo do repositório) — **confirmado pelo usuário
+  em 21/08/2026 que o bug daquela correção já foi resolvido**; eram ferramentas pontuais usadas
+  direto no editor do Apps Script, não uma feature permanente, então não precisam existir aqui.
 
-### Achados que **não** foram alterados (decisão do usuário necessária)
-- **`diagnosticarExtratoMes_`/`removerDuplicatasExtrato_` não existem no `Code.gs` do
-  repositório**, apesar de `PLANO-EVOLUCAO.md` (seção "Extrato Bancário: correção de soma errada",
-  28/07/2026) descrever essas funções como adicionadas ao arquivo. Prováveis explicações: foram
-  coladas direto no editor do Apps Script (online) como ferramenta pontual de diagnóstico/limpeza
-  e nunca commitadas aqui, ou foram removidas depois de usadas. **Não dá pra confirmar sem
-  acessar o projeto do Apps Script** — vale perguntar ao usuário se a limpeza de duplicatas de
-  julho/2026 foi mesmo executada.
-- **Duplicação legítima na importação de PDF**: `_extratoChave()` (em `js/extrato.js`) usa
-  `data+tipo+item+valor+direção` como chave de deduplicação. Duas transações **reais e distintas**
-  com esses cinco campos idênticos (ex.: dois Pix de R$ 20,00 pro mesmo destinatário, no mesmo
-  dia) seriam tratadas como duplicata e a segunda seria descartada na reimportação do mesmo PDF.
-  É uma limitação conhecida do modelo de dedup (mencionada em outro contexto no changelog), não
-  um bug introduzido agora — resolver exigiria mudar a chave (ex.: incluir um contador de
-  ocorrência) e não foi alterado sem validar com o usuário se vale a pena.
+### Ainda em aberto (decisão do usuário necessária)
 - **Nome do app**: `index.html` (`<title>`, tela de login), `manifest.json` (`name`/`short_name`)
   e `firebase-messaging-sw.js` (título de notificação) ainda usam "Planner Financeiro"/"Planner",
   não "Finance Pro". Bate com a seção 4/6 deste documento (branding Vortex AI ainda não aplicado).

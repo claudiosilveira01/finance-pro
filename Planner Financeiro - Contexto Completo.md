@@ -54,31 +54,34 @@ Primeira versão usava `showPicker()` num input escondido — falhava em silênc
 Corrigido colocando o input de data real (invisível) por cima do botão, do mesmo tamanho — o
 toque abre o calendário nativo direto. Ver PRs #6 e #7.
 
+### Correção: deduplicação do extrato podia descartar transações reais (2026-08-21)
+Achado da auditoria de código do mesmo dia. `_extratoChave()`/`_extratoMesclar()`
+(`js/extrato.js`) tratavam duas transações reais e distintas com data+tipo+item+valor+direção
+idênticos (ex.: dois Pix de R$ 20 pro mesmo favorecido, no mesmo dia) como se fossem a mesma
+duplicada — a segunda era descartada mesmo na primeira importação do PDF, e as duas ficavam com
+o mesmo `id` (excluir uma pela lixeira sempre removia a primeira). Corrigido contando por
+ordinal: só é duplicata de reimportação se já existir uma quantidade igual ou maior da mesma
+chave no mês. Reimportar o mesmo PDF continua sem duplicar nada. Validado com 3 cenários
+automatizados.
+
 ### Auditoria de código (2026-08-21)
 Varredura completa do front-end e do `Code.gs`. Corrigido: `alert()`/`confirm()` nativos
 remanescentes em `js/meses.js` (função de copiar contas fixas entre meses), substituídos por
 `mostrarToast()` pra bater com o padrão usado no resto do app. Nenhuma função morta, `id`
-duplicado ou `console.log` esquecido encontrados. Dois pontos identificados que **não** foram
-alterados, por precisarem de confirmação do usuário:
-- `diagnosticarExtratoMes_`/`removerDuplicatasExtrato_`, descritas abaixo como adicionadas ao
-  `Code.gs`, **não estão no arquivo do repositório** — não dá pra confirmar se a limpeza de
-  duplicatas de julho/2026 foi executada sem acessar o projeto do Apps Script diretamente.
-- A deduplicação da importação de PDF (`_extratoChave` em `js/extrato.js`, chave =
-  data+tipo+item+valor+direção) trataria duas transações **reais e distintas** com esses cinco
-  campos idênticos como duplicata, descartando a segunda numa reimportação. Limitação conhecida
-  do modelo atual, não um bug novo.
+duplicado ou `console.log` esquecido encontrados. As `diagnosticarExtratoMes_`/
+`removerDuplicatasExtrato_` (citadas abaixo como adicionadas ao `Code.gs`, mas ausentes do
+arquivo do repositório) foram confirmadas pelo usuário como resolvidas — eram ferramentas
+pontuais usadas direto no editor do Apps Script, não uma feature permanente do sistema.
 
-### Correção de bug: card Extrato somando valor errado (2026-07)
+### Correção de bug: card Extrato somando valor errado (2026-07) ✅ resolvido
 Usuário reportou que o total do card não batia com o extrato real do banco (CSV anexado).
 Causa suspeita: duplicação de transações no Firestore (dois caminhos de importação diferentes —
 upload manual de PDF vs. importação automática por e-mail/CSV — usam chaves de deduplicação
 diferentes, então a mesma transação real pode entrar duas vezes se os textos do "item" não
-baterem exatamente). Teriam sido usadas no `Code.gs` (via editor online do Apps Script, ver nota
-da auditoria acima) `diagnosticarExtratoMes_(mesKey)` (loga duplicatas e totais reais) e
-`removerDuplicatasExtrato_(mesKey)` (remove duplicatas exatas — mesma
-data+tipo+item+valor+direção+idOrigem — preservando pares legítimos que compartilham o mesmo
-Identificador do Nubank, como "Valor adicionado por cartão de crédito" + Pix pareado).
-**Status: situação não confirmada — perguntar ao usuário (ver auditoria de 2026-08-21 acima).**
+baterem exatamente). Corrigido usando `diagnosticarExtratoMes_(mesKey)`/
+`removerDuplicatasExtrato_(mesKey)` direto no editor do Apps Script (nunca commitadas neste
+`Code.gs` — eram ferramentas pontuais de diagnóstico/limpeza, não uma feature permanente).
+**Status: confirmado pelo usuário em 21/08/2026 que o bug foi resolvido.**
 
 ### Card Extrato Bancário — UX (2026-07)
 - Rótulos curtos + ícone por tipo de transação (ex.: "Recebido Pix").
