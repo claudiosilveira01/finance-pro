@@ -20,11 +20,16 @@ vencimentos. 100% client-side (HTML/CSS/JS puro, sem framework, sem build). Repo
   - `users/{uid}/config/geral` — categorias, assinaturas, lista de meses, `ocultarCardAcumulado`,
     `pushTokens` (mapa `deviceId -> token` do FCM), `notificacoesEnviadas` (dedup de avisos).
   - `users/{uid}/meses/{AAAA-MM}` — fixas, faturamentos, saldo, extrato (do mês).
-- **Arquivos principais:** `index.html` (tudo), `css/style.css`, `js/*.js` (um arquivo por
-  responsabilidade: `config.js`, `auth.js`, `config-global.js`, `fixas.js`, `faturamentos.js`,
-  `assinaturas.js`, `extrato.js`, `calendario.js`, `render.js`, `ui.js`, `modal.js`, `pwa.js`
-  etc.), `manifest.json` + `firebase-messaging-sw.js` (PWA), `PLANO-EVOLUCAO.md` (changelog
-  técnico detalhado, este arquivo é um resumo dele pra uso fora do repo).
+- **Arquivos principais:** `index.html` (marcação), `css/style.css`, 25 arquivos em `js/*.js`
+  (um por responsabilidade — `config.js`, `config-global.js`, `auth.js`, `meses.js`, `fixas.js`,
+  `faturamentos.js`, `assinaturas.js`, `categorias.js`, `extrato.js`, `calendario.js`,
+  `calculadora.js`, `filtros.js`, `tabelas.js`, `charts.js`, `render.js`, `exportar.js`,
+  `modal.js`, `undo.js`, `toast.js`, `ui.js`, `theme.js`, `anim.js`, `pwa.js`,
+  `verificacaoEmail.js`, `app.js`), `manifest.json` + `firebase-messaging-sw.js` (PWA),
+  `PLANO-EVOLUCAO.md` (changelog técnico detalhado, este arquivo é um resumo dele pra uso fora do
+  repo) e `EXPLORACAO_FINANCE_PRO.md` (varredura de arquitetura + auditoria de código).
+- **Nome exibido no app ainda é "Planner Financeiro"** (título da aba, tela de login,
+  `manifest.json`) — ainda não foi rebatizado para "Finance Pro" no próprio app.
 - **Automação externa:** `automacao-email-nubank/Code.gs`, um projeto Google Apps Script separado
   (roda na conta `claudio.silveira.gg@gmail.com`, gatilho de tempo a cada 1h). Lê e-mails
   "Extrato da sua conta do Nubank" (assunto fixo, enviado pelo Nubank só quando alguém pede um
@@ -35,16 +40,45 @@ vencimentos. 100% client-side (HTML/CSS/JS puro, sem framework, sem build). Repo
 
 ## Funcionalidades entregues (mais recentes primeiro)
 
+### Correção: Saldo Estimado somando receita em dobro (2026-08-21)
+Usuário reportou que "Falta/Sobra" no Painel de Controle mostrava R$ 2.000,44 quando o esperado
+era ~R$ 33. Causa: o cálculo somava **todas** as receitas do mês, inclusive uma já recebida dias
+antes — que já estava embutida no campo "Caixa Atual", entrando em dobro. Corrigido em
+`js/render.js`: só entram no Saldo Estimado as receitas com data **futura** à data de hoje.
+Validado com os números reais do usuário (bateu exato). Ver PR #6.
+
+### Card Receitas: layout mobile + botão de data (2026-08-21)
+Origem ganhou linha própria no mobile (mais espaço); Valor/Data/Adicionar foram pra uma segunda
+linha. Nos dois tamanhos de tela, o campo de data virou um botão compacto com ícone de calendário.
+Primeira versão usava `showPicker()` num input escondido — falhava em silêncio no Safari/iPhone.
+Corrigido colocando o input de data real (invisível) por cima do botão, do mesmo tamanho — o
+toque abre o calendário nativo direto. Ver PRs #6 e #7.
+
+### Auditoria de código (2026-08-21)
+Varredura completa do front-end e do `Code.gs`. Corrigido: `alert()`/`confirm()` nativos
+remanescentes em `js/meses.js` (função de copiar contas fixas entre meses), substituídos por
+`mostrarToast()` pra bater com o padrão usado no resto do app. Nenhuma função morta, `id`
+duplicado ou `console.log` esquecido encontrados. Dois pontos identificados que **não** foram
+alterados, por precisarem de confirmação do usuário:
+- `diagnosticarExtratoMes_`/`removerDuplicatasExtrato_`, descritas abaixo como adicionadas ao
+  `Code.gs`, **não estão no arquivo do repositório** — não dá pra confirmar se a limpeza de
+  duplicatas de julho/2026 foi executada sem acessar o projeto do Apps Script diretamente.
+- A deduplicação da importação de PDF (`_extratoChave` em `js/extrato.js`, chave =
+  data+tipo+item+valor+direção) trataria duas transações **reais e distintas** com esses cinco
+  campos idênticos como duplicata, descartando a segunda numa reimportação. Limitação conhecida
+  do modelo atual, não um bug novo.
+
 ### Correção de bug: card Extrato somando valor errado (2026-07)
 Usuário reportou que o total do card não batia com o extrato real do banco (CSV anexado).
 Causa suspeita: duplicação de transações no Firestore (dois caminhos de importação diferentes —
 upload manual de PDF vs. importação automática por e-mail/CSV — usam chaves de deduplicação
 diferentes, então a mesma transação real pode entrar duas vezes se os textos do "item" não
-baterem exatamente). Adicionadas ao `Code.gs`: `diagnosticarExtratoMes_(mesKey)` (loga duplicatas
-e totais reais) e `removerDuplicatasExtrato_(mesKey)` (remove duplicatas exatas — mesma
+baterem exatamente). Teriam sido usadas no `Code.gs` (via editor online do Apps Script, ver nota
+da auditoria acima) `diagnosticarExtratoMes_(mesKey)` (loga duplicatas e totais reais) e
+`removerDuplicatasExtrato_(mesKey)` (remove duplicatas exatas — mesma
 data+tipo+item+valor+direção+idOrigem — preservando pares legítimos que compartilham o mesmo
 Identificador do Nubank, como "Valor adicionado por cartão de crédito" + Pix pareado).
-**Status: correção de dados em andamento — ver PLANO-EVOLUCAO.md pra situação atualizada.**
+**Status: situação não confirmada — perguntar ao usuário (ver auditoria de 2026-08-21 acima).**
 
 ### Card Extrato Bancário — UX (2026-07)
 - Rótulos curtos + ícone por tipo de transação (ex.: "Recebido Pix").
@@ -112,11 +146,15 @@ padding/fonte). Ver `PLANO-EVOLUCAO.md` pra histórico completo fase a fase.
 - **Regra em vigor desde 2026-07-27 (até ele avisar o contrário):** responder só UMA VEZ, ao
   final de todo o processo — sem comentários a cada passo intermediário. Resposta final objetiva,
   pra economizar tokens.
-- Commitar e enviar ao GitHub automaticamente ao final de cada rodada de mudanças testada, sem
-  perguntar antes.
+- **Regra em vigor desde 2026-08-21:** commitar, enviar ao GitHub **e mesclar direto na `main`**
+  automaticamente ao final de cada rodada de mudanças testada, sem perguntar antes — o usuário
+  quer a mudança valendo em produção (Vercel) o quanto antes.
 
 ## Onde encontrar mais detalhes
 
 - `PLANO-EVOLUCAO.md` (na raiz do repositório) — changelog técnico completo, fase por fase, com
   detalhes de implementação, bugs encontrados/corrigidos e decisões de design.
+- `EXPLORACAO_FINANCE_PRO.md` (na raiz do repositório) — mapa de arquitetura/arquivos + seção de
+  auditoria de código (bugs, código morto, inconsistências encontradas e o que ainda depende de
+  confirmação do usuário).
 - `automacao-email-nubank/SETUP.md` — passo a passo de configuração da automação de e-mail.

@@ -323,11 +323,15 @@ com um extrato de 01–27/jul/2026: total real Entradas +R$8.708,50 / Saídas -R
 que o app mostrava). Hipótese mais provável: os dois caminhos de importação (upload manual de PDF,
 que dedupa por `data+tipo+item+valor+direção`, e a automação por e-mail/CSV, que dedupa por
 `idOrigem`) podem deixar a mesma transação real entrar duas vezes se o texto do "item" não bater
-exatamente entre PDF e CSV. Adicionado ao `Code.gs`: `diagnosticarExtratoMes_`/`
-removerDuplicatasExtrato_` (chave de duplicata = todos os campos + idOrigem, preservando pares
-legítimos que compartilham Identificador do Nubank, como "Valor adicionado por cartão de crédito"
-+ Pix pareado) e atalhos `diagnosticarExtratoJulho`/`limparDuplicatasExtratoJulho` pro mês em
-questão. Correção efetiva dos dados de julho pendente de execução manual no Apps Script.
+exatamente entre PDF e CSV. Foram usadas (coladas direto no editor do Apps Script como ferramenta
+pontual, não commitadas neste arquivo) `diagnosticarExtratoMes_`/`removerDuplicatasExtrato_`
+(chave de duplicata = todos os campos + idOrigem, preservando pares legítimos que compartilham
+Identificador do Nubank, como "Valor adicionado por cartão de crédito" + Pix pareado) e atalhos
+`diagnosticarExtratoJulho`/`limparDuplicatasExtratoJulho` pro mês em questão.
+**Atualização (auditoria de 21/08/2026): essas funções não estão presentes no `Code.gs` atual do
+repositório — não há como confirmar, sem acessar o projeto do Apps Script, se a limpeza dos
+dados de julho foi executada ou se essas funções ainda existem só lá (nunca commitadas aqui).
+Perguntar ao usuário antes de considerar esse item encerrado.**
 
 Junto, entregue o resto do pedido (card Extrato):
 - Modal "Ver detalhes" (`#modalExtratoDetalhes`) ampliado pra `.modal-xl` (980px), com coluna
@@ -343,3 +347,38 @@ um relatório final objetivo por tarefa (sem comentário a cada passo), pra econ
 Também foi criado um documento espelho no Google Drive ("Planner Financeiro - Contexto Completo.md",
 id `1TnlCpBoVQtEs1sZ5DVE5p7oycRb0hsNK`) pra ele ter contexto completo do projeto fora do Claude
 Code — deve ser atualizado junto com este arquivo a cada mudança relevante.
+
+## Correções no Painel de Controle e card Receitas (2026-08-21)
+
+**Novo processo, a pedido do usuário:** a partir desta data, toda alteração pedida é commitada,
+enviada ao GitHub (branch `claude/finance-pro-context-0a55bg`) **e mesclada direto na `main`**
+sem esperar confirmação — o deploy do Vercel reflete a mudança em produção em 1-2 minutos.
+
+### Bug: Saldo Estimado somando receita em dobro ✅ corrigido (PR #6)
+Usuário reportou que "Falta/Sobra" mostrava R$ 2.000,44 quando esperava algo próximo de R$ 33,00.
+Causa: `calcularEAtualizarVisual()` (`js/render.js`) somava **todas** as receitas do mês no Saldo
+Estimado, inclusive uma já recebida dias antes (ex.: salário do dia 07, com o mês em curso até o
+dia 21) — esse valor já estava embutido no campo "Caixa Atual", então entrava duas vezes na conta.
+Corrigido: só entram no Saldo Estimado as receitas com `data` **futura** à data de hoje (`f.data >
+hojeStr`); receitas já passadas são tratadas como já refletidas em "Caixa Atual". Variável nova
+`totalFaturamentosFuturos`, separada de `totalFaturamentos` (que continua somando tudo, sem uso
+direto fora desse cálculo agora). Validado com os números reais do usuário: resultado bateu
+exatamente com a expectativa manual (R$ 33,44).
+
+### Card Receitas: layout mobile + botão de data ✅ corrigido (PR #6 e #7)
+- Layout: no mobile, "Origem" ganhou linha própria (mais espaço pra digitar); Valor/Data/Adicionar
+  foram pra uma segunda linha (`.receitas-form`/`.receitas-linha2` novas em `css/style.css`). No
+  desktop (`@media min-width:900px`) continua tudo numa linha só, como antes.
+- Botão de data: o `<input type="date">` completo virou um botão compacto com ícone de calendário
+  (`.btn-data-picker`, mostra "Hoje" ou "dd/mm"). Primeira versão (PR #6) tentava abrir o seletor
+  nativo via `input.showPicker()` num input escondido em 1x1px — falhava em silêncio no
+  Safari/iOS, que foi onde o usuário testou. Corrigido no PR #7: o `<input type="date">` real
+  passou a ficar **invisível por cima do botão** (mesmo tamanho/posição, `opacity:0`), então o
+  toque cai direto nele e abre o calendário nativo do navegador/celular sem depender de JS pra
+  isso. `js/faturamentos.js` ganhou `atualizarLabelDataFat()` pra manter o texto do botão em
+  sincronia com a data escolhida.
+
+### Limpeza: `alert()`/`confirm()` nativos removidos de `js/meses.js` (auditoria de 21/08/2026)
+`copiarContasFixas()`/`_executarCopiaContasFixas()` ainda usavam `alert()` puro do navegador em
+vez do sistema de toast usado no resto do app desde a Fase 2 — substituídos por `mostrarToast()`.
+Sem mudança de comportamento visível além do estilo visual da mensagem.
