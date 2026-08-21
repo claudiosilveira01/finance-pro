@@ -113,10 +113,16 @@
         .receitas-linha2 { display: flex; gap: 10px; align-items: center; }
         .receitas-valor { flex: 1 1 auto; min-width: 0; }
         .receitas-btn-add { flex: 1 1 auto; white-space: nowrap; }
-        .btn-data-picker { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 11px 12px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main); cursor: pointer; font-size: 0.85rem; white-space: nowrap; transition: border-color 0.2s, box-shadow 0.2s; }
-        .btn-data-picker:hover { border-color: var(--purple-light); }
+        /* Botão de data: o <input type="date"> real fica invisível por cima do botão (mesmo
+           tamanho, opacity:0), então o toque abre o seletor nativo do navegador diretamente —
+           mais confiável entre navegadores do que chamar showPicker() via JS (no Safari/iOS,
+           showPicker() falha em silêncio quando o input não está visível/tem tamanho real). */
+        .data-picker-wrap { position: relative; flex: 0 0 auto; display: flex; }
+        .btn-data-picker { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 11px 12px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main); cursor: pointer; font-size: 0.85rem; white-space: nowrap; transition: border-color 0.2s, box-shadow 0.2s; pointer-events: none; }
+        .data-picker-wrap:focus-within .btn-data-picker,
+        .data-picker-wrap:hover .btn-data-picker { border-color: var(--purple-light); }
         .btn-data-picker i { font-size: 18px; color: var(--text-highlight); }
-        .input-data-oculto { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; padding: 0; border: 0; margin: 0; }
+        .input-data-overlay { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; min-width: 0; }
 
         @media (min-width: 900px) {
             .receitas-form { flex-direction: row; flex-wrap: nowrap; align-items: center; }

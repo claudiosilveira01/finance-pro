@@ -474,11 +474,13 @@
                             <input type="text" id="fatNome" class="receitas-origem" placeholder="Origem (Ex: Salário, Venda)">
                             <div class="receitas-linha2">
                                 <input type="number" id="fatValor" class="no-spin receitas-valor" placeholder="R$">
-                                <button type="button" class="btn-data-picker" id="fatDataBtn" onclick="abrirSeletorDataFat()" title="Escolher data">
-                                    <i class="ph ph-calendar-blank"></i>
-                                    <span id="fatDataLabel">Hoje</span>
-                                </button>
-                                <input type="date" id="fatData" class="input-data-oculto" onchange="atualizarLabelDataFat()">
+                                <div class="data-picker-wrap">
+                                    <button type="button" class="btn-data-picker" id="fatDataBtn" tabindex="-1" title="Escolher data">
+                                        <i class="ph ph-calendar-blank"></i>
+                                        <span id="fatDataLabel">Hoje</span>
+                                    </button>
+                                    <input type="date" id="fatData" class="input-data-overlay" onchange="atualizarLabelDataFat()">
+                                </div>
                                 <button class="btn-flat btn-flat-sm receitas-btn-add" style="background:var(--gradient-green)" onclick="addFaturamento()"><i class="ph ph-plus"></i> Adicionar</button>
                             </div>
                         </div>

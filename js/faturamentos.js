@@ -1,10 +1,6 @@
 // Faturamentos/receitas do mês
-        // Botão de calendário do card Receitas: abre o seletor nativo do input de data escondido.
-        function abrirSeletorDataFat() {
-            const el = document.getElementById('fatData');
-            if (el.showPicker) el.showPicker(); else el.focus();
-        }
-
+        // Mantém o texto do botão de data (ícone + "Hoje"/"dd/mm") em sincronia com o <input
+        // type="date"> real, que fica invisível por cima do botão e recebe o toque diretamente.
         function atualizarLabelDataFat() {
             const el = document.getElementById('fatData');
             const label = document.getElementById('fatDataLabel');
