@@ -1,4 +1,20 @@
 // Faturamentos/receitas do mês
+        // Botão de calendário do card Receitas: abre o seletor nativo do input de data escondido.
+        function abrirSeletorDataFat() {
+            const el = document.getElementById('fatData');
+            if (el.showPicker) el.showPicker(); else el.focus();
+        }
+
+        function atualizarLabelDataFat() {
+            const el = document.getElementById('fatData');
+            const label = document.getElementById('fatDataLabel');
+            if (!el || !label) return;
+            if (!el.value) { label.textContent = 'Hoje'; return; }
+            const [ano, mes, dia] = el.value.split('-');
+            const hojeStr = new Date().toISOString().split('T')[0];
+            label.textContent = el.value === hojeStr ? 'Hoje' : `${dia}/${mes}`;
+        }
+
         function addFaturamento() {
             const nome = document.getElementById('fatNome').value.trim(); 
             const valor = parseFloat(document.getElementById('fatValor').value); 

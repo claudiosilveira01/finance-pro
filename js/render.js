@@ -8,7 +8,7 @@
             const classeAnim = animarAgora ? ' item-anim' : '';
             const classeAnimBadge = animarAgora ? ' anim-pop' : '';
 
-            let orcamento = 0, pago = 0, restante = 0, totalFaturamentos = 0;
+            let orcamento = 0, pago = 0, restante = 0, totalFaturamentos = 0, totalFaturamentosFuturos = 0;
             let totalPorCategoria = {};
             categoriasAtuais.forEach(c => totalPorCategoria[c] = 0);
 
@@ -49,7 +49,11 @@
 
             // Tabela Faturamentos
             let fatOrdenados = aplicarOrdenacao(window.activeFaturamentos, ordFaturamentos);
-            fatOrdenados.forEach(f => { totalFaturamentos += f.valor; });
+            // "Caixa Atual" já reflete o dinheiro que entrou até hoje — somar de novo as receitas
+            // com data <= hoje no Saldo Estimado duplicaria esse valor. Só entram aqui as receitas
+            // com data futura (ainda não recebidas, então ainda não estão no Caixa Atual).
+            const hojeStr = new Date().toISOString().split('T')[0];
+            fatOrdenados.forEach(f => { totalFaturamentos += f.valor; if (f.data > hojeStr) totalFaturamentosFuturos += f.valor; });
 
             const tbodyFat = document.getElementById('listaFaturamentos');
             tbodyFat.innerHTML = '';
@@ -68,7 +72,7 @@
             });
 
             const saldoCaixaInicial = parseFloat(document.getElementById('saldoInput').value) || 0;
-            const saldoEstimado = saldoCaixaInicial + totalFaturamentos;
+            const saldoEstimado = saldoCaixaInicial + totalFaturamentosFuturos;
             let resultadoFinal = saldoEstimado - restante;
 
             animarNumero('mSaldoEstimado', saldoEstimado, duracaoOdometro);

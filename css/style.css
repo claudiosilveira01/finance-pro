@@ -105,6 +105,26 @@
         .girando { display: inline-block; animation: girar 0.9s linear infinite; }
         @keyframes girar { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
 
+        /* Card Receitas: no mobile, Origem ocupa a linha toda (mais espaço pra digitar) e
+           Valor/Data/Adicionar ficam numa segunda linha. No desktop (>=900px) tudo numa linha só,
+           como era antes — só que a Data virou um botão de ícone (menos espaço ocupado). */
+        .receitas-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .receitas-origem { width: 100%; }
+        .receitas-linha2 { display: flex; gap: 10px; align-items: center; }
+        .receitas-valor { flex: 1 1 auto; min-width: 0; }
+        .receitas-btn-add { flex: 1 1 auto; white-space: nowrap; }
+        .btn-data-picker { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 11px 12px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main); cursor: pointer; font-size: 0.85rem; white-space: nowrap; transition: border-color 0.2s, box-shadow 0.2s; }
+        .btn-data-picker:hover { border-color: var(--purple-light); }
+        .btn-data-picker i { font-size: 18px; color: var(--text-highlight); }
+        .input-data-oculto { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; padding: 0; border: 0; margin: 0; }
+
+        @media (min-width: 900px) {
+            .receitas-form { flex-direction: row; flex-wrap: nowrap; align-items: center; }
+            .receitas-origem { flex: 2 1 200px; width: auto; min-width: 120px; }
+            .receitas-linha2 { flex: 1 1 auto; min-width: 0; }
+            .receitas-btn-add { flex: 0 0 auto; }
+        }
+
         ::-webkit-calendar-picker-indicator { filter: invert(var(--calendar-invert)); cursor: pointer; }
         ::placeholder { color: var(--text-muted); opacity: 0.7; font-weight: 400; }
 

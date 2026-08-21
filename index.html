@@ -470,11 +470,17 @@
                         <div class="card-title">
                             <span class="card-title-left"><i class="ph ph-wallet"></i> Receitas</span>
                         </div>
-                        <div class="input-inline">
-                            <input type="text" id="fatNome" style="flex:2;" placeholder="Origem (Ex: Salário, Venda)">
-                            <input type="number" id="fatValor" class="no-spin" style="flex:1.5;" placeholder="R$">
-                            <input type="date" id="fatData" style="flex:1.5;">
-                            <button class="btn-flat btn-flat-sm" style="background:var(--gradient-green)" onclick="addFaturamento()"><i class="ph ph-plus"></i> Adicionar</button>
+                        <div class="receitas-form">
+                            <input type="text" id="fatNome" class="receitas-origem" placeholder="Origem (Ex: Salário, Venda)">
+                            <div class="receitas-linha2">
+                                <input type="number" id="fatValor" class="no-spin receitas-valor" placeholder="R$">
+                                <button type="button" class="btn-data-picker" id="fatDataBtn" onclick="abrirSeletorDataFat()" title="Escolher data">
+                                    <i class="ph ph-calendar-blank"></i>
+                                    <span id="fatDataLabel">Hoje</span>
+                                </button>
+                                <input type="date" id="fatData" class="input-data-oculto" onchange="atualizarLabelDataFat()">
+                                <button class="btn-flat btn-flat-sm receitas-btn-add" style="background:var(--gradient-green)" onclick="addFaturamento()"><i class="ph ph-plus"></i> Adicionar</button>
+                            </div>
                         </div>
                         <div class="table-responsive" style="margin-bottom: 15px;">
                             <table class="tabela-compacta">
