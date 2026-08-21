@@ -1,39 +1,57 @@
 # Exploração — Finance Pro (Integração Vórtex AI)
 
-**Data:** 28/07/2026 | **Escopo:** Arquitetura, Features, Estratégia de Branding
+**Data original:** 28/07/2026 | **Última revisão:** 21/08/2026 | **Escopo:** Arquitetura, Features, Estratégia de Branding
+
+> ⚠️ **Nota da revisão (21/08/2026):** a tabela de arquivos e o inventário de features abaixo
+> foram atualizados para bater com o código real do repositório nesta data (varredura completa +
+> auditoria). A seção 4 (branding Vortex AI) é a proposta original de 28/07 — **nenhuma dessas
+> mudanças de branding foi aplicada ainda**: o app continua com o nome "Planner Financeiro" no
+> `<title>`, no `manifest.json` e na tela de login. Confirmar com o usuário se essa iniciativa
+> Vortex AI ainda está de pé antes de agir sobre a seção 4/6.
 
 ---
 
 ## 1. Arquitetura Atual
 
 ### Stack
-- **Frontend:** HTML5 + CSS3 + Vanilla JS (sem framework)
-- **Backend:** Firebase (Auth + Firestore)
-- **Hospedagem:** Vercel (serverless)
+- **Frontend:** HTML5 + CSS3 + Vanilla JS (sem framework, sem build)
+- **Backend:** Firebase (Auth + Firestore), sem Cloud Functions
+- **Hospedagem:** Vercel (deploy automático a cada push na `main`)
+- **Automação externa:** Google Apps Script (`automacao-email-nubank/Code.gs`), conta separada
 - **Modelo:** Single-user (pessoal, cada usuário vê seus próprios dados)
 
-### Modularização (16 arquivos JS)
+### Modularização (25 arquivos JS, ~2.484 linhas)
 
 | Arquivo | Linhas | Responsabilidade |
 |---------|--------|-----------------|
-| **index.html** | ~300 | Marcação (modais, layout, form inputs) |
-| **config.js** | ~80 | Firebase config, auth/db wrappers |
-| **auth.js** | ~100 | Login, signup, logout, password reset |
-| **theme.js** | ~50 | Tema claro/escuro (CSS vars) |
-| **fixas.js** | ~300 | CRUD contas fixas + UI |
-| **faturamentos.js** | ~80 | Receitas/entradas |
-| **assinaturas.js** | ~250 | Assinaturas + botão "Adicionar às Fixas" |
-| **categorias.js** | ~200 | CRUD categorias com merge/rename |
-| **extrato.js** | ~550 | **Importação PDF de extrato bancário** (OCR client-side) |
-| **calendario.js** | ~200 | Calendário de vencimentos |
-| **calculadora.js** | ~100 | Calculadora inteligente |
-| **charts.js** | ~50 | Gráficos (Chart.js) |
-| **render.js** | TBD | Rendering central |
-| **exportar.js** | ~150 | CSV + PDF export (jsPDF) |
-| **pwa.js** | ~100 | Service worker + notificações push |
-| **modal.js** | ~250 | Modais genéricos (confirmação, prompt, seleção) |
+| **config.js** | 49 | Firebase config, `auth`/`db`, wrappers de referência Firestore, estado global |
+| **config-global.js** | 54 | Carrega/salva `config/geral` (categorias, assinaturas, meses, flags) |
+| **auth.js** | 55 | Login, cadastro, logout, recuperação de senha |
+| **meses.js** | 158 | Carrega/salva dados do mês, navegação entre meses, copiar/limpar fixas |
+| **fixas.js** | 203 | CRUD de contas fixas, recorrência mensal, alerta de vencimento |
+| **faturamentos.js** | 55 | Receitas/entradas do mês, botão de seletor de data |
+| **assinaturas.js** | 144 | Assinaturas informativas + "Adicionar às Contas Fixas" |
+| **categorias.js** | 135 | CRUD de categorias com merge/rename/migração |
+| **extrato.js** | 463 | **Importação de PDF de extrato bancário** (parsing client-side via pdf.js) |
+| **calendario.js** | 122 | Calendário de vencimentos |
+| **calculadora.js** | 81 | Calculadora inteligente (+ soma de contas fixas) |
+| **filtros.js** | 63 | Filtros em cascata das contas fixas |
+| **tabelas.js** | 67 | Ordenação em cascata das tabelas |
+| **charts.js** | 35 | Gráficos (Chart.js) |
+| **render.js** | 120 | `calcularEAtualizarVisual()` — função central de recálculo/render |
+| **exportar.js** | 95 | Exportação CSV (BOM UTF-8) + relatório PDF (jsPDF + autoTable) |
+| **modal.js** | 150 | Modais genéricos (confirmação, prompt, seleção, menu de contexto) |
+| **undo.js** | 39 | Exclusão otimista com "Desfazer" (5s) |
+| **toast.js** | 55 | Notificações toast |
+| **ui.js** | 54 | Navegação entre abas, modais de calculadora/configurações, tecla Esc |
+| **theme.js** | 25 | Tema claro/escuro |
+| **anim.js** | 80 | Animações de entrada (IntersectionObserver) + odômetro numérico |
+| **pwa.js** | 94 | Registro do service worker + notificações push (FCM) |
+| **verificacaoEmail.js** | 87 | Botão "Verificar e-mail agora" (dispara a importação sob demanda) |
+| **app.js** | 1 | Placeholder (registro do service worker migrou para `pwa.js`) |
 
-**Total:** ~2.500 linhas (bem organizado, sem código monolítico).
+**Total:** ~2.484 linhas de JS (bem organizado, um arquivo por responsabilidade), mais
+`index.html` (marcação) e `css/style.css`.
 
 ---
 
@@ -49,15 +67,17 @@
 - ✅ Calculadora Inteligente (+ soma contas selecionadas)
 
 ### Avançado
-- ✅ Categorização automática
-- ✅ Busca/filtro em tabelas
+- ✅ Categorização automática (com merge/rename/migração)
+- ✅ Filtros em cascata + ordenação em cascata nas tabelas
 - ✅ Gráficos (Chart.js)
 - ✅ Tema claro/escuro (com preferência do sistema)
-- ✅ Notificações push (3 dias antes + dia vencimento)
-- ✅ Exportação CSV (UTF-8 + BOM)
-- ✅ Exportação PDF (jsPDF + tabelas automáticas)
+- ✅ Notificações push via FCM (3 dias antes + dia do vencimento)
+- ✅ Exportação CSV (UTF-8 + BOM) e PDF (jsPDF + autoTable)
 - ✅ PWA instalável (tela inicial iPhone/Android)
-- ✅ Undo em deletions (5s window)
+- ✅ Undo em exclusões (janela de 5s)
+- ✅ Importação automática de extrato por e-mail (Google Apps Script, a cada 1h)
+- ✅ Botão "Verificar e-mail agora" (dispara a importação sob demanda, sem esperar o gatilho)
+- ✅ Animações de entrada (IntersectionObserver) + odômetro numérico no Painel de Controle
 
 ---
 
@@ -166,3 +186,47 @@ users/{uid}/
 **Finance Pro é 80% pronto pra integração Vortex AI.** Mudanças de branding são cosméticas (1-2h). Funcionalidade = excelente. Pronto pra produção pessoal agora; escalação (multi-user) fica pra depois se virar feature paga do Vortex.
 
 **Recomendação:** Priorize correções no Hub (log rotation, refactor sala.php) antes de mexer no Finance Pro. Finance Pro está estável e não bloqueia desenvolvimento.
+
+---
+
+## 9. Auditoria de código (21/08/2026)
+
+Varredura completa do front-end (`index.html`, `css/style.css`, todos os `js/*.js`) e do backend
+externo (`automacao-email-nubank/Code.gs`), em busca de bugs, inconsistências e código morto.
+
+### Corrigidos nesta rodada
+- **`alert()`/`confirm()` nativos em `js/meses.js`** (6 ocorrências, em `copiarContasFixas()` e
+  `_executarCopiaContasFixas()`) — quebravam a consistência visual do resto do app, que usa
+  `mostrarToast()`/`abrirModalConfirmacao()` em todo o restante do código desde a Fase 2/8.
+  Substituídos por toasts.
+- Bug do **Saldo Estimado somando receita em dobro** (já recebida + prevista) — ver
+  `Planner Financeiro - Contexto Completo.md` para o detalhe.
+- Botão de seletor de data do card Receitas que não abria o calendário no Safari/iOS
+  (`showPicker()` num input de tamanho zero) — ver mesmo documento.
+
+### Verificado e OK (sem ação necessária)
+- Nenhum `id` HTML duplicado em `index.html`.
+- Nenhuma função JS declarada e nunca referenciada (checado cruzando todo `function nome(` contra
+  usos em `js/*.js` + `index.html`).
+- Nenhum `console.log`/`TODO`/`FIXME` esquecido no código.
+- `automacao-email-nubank/Code.gs`: lógica de deduplicação (`idOrigem`), autenticação JWT e envio
+  de push revisadas — sem problemas encontrados.
+
+### Achados que **não** foram alterados (decisão do usuário necessária)
+- **`diagnosticarExtratoMes_`/`removerDuplicatasExtrato_` não existem no `Code.gs` do
+  repositório**, apesar de `PLANO-EVOLUCAO.md` (seção "Extrato Bancário: correção de soma errada",
+  28/07/2026) descrever essas funções como adicionadas ao arquivo. Prováveis explicações: foram
+  coladas direto no editor do Apps Script (online) como ferramenta pontual de diagnóstico/limpeza
+  e nunca commitadas aqui, ou foram removidas depois de usadas. **Não dá pra confirmar sem
+  acessar o projeto do Apps Script** — vale perguntar ao usuário se a limpeza de duplicatas de
+  julho/2026 foi mesmo executada.
+- **Duplicação legítima na importação de PDF**: `_extratoChave()` (em `js/extrato.js`) usa
+  `data+tipo+item+valor+direção` como chave de deduplicação. Duas transações **reais e distintas**
+  com esses cinco campos idênticos (ex.: dois Pix de R$ 20,00 pro mesmo destinatário, no mesmo
+  dia) seriam tratadas como duplicata e a segunda seria descartada na reimportação do mesmo PDF.
+  É uma limitação conhecida do modelo de dedup (mencionada em outro contexto no changelog), não
+  um bug introduzido agora — resolver exigiria mudar a chave (ex.: incluir um contador de
+  ocorrência) e não foi alterado sem validar com o usuário se vale a pena.
+- **Nome do app**: `index.html` (`<title>`, tela de login), `manifest.json` (`name`/`short_name`)
+  e `firebase-messaging-sw.js` (título de notificação) ainda usam "Planner Financeiro"/"Planner",
+  não "Finance Pro". Bate com a seção 4/6 deste documento (branding Vortex AI ainda não aplicado).

@@ -91,8 +91,8 @@
 
         function copiarContasFixas() {
             const mesOrigemKey = document.getElementById('mesCopiaSeletor').value;
-            if(!mesOrigemKey) return alert("Selecione um mês de origem primeiro!");
-            if(mesOrigemKey === mesAtualKey) return alert("Você já está na aba do mesmo mês!");
+            if(!mesOrigemKey) return mostrarToast('Selecione um mês de origem primeiro.', 'warning');
+            if(mesOrigemKey === mesAtualKey) return mostrarToast('Você já está na aba do mesmo mês.', 'warning');
 
             abrirModalConfirmacao({
                 titulo: 'Copiar Contas Fixas',
@@ -112,11 +112,11 @@
                     let fixasOrigem = data.fixas || [];
                     
                     if(fixasOrigem.length === 0) {
-                        alert("Nenhuma conta fixa localizada no mês de origem.");
+                        mostrarToast('Nenhuma conta fixa localizada no mês de origem.', 'warning');
                     } else {
                         fixasOrigem.forEach(f => {
                             window.activeFixas.push({
-                                id: Date.now() + Math.floor(Math.random() * 1000), 
+                                id: Date.now() + Math.floor(Math.random() * 1000),
                                 nome: f.nome,
                                 valor: f.valor,
                                 vencimento: f.vencimento,
@@ -127,14 +127,14 @@
                         });
                         salvarDadosDoMesAtual();
                         calcularEAtualizarVisual();
-                        alert("Contas fixas copiadas com sucesso!");
+                        mostrarToast('Contas fixas copiadas com sucesso!', 'success');
                     }
                 } else {
-                    alert("Dados indisponíveis para o mês de origem.");
+                    mostrarToast('Dados indisponíveis para o mês de origem.', 'error');
                 }
                 document.getElementById('loadingDiv').style.display = 'none';
             }).catch(err => {
-                alert("Erro operacional: " + err.message);
+                mostrarToast('Erro ao copiar as contas fixas: ' + err.message, 'error', 6000);
                 document.getElementById('loadingDiv').style.display = 'none';
             });
         }
