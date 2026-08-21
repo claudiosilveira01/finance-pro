@@ -328,10 +328,10 @@ pontual, não commitadas neste arquivo) `diagnosticarExtratoMes_`/`removerDuplic
 (chave de duplicata = todos os campos + idOrigem, preservando pares legítimos que compartilham
 Identificador do Nubank, como "Valor adicionado por cartão de crédito" + Pix pareado) e atalhos
 `diagnosticarExtratoJulho`/`limparDuplicatasExtratoJulho` pro mês em questão.
-**Atualização (auditoria de 21/08/2026): essas funções não estão presentes no `Code.gs` atual do
-repositório — não há como confirmar, sem acessar o projeto do Apps Script, se a limpeza dos
-dados de julho foi executada ou se essas funções ainda existem só lá (nunca commitadas aqui).
-Perguntar ao usuário antes de considerar esse item encerrado.**
+**Status: ✅ bug resolvido e confirmado pelo usuário (21/08/2026).** As funções de
+diagnóstico/limpeza citadas acima nunca chegaram a ser commitadas neste `Code.gs` (foram usadas
+direto no editor do Apps Script), o que é esperado — eram ferramentas pontuais de uma correção de
+dados já feita, não uma feature permanente do sistema.
 
 Junto, entregue o resto do pedido (card Extrato):
 - Modal "Ver detalhes" (`#modalExtratoDetalhes`) ampliado pra `.modal-xl` (980px), com coluna
@@ -382,3 +382,18 @@ exatamente com a expectativa manual (R$ 33,44).
 `copiarContasFixas()`/`_executarCopiaContasFixas()` ainda usavam `alert()` puro do navegador em
 vez do sistema de toast usado no resto do app desde a Fase 2 — substituídos por `mostrarToast()`.
 Sem mudança de comportamento visível além do estilo visual da mensagem.
+
+### Correção: deduplicação do extrato podia descartar transações reais ✅ corrigido
+Achado da auditoria de 21/08/2026 (ver seção "Extrato Bancário: correção de soma errada" acima
+para o histórico do bug de julho, já resolvido e confirmado pelo usuário). Ponto novo, separado
+daquele: `_extratoChave()`/`_extratoMesclar()` (`js/extrato.js`) tratavam duas transações **reais
+e distintas** com data+tipo+item+valor+direção idênticos (ex.: dois Pix de R$ 20 pro mesmo
+favorecido, no mesmo dia) como se fossem a mesma duplicada — a segunda era silenciosamente
+descartada mesmo na primeira importação do PDF. Corrigido contando por **ordinal**: uma nova
+transação só é tratada como duplicata de reimportação se já existir uma quantidade igual ou maior
+de transações com a mesma chave no mês; a Nª ocorrência de uma chave repetida dentro do mesmo PDF
+continua sendo somada normalmente. O ordinal também passou a entrar no hash do `id` de cada
+transação — antes, duas transações com a mesma chave ficavam com o mesmo `id`, e excluir uma pela
+lixeira sempre removia a primeira (nunca a segunda). Validado com 3 cenários automatizados
+(importação com par idêntico, reimportação do mesmo PDF, PDF novo com uma 3ª ocorrência real):
+todos bateram o resultado esperado.
