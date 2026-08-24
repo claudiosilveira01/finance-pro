@@ -100,7 +100,7 @@
                     ['Pago', document.getElementById('mPago').innerText],
                     ['Total de Receitas', document.getElementById('mTotalReceitas').innerText],
                     ['Caixa Atual', `R$ ${caixaAtual.toFixed(2)}`],
-                    [`${sobraFaltaLabel} (Receitas: ${labelReceitaEscolhida} / Orçamento: ${labelOrcamentoEscolhido})`, sobraFaltaValorTexto]
+                    [`${sobraFaltaLabel} (Caixa Atual + Receitas: ${labelReceitaEscolhida} / Orçamento: ${labelOrcamentoEscolhido})`, sobraFaltaValorTexto]
                 ],
                 startY: y + 5,
                 theme: 'grid',
