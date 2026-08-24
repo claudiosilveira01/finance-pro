@@ -110,7 +110,7 @@
                 html += `
                 <div class="sub-item${classeAnim}" style="animation-delay:${atrasoItem}s">
                     <span>
-                        <i class="ph ph-star" style="font-size:16px; vertical-align:middle; color:var(--sub-color);"></i>
+                        <i class="ph ph-${obterIconeAssinatura(s.categoria)}" style="font-size:16px; vertical-align:middle; color:var(--sub-color);"></i>
                         ${s.nome} <strong style="color:var(--sub-color)"> - R$ ${(s.valor||0).toFixed(2)}</strong>
                     </span>
                     <span class="vencimento-tag${classeAnimBadge}" style="color:white; background-color:var(--sub-color)">Dia ${s.vencimento}</span>

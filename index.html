@@ -282,13 +282,8 @@
             <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
             <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-bell" style="vertical-align:-2px;"></i> Controle de Assinaturas (Informativo)</h4>
-            <div class="control-row">
-                <input type="text" id="subNome" placeholder="Ex: Netflix" style="flex:2;">
-                <input type="number" id="subValor" placeholder="Valor (R$)" style="flex:1.5;">
-                <input type="number" id="subVenc" placeholder="Dia Venc." min="1" max="31" style="flex:1;">
-                <button class="btn-flat" onclick="addAssinaturaInformativa()">Adicionar</button>
-            </div>
-            <div id="listaAssinaturasConfig" style="margin-top:12px;"></div>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Pra adicionar ou editar uma assinatura, use o botão "+" no card "Suas Assinaturas" do painel.</p>
+            <div id="listaAssinaturasConfig"></div>
 
             <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
@@ -583,7 +578,10 @@
 
                     <!-- ASSINATURAS -->
                     <div class="card">
-                        <div class="card-title"><span class="card-title-left"><i class="ph ph-credit-card"></i> Suas Assinaturas</span></div>
+                        <div class="card-title">
+                            <span class="card-title-left"><i class="ph ph-credit-card"></i> Suas Assinaturas</span>
+                            <button class="card-action-btn" onclick="abrirModalAssinatura()" title="Nova Assinatura"><i class="ph ph-plus"></i></button>
+                        </div>
                         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-light); padding:12px 14px; border-radius:var(--radius-sm); margin-bottom:12px;">
                             <span style="color:var(--text-muted); font-weight:600; font-size:0.8rem;">TOTAL MENSAL</span>
                             <span style="color:var(--text-highlight); font-size:1.1rem; font-weight:800;" id="totalAssinaturas">R$ 0,00</span>
