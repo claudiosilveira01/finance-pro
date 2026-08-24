@@ -452,13 +452,32 @@
                             </div>
                             <div class="stat-row stat-hero item-anim" style="animation-delay:0.26s">
                                 <span class="stat-icon"><i class="ph ph-piggy-bank"></i></span>
-                                <span class="stat-label">Saldo Estimado</span>
-                                <span class="stat-value" id="mSaldoEstimado">R$ 0,00</span>
+                                <span class="stat-label">Total de Receitas</span>
+                                <span class="stat-value" id="mTotalReceitas">R$ 0,00</span>
                             </div>
-                            <div class="stat-row item-anim" style="animation-delay:0.32s">
+                        </div>
+                    </div>
+
+                    <!-- SOBRA / FALTA ESTIMADA (consulta livre, não entra no cálculo automático acima) -->
+                    <div class="card">
+                        <div class="card-title"><span class="card-title-left"><i class="ph ph-scales"></i> Sobra / Falta Estimada</span></div>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:12px;">Escolha uma base de cálculo pra ver se ela cobre o seu Orçamento Fixo.</p>
+                        <select id="sobraFaltaBase" onchange="renderizarSobraFaltaEstimada()" style="width:100%; margin-bottom:14px;"></select>
+                        <div class="stats-list">
+                            <div class="stat-row">
+                                <span class="stat-icon"><i class="ph ph-arrow-circle-down"></i></span>
+                                <span class="stat-label">Base escolhida (X)</span>
+                                <span class="stat-value" id="sobraFaltaX">R$ 0,00</span>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-icon"><i class="ph ph-wallet"></i></span>
+                                <span class="stat-label">Orçamento Fixo (Y)</span>
+                                <span class="stat-value" id="sobraFaltaY">R$ 0,00</span>
+                            </div>
+                            <div class="stat-row stat-hero">
                                 <span class="stat-icon"><i class="ph ph-scales"></i></span>
-                                <span class="stat-label">Falta / Sobra</span>
-                                <span class="stat-value" id="mResultado" style="font-size: 1.15rem;">R$ 0,00</span>
+                                <span class="stat-label">Sobra / Falta (Z)</span>
+                                <span class="stat-value" id="sobraFaltaZ">R$ 0,00</span>
                             </div>
                         </div>
                     </div>

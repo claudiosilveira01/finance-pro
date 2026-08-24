@@ -221,6 +221,8 @@
         .btn-action { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display:flex; align-items:center; padding: 6px; border-radius: 8px; transition: background 0.15s, color 0.15s; }
         .btn-action:hover { color: var(--blue-accent); background: var(--bg-blue-light); }
         .btn-delete:hover { color: var(--red-danger); background: rgba(239, 68, 68, 0.1); }
+        .btn-no-caixa-ativo { color: var(--green-success); }
+        .btn-no-caixa-ativo:hover { color: var(--green-success); background: rgba(16, 185, 129, 0.1); }
 
         .acumulados-list { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
         .acumulado-item { display: flex; justify-content: space-between; padding: 10px 14px; background: var(--bg-light); border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; transition: 0.2s; }

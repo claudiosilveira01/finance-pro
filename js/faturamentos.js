@@ -19,9 +19,22 @@
             if(!data) data = new Date().toISOString().split('T')[0];
             if(!window.activeFaturamentos) window.activeFaturamentos = [];
             
-            window.activeFaturamentos.push({ id: Date.now(), nome, valor, data: data });
+            window.activeFaturamentos.push({ id: Date.now(), nome, valor, data: data, noCaixa: false });
             document.getElementById('fatNome').value = ''; document.getElementById('fatValor').value = '';
             salvarDadosDoMesAtual(); calcularEAtualizarVisual();
+        }
+
+        // "Puxa" uma receita específica pro Caixa Atual (soma o valor dela) quando o dinheiro cai
+        // de verdade na conta — clicar de novo remove (ex.: marcou por engano). Evita contar a
+        // mesma receita duas vezes: uma vez marcada, o botão vira um "já no caixa" até desmarcar.
+        function toggleReceitaNoCaixa(id) {
+            const f = window.activeFaturamentos.find(x => x.id === id);
+            if (!f) return;
+            const novoStatus = !f.noCaixa;
+            window.activeFaturamentos = window.activeFaturamentos.map(x => x.id === id ? { ...x, noCaixa: novoStatus } : x);
+            ajustarCaixaAtual(novoStatus ? f.valor : -f.valor);
+            calcularEAtualizarVisual();
+            mostrarToast(novoStatus ? `"${f.nome}" somada ao Caixa Atual.` : `"${f.nome}" removida do Caixa Atual.`, 'success');
         }
 
         function editarFaturamento(id) {
@@ -46,10 +59,18 @@
             const data = document.getElementById('editFatData').value;
             if (!nome || isNaN(valor) || !data) return;
 
+            const original = window.activeFaturamentos.find(f => f.id === idEditandoFaturamento);
             window.activeFaturamentos = window.activeFaturamentos.map(f =>
                 f.id === idEditandoFaturamento ? { ...f, nome, valor, data } : f
             );
             fecharModalEditarFaturamento();
-            salvarDadosDoMesAtual();
+
+            // Se essa receita já tinha sido somada ao Caixa Atual, corrige a diferença do valor
+            // editado em vez de deixar o Caixa Atual desatualizado.
+            if (original && original.noCaixa && valor !== original.valor) {
+                ajustarCaixaAtual(valor - original.valor);
+            } else {
+                salvarDadosDoMesAtual();
+            }
             calcularEAtualizarVisual();
         }

@@ -169,13 +169,15 @@
             y = _pdfGarantirEspaco(doc, y, 60);
             doc.setFontSize(13);
             doc.text('Resumo Financeiro', 14, y);
+            const selectBase = document.getElementById('sobraFaltaBase');
+            const labelBaseEscolhida = selectBase && selectBase.selectedOptions[0] ? selectBase.selectedOptions[0].text : '—';
             doc.autoTable({
                 body: [
                     ['Orçamento Fixo', document.getElementById('mOrcamento').innerText],
                     ['Restante Contas', document.getElementById('mRestante').innerText],
                     ['Pago', document.getElementById('mPago').innerText],
-                    ['Saldo Estimado', document.getElementById('mSaldoEstimado').innerText],
-                    ['Falta / Sobra', document.getElementById('mResultado').innerText]
+                    ['Total de Receitas', document.getElementById('mTotalReceitas').innerText],
+                    [`Sobra/Falta Estimada (base: ${labelBaseEscolhida})`, document.getElementById('sobraFaltaZ').innerText]
                 ],
                 startY: y + 4,
                 theme: 'plain',
