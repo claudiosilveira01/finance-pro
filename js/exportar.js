@@ -98,6 +98,29 @@
                 y = doc.lastAutoTable.finalY + 12;
             }
 
+            const registroPagamentos = window.activeRegistroPagamentos || [];
+            if (registroPagamentos.length > 0) {
+                y = _pdfGarantirEspaco(doc, y, 30);
+                doc.setFontSize(13);
+                doc.text('Registro de Pagamentos (Pago / Não Pago)', 14, y);
+                doc.autoTable({
+                    head: [['Data/Hora', 'Conta', 'Valor (R$)', 'Ação']],
+                    body: [...registroPagamentos]
+                        .sort((a, b) => a.registradoEm.localeCompare(b.registradoEm))
+                        .map(r => [
+                            new Date(r.registradoEm).toLocaleString('pt-BR'),
+                            r.nome,
+                            r.valor.toFixed(2),
+                            r.marcadoComoPago ? 'Marcado como Pago' : 'Marcado como Não Pago'
+                        ]),
+                    startY: y + 4,
+                    theme: 'striped',
+                    headStyles: { fillColor: corCabecalho },
+                    styles: { fontSize: 8 }
+                });
+                y = doc.lastAutoTable.finalY + 12;
+            }
+
             const extrato = window.activeExtrato || [];
             if (extrato.length > 0) {
                 y = _pdfGarantirEspaco(doc, y, 30);
