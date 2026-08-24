@@ -69,6 +69,7 @@
             });
 
             window.__ultimoOrcamentoFixo = orcamento;
+            window.__ultimoRestanteContas = restante;
 
             animarNumero('mTotalReceitas', totalFaturamentos, duracaoOdometro);
             animarNumero('mOrcamento', orcamento, duracaoOdometro);
@@ -113,37 +114,36 @@
         }
 
         // Card "Sobra/Falta Estimada": consulta livre, não faz parte do cálculo automático do
-        // Painel de Controle. X = base escolhida pelo usuário (total das receitas, o Caixa Atual,
-        // ou uma receita específica), Y = Orçamento Fixo total, Z = X - Y.
+        // Painel de Controle. Receitas = uma receita específica ou todas somadas; Orçamento =
+        // Orçamento Fixo total ou só o Restante Contas (ainda não pago); resultado = Receitas -
+        // Orçamento.
         function renderizarSobraFaltaEstimada() {
-            const select = document.getElementById('sobraFaltaBase');
-            if (!select) return;
+            const selectReceita = document.getElementById('sobraFaltaReceita');
+            const selectOrcamento = document.getElementById('sobraFaltaOrcamento');
+            if (!selectReceita || !selectOrcamento) return;
 
-            const valorSelecionadoAntes = select.value;
-            const opcoes = [
-                { value: 'total', label: 'Total das Receitas' },
-                { value: 'caixa', label: 'Caixa Atual' },
+            const receitaSelecionadaAntes = selectReceita.value;
+            const opcoesReceita = [
+                { value: 'total', label: 'Todas as Receitas' },
                 ...(window.activeFaturamentos || []).map(f => ({ value: `fat-${f.id}`, label: `${f.nome} — R$ ${f.valor.toFixed(2)}` }))
             ];
-            select.innerHTML = opcoes.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
-            select.value = opcoes.some(o => o.value === valorSelecionadoAntes) ? valorSelecionadoAntes : 'total';
+            selectReceita.innerHTML = opcoesReceita.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+            selectReceita.value = opcoesReceita.some(o => o.value === receitaSelecionadaAntes) ? receitaSelecionadaAntes : 'total';
 
             let x = 0;
-            if (select.value === 'total') {
+            if (selectReceita.value === 'total') {
                 x = (window.activeFaturamentos || []).reduce((s, f) => s + f.valor, 0);
-            } else if (select.value === 'caixa') {
-                x = parseFloat(document.getElementById('saldoInput').value) || 0;
             } else {
-                const fatId = Number(select.value.replace('fat-', ''));
+                const fatId = Number(selectReceita.value.replace('fat-', ''));
                 const f = (window.activeFaturamentos || []).find(item => item.id === fatId);
                 x = f ? f.valor : 0;
             }
 
-            const orcamento = window.__ultimoOrcamentoFixo || 0;
-            const z = x - orcamento;
+            const y = selectOrcamento.value === 'restante' ? (window.__ultimoRestanteContas || 0) : (window.__ultimoOrcamentoFixo || 0);
+            const z = x - y;
 
             document.getElementById('sobraFaltaX').innerText = `R$ ${x.toFixed(2)}`;
-            document.getElementById('sobraFaltaY').innerText = `R$ ${orcamento.toFixed(2)}`;
+            document.getElementById('sobraFaltaY').innerText = `R$ ${y.toFixed(2)}`;
             document.getElementById('sobraFaltaZ').innerText = `R$ ${Math.abs(z).toFixed(2)}`;
             document.getElementById('sobraFaltaResultadoLabel').innerText = z >= 0 ? 'Sobra estimada' : 'Falta estimada';
             document.getElementById('sobraFaltaResultadoBox').className = 'sobra-falta-resultado ' + (z >= 0 ? 'positivo' : 'negativo');
