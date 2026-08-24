@@ -84,8 +84,11 @@
             const selectBase = document.getElementById('sobraFaltaBase');
             const labelBaseEscolhida = selectBase && selectBase.selectedOptions[0] ? selectBase.selectedOptions[0].text : '—';
             const caixaAtual = parseFloat(document.getElementById('saldoInput').value) || 0;
-            const zTexto = document.getElementById('sobraFaltaZ').innerText;
-            const zValor = parseFloat(zTexto.replace('R$', '').trim()) || 0;
+            // sobraFaltaZ mostra o valor sempre positivo (o sinal vem do rótulo "Sobra"/"Falta" ao
+            // lado); a classe do box (positivo/negativo) é a fonte confiável do sinal aqui.
+            const sobraFaltaPositiva = (document.getElementById('sobraFaltaResultadoBox')?.className || '').includes('positivo');
+            const sobraFaltaLabel = document.getElementById('sobraFaltaResultadoLabel')?.innerText || 'Sobra/Falta Estimada';
+            const sobraFaltaValorTexto = document.getElementById('sobraFaltaZ').innerText;
 
             _pdfTituloSecao(doc, 'Resumo Financeiro', 14, y, corPrimaria);
             doc.autoTable({
@@ -95,7 +98,7 @@
                     ['Pago', document.getElementById('mPago').innerText],
                     ['Total de Receitas', document.getElementById('mTotalReceitas').innerText],
                     ['Caixa Atual', `R$ ${caixaAtual.toFixed(2)}`],
-                    [`Sobra/Falta Estimada (base: ${labelBaseEscolhida})`, zTexto]
+                    [`${sobraFaltaLabel} (base: ${labelBaseEscolhida})`, sobraFaltaValorTexto]
                 ],
                 startY: y + 5,
                 theme: 'grid',
@@ -103,7 +106,7 @@
                 columnStyles: { 0: { fontStyle: 'bold', cellWidth: 110 }, 1: { halign: 'right', fontStyle: 'bold' } },
                 didParseCell: (data) => {
                     if (data.row.index === 5 && data.column.index === 1) {
-                        data.cell.styles.textColor = zValor >= 0 ? corVerde : corVermelha;
+                        data.cell.styles.textColor = sobraFaltaPositiva ? corVerde : corVermelha;
                     }
                 }
             });

@@ -224,6 +224,20 @@
         .btn-no-caixa-ativo { color: var(--green-success); }
         .btn-no-caixa-ativo:hover { color: var(--green-success); background: rgba(16, 185, 129, 0.1); }
 
+        /* Card "Sobra / Falta Estimada": resultado em destaque (verde = sobra, vermelho = falta),
+           com a base escolhida e o Orçamento Fixo abaixo como detalhe da conta. */
+        .sobra-falta-resultado { border-radius: var(--radius-md); padding: 18px; text-align: center; margin-bottom: 16px; transition: background 0.2s; }
+        .sobra-falta-resultado.positivo { background: rgba(16, 185, 129, 0.12); }
+        .sobra-falta-resultado.negativo { background: rgba(239, 68, 68, 0.12); }
+        .sobra-falta-resultado-label { display: block; font-size: 0.85rem; font-weight: 700; color: var(--text-muted); margin-bottom: 4px; }
+        .sobra-falta-resultado-valor { display: block; font-size: 2rem; font-weight: 800; }
+        .sobra-falta-resultado.positivo .sobra-falta-resultado-valor { color: var(--green-success); }
+        .sobra-falta-resultado.negativo .sobra-falta-resultado-valor { color: var(--red-danger); }
+        .sobra-falta-detalhe { display: flex; flex-direction: column; gap: 8px; }
+        .sobra-falta-linha { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; background: var(--bg-light); border-radius: var(--radius-sm); font-size: 0.9rem; }
+        .sobra-falta-linha span { display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
+        .sobra-falta-linha strong { color: var(--text-main); }
+
         .acumulados-list { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
         .acumulado-item { display: flex; justify-content: space-between; padding: 10px 14px; background: var(--bg-light); border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; transition: 0.2s; }
         .acumulado-item:hover { background: var(--bg-blue-light); }
