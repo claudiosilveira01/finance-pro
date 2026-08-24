@@ -430,7 +430,7 @@
                     <div class="card">
                         <div class="card-title"><span class="card-title-left"><i class="ph ph-gauge"></i> Painel de Controle</span></div>
                         <div class="stats-list">
-                            <div class="stat-row item-anim" style="animation-delay:0.02s">
+                            <div class="stat-row stat-hero item-anim" style="animation-delay:0.02s">
                                 <span class="stat-icon"><i class="ph ph-wallet"></i></span>
                                 <span class="stat-label">Orçamento Fixo</span>
                                 <span class="stat-value" id="mOrcamento">R$ 0,00</span>
@@ -441,19 +441,9 @@
                                 <span class="stat-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</span>
                             </div>
                             <div class="stat-row item-anim" style="animation-delay:0.14s">
-                                <span class="stat-icon" style="color:var(--blue-accent);"><i class="ph ph-list-checks"></i></span>
-                                <span class="stat-label">Soma de Contas</span>
-                                <span class="stat-value" id="mSomaSelecionadas" style="color: var(--blue-accent);">R$ 0,00</span>
-                            </div>
-                            <div class="stat-row item-anim" style="animation-delay:0.2s">
                                 <span class="stat-icon" style="color:var(--green-success);"><i class="ph ph-check-circle"></i></span>
                                 <span class="stat-label">Pago</span>
                                 <span class="stat-value" id="mPago" style="color: var(--green-success);">R$ 0,00</span>
-                            </div>
-                            <div class="stat-row stat-hero item-anim" style="animation-delay:0.26s">
-                                <span class="stat-icon"><i class="ph ph-piggy-bank"></i></span>
-                                <span class="stat-label">Total de Receitas</span>
-                                <span class="stat-value" id="mTotalReceitas">R$ 0,00</span>
                             </div>
                         </div>
                     </div>
@@ -512,6 +502,10 @@
                     <div class="card">
                         <div class="card-title">
                             <span class="card-title-left"><i class="ph ph-wallet"></i> Receitas</span>
+                        </div>
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-light); padding:12px 14px; border-radius:var(--radius-sm); margin-bottom:14px;">
+                            <span style="color:var(--text-muted); font-weight:600; font-size:0.8rem;">TOTAL DE RECEITAS</span>
+                            <span style="color:var(--text-highlight); font-size:1.1rem; font-weight:800;" id="mTotalReceitas">R$ 0,00</span>
                         </div>
                         <div class="receitas-form">
                             <input type="text" id="fatNome" class="receitas-origem" placeholder="Origem (Ex: Salário, Venda)">

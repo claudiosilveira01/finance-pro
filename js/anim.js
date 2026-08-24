@@ -53,18 +53,38 @@
     }
     window.chartFoiRevelado = () => chartRevelado;
 
-    // Efeito de contagem: anima o número de 0 até o valor final (usado no Painel de Controle)
+    // Efeito de contagem do Painel de Controle. Só conta "do zero" (efeito de entrada completo)
+    // na carga inicial, troca de mês ou troca de aba — via a flag global animarNaCarga, lida no
+    // momento da chamada (calcularEAtualizarVisual só zera a flag depois de chamar tudo). Fora
+    // disso (ex.: marcar uma conta como paga, somar uma receita ao Caixa Atual), cada número só
+    // anima se o SEU valor de fato mudou, e parte do valor anterior — não do zero — pra não fazer
+    // todos os outros números "piscarem" de novo por causa de uma ação que não tem nada a ver com eles.
     const contadoresAtivos = {};
+    const valoresAnteriores = {};
     function animarNumero(elId, valorFinal, duracao = 1800) {
         const el = document.getElementById(elId);
         if (!el) return;
         if (contadoresAtivos[elId]) cancelAnimationFrame(contadoresAtivos[elId]);
 
+        const valorAnterior = valoresAnteriores[elId];
+        const primeiraVez = valorAnterior === undefined;
+        const mudou = primeiraVez || Math.abs(valorAnterior - valorFinal) > 0.001;
+        valoresAnteriores[elId] = valorFinal;
+
+        if (!mudou) {
+            el.innerText = `R$ ${valorFinal.toFixed(2)}`;
+            return;
+        }
+
+        const doZero = animarNaCarga || primeiraVez;
+        const valorInicial = doZero ? 0 : valorAnterior;
+        const duracaoReal = doZero ? duracao : Math.min(duracao, 500);
+
         const inicio = performance.now();
         const passo = (agora) => {
-            const progresso = Math.min((agora - inicio) / duracao, 1);
+            const progresso = Math.min((agora - inicio) / duracaoReal, 1);
             const facilitado = 1 - Math.pow(1 - progresso, 3); // ease-out cubic
-            const valorAtual = valorFinal * facilitado;
+            const valorAtual = valorInicial + (valorFinal - valorInicial) * facilitado;
             el.innerText = `R$ ${valorAtual.toFixed(2)}`;
             if (progresso < 1) {
                 contadoresAtivos[elId] = requestAnimationFrame(passo);

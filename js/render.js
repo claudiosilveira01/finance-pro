@@ -45,7 +45,6 @@
                 `;
             });
             [...fixasSelecionadas].forEach(id => { if (!fixasOrdenadas.some(c => c.id === id)) fixasSelecionadas.delete(id); });
-            animarNumero('mSomaSelecionadas', somaSelecionadaFixas, duracaoOdometro);
             animarNumero('mSomaSelecionadasCard', somaSelecionadaFixas, duracaoOdometro);
 
             // Tabela Faturamentos
