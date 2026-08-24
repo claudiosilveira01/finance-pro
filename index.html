@@ -461,7 +461,15 @@
                     <!-- SOBRA / FALTA ESTIMADA (consulta livre, não entra no cálculo automático acima) -->
                     <div class="card">
                         <div class="card-title"><span class="card-title-left"><i class="ph ph-scales"></i> Sobra / Falta Estimada</span></div>
-                        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Escolha a receita e o orçamento pra ver se um cobre o outro.</p>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Some o seu Caixa Atual com as receitas escolhidas e veja se cobre o orçamento.</p>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+                            <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">CAIXA ATUAL</span>
+                            <div style="display: flex; align-items: center; gap: 6px; background:var(--card-bg); border:1.5px solid var(--border-color); border-radius:var(--radius-sm); padding:8px 12px;">
+                                <span style="font-weight: 700; color: var(--text-highlight-alt);">R$</span>
+                                <input type="number" id="saldoInput" onblur="salvarSaldoDoMes()" style="background: transparent; border: none; width: 100px; text-align: right; font-weight: 700; font-size: 1.1rem; padding: 0; color: var(--text-highlight-alt); outline: none;">
+                            </div>
+                        </div>
 
                         <label class="sobra-falta-rotulo">Receitas</label>
                         <select id="sobraFaltaReceita" onchange="renderizarSobraFaltaEstimada()" style="width:100%; margin-bottom:12px;"></select>
@@ -479,7 +487,11 @@
 
                         <div class="sobra-falta-detalhe">
                             <div class="sobra-falta-linha">
-                                <span><i class="ph ph-arrow-circle-down"></i> Receitas</span>
+                                <span><i class="ph ph-wallet"></i> Caixa Atual</span>
+                                <strong id="sobraFaltaCaixa">R$ 0,00</strong>
+                            </div>
+                            <div class="sobra-falta-linha">
+                                <span><i class="ph ph-plus-circle"></i> Receitas</span>
                                 <strong id="sobraFaltaX">R$ 0,00</strong>
                             </div>
                             <div class="sobra-falta-linha">
@@ -520,13 +532,6 @@
                                 </thead>
                                 <tbody id="listaFaturamentos"></tbody>
                             </table>
-                        </div>
-                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); flex-wrap:wrap; gap:10px;">
-                            <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">CAIXA ATUAL</span>
-                            <div style="display: flex; align-items: center; gap: 6px; background:var(--card-bg); border:1.5px solid var(--border-color); border-radius:var(--radius-sm); padding:8px 12px;">
-                                <span style="font-weight: 700; color: var(--text-highlight-alt);">R$</span>
-                                <input type="number" id="saldoInput" onblur="salvarSaldoDoMes()" style="background: transparent; border: none; width: 100px; text-align: right; font-weight: 700; font-size: 1.1rem; padding: 0; color: var(--text-highlight-alt); outline: none;">
-                            </div>
                         </div>
                     </div>
 
