@@ -242,8 +242,12 @@
                 persistir: () => {
                     // Se a receita excluída já tinha sido somada ao Caixa Atual, desconta de volta
                     // — senão o Caixa Atual ficaria contando um dinheiro que não existe mais no app.
+                    // Se a conta fixa excluída já estava paga, o valor tinha sido descontado do Caixa
+                    // Atual ao marcar como paga — devolve, senão o Caixa Atual fica manco pra sempre.
                     if (tipo === 'faturamento' && item.noCaixa) {
                         ajustarCaixaAtual(-item.valor);
+                    } else if (tipo === 'fixa' && item.pago) {
+                        ajustarCaixaAtual(item.valor);
                     } else {
                         salvarDadosDoMesAtual();
                     }
