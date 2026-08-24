@@ -92,12 +92,19 @@
             const sobraFaltaLabel = document.getElementById('sobraFaltaResultadoLabel')?.innerText || 'Sobra/Falta Estimada';
             const sobraFaltaValorTexto = document.getElementById('sobraFaltaZ').innerText;
 
+            // Calculado direto de window.activeFixas (nunca da tela) — se o usuário tiver algum
+            // filtro ativo em Contas Fixas no momento de gerar o relatório, os cards do painel
+            // mostram só o subconjunto filtrado, mas o relatório sempre reflete o mês inteiro.
+            const orcamentoFixoReal = (window.activeFixas || []).reduce((s, c) => s + c.valor, 0);
+            const pagoReal = (window.activeFixas || []).filter(c => c.pago).reduce((s, c) => s + c.valor, 0);
+            const restanteReal = orcamentoFixoReal - pagoReal;
+
             _pdfTituloSecao(doc, 'Resumo Financeiro', 14, y, corPrimaria);
             doc.autoTable({
                 body: [
-                    ['Orçamento Fixo', document.getElementById('mOrcamento').innerText],
-                    ['Restante Contas', document.getElementById('mRestante').innerText],
-                    ['Pago', document.getElementById('mPago').innerText],
+                    ['Orçamento Fixo', `R$ ${orcamentoFixoReal.toFixed(2)}`],
+                    ['Restante Contas', `R$ ${restanteReal.toFixed(2)}`],
+                    ['Pago', `R$ ${pagoReal.toFixed(2)}`],
                     ['Total de Receitas', document.getElementById('mTotalReceitas').innerText],
                     ['Caixa Atual', `R$ ${caixaAtual.toFixed(2)}`],
                     [`${sobraFaltaLabel} (Caixa Atual + Receitas: ${labelReceitaEscolhida} / Orçamento: ${labelOrcamentoEscolhido})`, sobraFaltaValorTexto]
@@ -132,7 +139,9 @@
                 _pdfTituloSecao(doc, 'Contas Fixas', 14, y, corPrimaria);
                 doc.autoTable({
                     head: [['Item', 'Categoria', 'Venc.', 'Valor (R$)', 'Pago']],
-                    body: window.activeFixas.map(c => [c.nome, c.categoria, `Dia ${c.vencimento}`, c.valor.toFixed(2), c.pago ? 'Sim' : 'Não']),
+                    body: [...window.activeFixas]
+                        .sort((a, b) => (a.vencimento || 0) - (b.vencimento || 0))
+                        .map(c => [c.nome, c.categoria, `Dia ${c.vencimento}`, c.valor.toFixed(2), c.pago ? 'Sim' : 'Não']),
                     startY: y + 5,
                     theme: 'striped',
                     headStyles: { fillColor: corPrimaria }

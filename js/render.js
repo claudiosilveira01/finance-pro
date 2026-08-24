@@ -23,12 +23,13 @@
             });
 
             const tbodyFixas = document.getElementById('listaFixas');
-            tbodyFixas.innerHTML = '';
+            if (tbodyFixas) tbodyFixas.innerHTML = '';
             let somaSelecionadaFixas = 0;
             fixasOrdenadas.forEach(c => {
                 let alerta = calcularAlertaVencimento(c.vencimento, c.pago);
                 const marcado = fixasSelecionadas.has(c.id);
                 if (marcado) somaSelecionadaFixas += c.valor;
+                if (!tbodyFixas) return;
 
                 tbodyFixas.innerHTML += `
                     <tr>
@@ -52,8 +53,9 @@
             fatOrdenados.forEach(f => { totalFaturamentos += f.valor; });
 
             const tbodyFat = document.getElementById('listaFaturamentos');
-            tbodyFat.innerHTML = '';
+            if (tbodyFat) tbodyFat.innerHTML = '';
             fatOrdenados.forEach(f => {
+                if (!tbodyFat) return;
                 tbodyFat.innerHTML += `
                     <tr>
                         <td data-label="Data" style="color:var(--text-muted); font-size:0.85rem">${formatarData(f.data)}</td>
@@ -78,12 +80,12 @@
             renderizarSobraFaltaEstimada();
 
             const divAcumulados = document.getElementById('listaAcumulados');
-            divAcumulados.innerHTML = '';
-            
+            if (divAcumulados) divAcumulados.innerHTML = '';
+
             let catArray = Object.entries(totalPorCategoria).sort((a,b) => b[1] - a[1]);
             let catIdx = 0;
             catArray.forEach(([cat, valor]) => {
-                if(valor > 0) {
+                if(valor > 0 && divAcumulados) {
                     let icone = obterIconeCategoria(cat);
                     divAcumulados.innerHTML += `
                         <div class="acumulado-item${classeAnim}" style="animation-delay:${catIdx * 0.04}s">
