@@ -81,8 +81,10 @@
             let y = 40;
 
             // Resumo Financeiro primeiro — visão executiva antes de entrar nos detalhes de cada seção.
-            const selectBase = document.getElementById('sobraFaltaBase');
-            const labelBaseEscolhida = selectBase && selectBase.selectedOptions[0] ? selectBase.selectedOptions[0].text : '—';
+            const selectReceita = document.getElementById('sobraFaltaReceita');
+            const selectOrcamento = document.getElementById('sobraFaltaOrcamento');
+            const labelReceitaEscolhida = selectReceita && selectReceita.selectedOptions[0] ? selectReceita.selectedOptions[0].text : '—';
+            const labelOrcamentoEscolhido = selectOrcamento && selectOrcamento.selectedOptions[0] ? selectOrcamento.selectedOptions[0].text : '—';
             const caixaAtual = parseFloat(document.getElementById('saldoInput').value) || 0;
             // sobraFaltaZ mostra o valor sempre positivo (o sinal vem do rótulo "Sobra"/"Falta" ao
             // lado); a classe do box (positivo/negativo) é a fonte confiável do sinal aqui.
@@ -98,7 +100,7 @@
                     ['Pago', document.getElementById('mPago').innerText],
                     ['Total de Receitas', document.getElementById('mTotalReceitas').innerText],
                     ['Caixa Atual', `R$ ${caixaAtual.toFixed(2)}`],
-                    [`${sobraFaltaLabel} (base: ${labelBaseEscolhida})`, sobraFaltaValorTexto]
+                    [`${sobraFaltaLabel} (Receitas: ${labelReceitaEscolhida} / Orçamento: ${labelOrcamentoEscolhido})`, sobraFaltaValorTexto]
                 ],
                 startY: y + 5,
                 theme: 'grid',

@@ -461,8 +461,16 @@
                     <!-- SOBRA / FALTA ESTIMADA (consulta livre, não entra no cálculo automático acima) -->
                     <div class="card">
                         <div class="card-title"><span class="card-title-left"><i class="ph ph-scales"></i> Sobra / Falta Estimada</span></div>
-                        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Escolha uma base de cálculo pra ver se ela cobre o seu Orçamento Fixo.</p>
-                        <select id="sobraFaltaBase" onchange="renderizarSobraFaltaEstimada()" style="width:100%; margin-bottom:16px;"></select>
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Escolha a receita e o orçamento pra ver se um cobre o outro.</p>
+
+                        <label class="sobra-falta-rotulo">Receitas</label>
+                        <select id="sobraFaltaReceita" onchange="renderizarSobraFaltaEstimada()" style="width:100%; margin-bottom:12px;"></select>
+
+                        <label class="sobra-falta-rotulo">Orçamento</label>
+                        <select id="sobraFaltaOrcamento" onchange="renderizarSobraFaltaEstimada()" style="width:100%; margin-bottom:16px;">
+                            <option value="fixo">Orçamento Fixo</option>
+                            <option value="restante">Restante Contas</option>
+                        </select>
 
                         <div class="sobra-falta-resultado" id="sobraFaltaResultadoBox">
                             <span class="sobra-falta-resultado-label" id="sobraFaltaResultadoLabel">Sobra estimada</span>
@@ -471,11 +479,11 @@
 
                         <div class="sobra-falta-detalhe">
                             <div class="sobra-falta-linha">
-                                <span><i class="ph ph-arrow-circle-down"></i> Base escolhida</span>
+                                <span><i class="ph ph-arrow-circle-down"></i> Receitas</span>
                                 <strong id="sobraFaltaX">R$ 0,00</strong>
                             </div>
                             <div class="sobra-falta-linha">
-                                <span><i class="ph ph-minus-circle"></i> Orçamento Fixo</span>
+                                <span><i class="ph ph-minus-circle"></i> Orçamento</span>
                                 <strong id="sobraFaltaY">R$ 0,00</strong>
                             </div>
                         </div>
