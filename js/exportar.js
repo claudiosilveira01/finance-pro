@@ -104,12 +104,17 @@
                 doc.setFontSize(13);
                 doc.text('Registro de Pagamentos (Pago / Não Pago / Faturado)', 14, y);
                 doc.autoTable({
-                    head: [['Data/Hora', 'Tipo', 'Item', 'Valor (R$)', 'Ação']],
+                    head: [['Data do Pagamento', 'Registrado em', 'Tipo', 'Item', 'Valor (R$)', 'Ação']],
                     body: [...registroPagamentos]
                         .sort((a, b) => a.registradoEm.localeCompare(b.registradoEm))
                         .map(r => {
                             const ehAssinatura = r.tipo === 'assinatura';
+                            // Data escolhida no popup ("Foi hoje" ou uma data específica) — pode
+                            // ser diferente do dia em que o usuário de fato clicou no botão. Nas
+                            // desmarcações (sem popup), cai no dia do próprio clique.
+                            const dataPagamentoStr = r.dataPagamento || r.registradoEm.slice(0, 10);
                             return [
+                                formatarData(dataPagamentoStr),
                                 new Date(r.registradoEm).toLocaleString('pt-BR'),
                                 ehAssinatura ? 'Assinatura' : 'Conta Fixa',
                                 r.nome,

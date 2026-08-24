@@ -119,6 +119,40 @@
             input.addEventListener('keydown', e => { if (e.key === 'Enter') confirmar(); });
         }
 
+        // Pergunta a data real de um evento (ex.: quando uma conta foi paga de verdade) — nem
+        // sempre é o mesmo dia em que a pessoa clicou no botão. Botão "Foi hoje" resolve o caso
+        // mais comum num clique só; o campo de data cobre pagamentos feitos em outro dia.
+        function abrirModalData({
+            titulo = 'Escolha uma data',
+            mensagem = '',
+            onConfirmar
+        }) {
+            const hojeStr = new Date().toISOString().split('T')[0];
+            const html = `
+                <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">${titulo}</h3>
+                ${mensagem ? `<p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">${mensagem}</p>` : ''}
+                <button class="btn-flat" id="modalBtnHoje" style="width: 100%; margin-bottom: 14px;"><i class="ph ph-calendar-check"></i> Foi hoje</button>
+                <p style="text-align:center; color:var(--text-muted); font-size:0.8rem; margin: 0 0 8px;">ou escolha outra data</p>
+                <input type="date" id="modalDataInput" value="${hojeStr}" max="${hojeStr}" style="width: 100%; margin-bottom: 20px;">
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">Cancelar</button>
+                    <button class="btn-flat" id="modalBtnConfirmarData" style="flex: 1; background: var(--blue-accent);">Confirmar data</button>
+                </div>
+            `;
+            const overlay = _renderModalGenerico(html);
+
+            overlay.querySelector('#modalBtnHoje').onclick = () => {
+                _fecharModalGenerico();
+                if (onConfirmar) onConfirmar(hojeStr);
+            };
+            overlay.querySelector('#modalBtnConfirmarData').onclick = () => {
+                const valor = overlay.querySelector('#modalDataInput').value || hojeStr;
+                _fecharModalGenerico();
+                if (onConfirmar) onConfirmar(valor);
+            };
+            overlay.querySelector('#modalBtnCancelar').onclick = _fecharModalGenerico;
+        }
+
         function abrirModalSelecao({
             titulo = 'Selecione uma opção',
             mensagem = '',

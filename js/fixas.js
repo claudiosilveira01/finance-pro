@@ -179,12 +179,29 @@
             fecharModalNovaFixa();
         }
 
-        // Alterna Pago/Não Pago e guarda um registro do evento (data/hora reais do clique) — usado
-        // só no Relatório Mensal em PDF, não aparece em nenhuma tela do app.
+        // Alterna Pago/Não Pago. Ao MARCAR como pago, pergunta em que data o pagamento foi feito
+        // de verdade (o clique nem sempre acontece no mesmo dia) — botão "Foi hoje" ou uma data
+        // escolhida. Ao desmarcar, aplica na hora, sem perguntar nada. O registro do evento
+        // (usado só no Relatório Mensal em PDF, não aparece em nenhuma tela do app) guarda essa
+        // data escolhida separada da data/hora reais do clique.
         function togglePagoFixa(id) {
             const conta = window.activeFixas.find(c => c.id === id);
             if (!conta) return;
-            const novoStatus = !conta.pago;
+
+            if (conta.pago) {
+                _aplicarTogglePagoFixa(id, false, null);
+                return;
+            }
+
+            abrirModalData({
+                titulo: `Quando você pagou "${conta.nome}"?`,
+                onConfirmar: (dataPagamento) => _aplicarTogglePagoFixa(id, true, dataPagamento)
+            });
+        }
+
+        function _aplicarTogglePagoFixa(id, novoStatus, dataPagamento) {
+            const conta = window.activeFixas.find(c => c.id === id);
+            if (!conta) return;
             window.activeFixas = window.activeFixas.map(c => c.id === id ? { ...c, pago: novoStatus } : c);
 
             if (!window.activeRegistroPagamentos) window.activeRegistroPagamentos = [];
@@ -195,6 +212,7 @@
                 valor: conta.valor,
                 marcadoComoPago: novoStatus,
                 tipo: 'fixa',
+                dataPagamento: dataPagamento,
                 registradoEm: new Date().toISOString()
             });
 

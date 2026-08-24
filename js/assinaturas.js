@@ -58,14 +58,31 @@
             if(totalEl) totalEl.innerText = `R$ ${totalAssin.toFixed(2)}`;
         }
 
-        // Alterna o status de faturado da assinatura para o mês atualmente selecionado no app, e
-        // grava um registro do evento (mesmo mecanismo do Pago/Não Pago das contas fixas) — usado
-        // só no Relatório Mensal em PDF, não aparece em nenhuma tela do app.
+        // Alterna o status de faturado da assinatura para o mês atualmente selecionado no app. Ao
+        // MARCAR como faturada, pergunta em que data o pagamento foi feito de verdade (o clique
+        // nem sempre acontece no mesmo dia) — botão "Foi hoje" ou uma data escolhida. Ao desmarcar,
+        // aplica na hora. Grava um registro do evento (mesmo mecanismo do Pago/Não Pago das contas
+        // fixas) — usado só no Relatório Mensal em PDF, não aparece em nenhuma tela do app.
         function toggleFaturadoAssinatura(id) {
             const sub = assinaturasConfig.find(s => s.id === id);
             if(!sub) return;
             const jaFaturado = sub.faturadoEm === mesAtualKey;
-            sub.faturadoEm = jaFaturado ? null : mesAtualKey;
+
+            if (jaFaturado) {
+                _aplicarToggleFaturadoAssinatura(id, false, null);
+                return;
+            }
+
+            abrirModalData({
+                titulo: `Quando você pagou/faturou "${sub.nome}"?`,
+                onConfirmar: (dataPagamento) => _aplicarToggleFaturadoAssinatura(id, true, dataPagamento)
+            });
+        }
+
+        function _aplicarToggleFaturadoAssinatura(id, marcarComoFaturado, dataPagamento) {
+            const sub = assinaturasConfig.find(s => s.id === id);
+            if(!sub) return;
+            sub.faturadoEm = marcarComoFaturado ? mesAtualKey : null;
             salvarConfigGlobal();
 
             if (!window.activeRegistroPagamentos) window.activeRegistroPagamentos = [];
@@ -74,14 +91,15 @@
                 contaId: id,
                 nome: sub.nome,
                 valor: sub.valor || 0,
-                marcadoComoPago: !jaFaturado,
+                marcadoComoPago: marcarComoFaturado,
                 tipo: 'assinatura',
+                dataPagamento: dataPagamento,
                 registradoEm: new Date().toISOString()
             });
             salvarDadosDoMesAtual();
 
             renderizarAssinaturas();
-            mostrarToast(jaFaturado ? `"${sub.nome}" voltou para não faturada.` : `"${sub.nome}" marcada como faturada em ${mesAtualKey}.`, 'success');
+            mostrarToast(marcarComoFaturado ? `"${sub.nome}" marcada como faturada em ${mesAtualKey}.` : `"${sub.nome}" voltou para não faturada.`, 'success');
         }
 
         // Menu de ações por assinatura: Faturar, Adicionar às Contas Fixas, Classificação, Excluir.
