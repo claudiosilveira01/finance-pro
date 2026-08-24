@@ -40,6 +40,16 @@ vencimentos. 100% client-side (HTML/CSS/JS puro, sem framework, sem build). Repo
 
 ## Funcionalidades entregues (mais recentes primeiro)
 
+### Relatório Mensal Completo em PDF (2026-08-24)
+Botão "Relatório Mensal (PDF)" agora exporta tudo, não só Receitas + Contas Fixas: adicionado
+Extrato Bancário (resumo + tabela completa) e Gastos por Categoria (com os gráficos de pizza e
+barra como imagem dentro do PDF). Cada seção some do relatório se não tiver dado nenhum naquele
+mês. Extrato de cartão de crédito foi cogitado (usuário mandou CSV + PDF de fatura do Nubank pra
+eu aprender o formato) mas **cancelado pelo próprio usuário antes de codar** — achou desnecessário
+por ora. **Não testado visualmente**: o ambiente onde foi implementado bloqueia os CDNs que o app
+usa (Chart.js, jsPDF, Firebase), só deu pra revisar o código — pedir pro usuário conferir o PDF
+gerado depois do deploy.
+
 ### Correção: Saldo Estimado somando receita em dobro (2026-08-21)
 Usuário reportou que "Falta/Sobra" no Painel de Controle mostrava R$ 2.000,44 quando o esperado
 era ~R$ 33. Causa: o cálculo somava **todas** as receitas do mês, inclusive uma já recebida dias
