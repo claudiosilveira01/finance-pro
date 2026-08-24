@@ -397,3 +397,36 @@ transação — antes, duas transações com a mesma chave ficavam com o mesmo `
 lixeira sempre removia a primeira (nunca a segunda). Validado com 3 cenários automatizados
 (importação com par idêntico, reimportação do mesmo PDF, PDF novo com uma 3ª ocorrência real):
 todos bateram o resultado esperado.
+
+## Relatório Mensal Completo (2026-08-24)
+
+Pedido do usuário: o botão "Relatório Mensal (PDF)" só exportava Receitas + Contas Fixas + um
+resumo curto — pediu um relatório completo com "a saúde financeira do mês inteiro". Cogitou-se
+também implementar extrato de cartão de crédito (o usuário mandou um CSV de exemplo da fatura do
+Nubank e um PDF de fatura fechada pra eu aprender o formato) — **cancelado pelo próprio usuário**
+antes de codar ("me parece um pouco desnecessário isso agora"), então só o relatório foi feito.
+
+`exportarRelatorioMensalPDF()` (`js/exportar.js`) reescrita do zero, agora com estas seções, cada
+uma **pulada inteira do PDF se não tiver nenhum dado no mês** (decisão do usuário via
+`AskUserQuestion`):
+1. **Receitas** (já existia)
+2. **Contas Fixas** (já existia)
+3. **Extrato Bancário** — novo: resumo de Entradas/Saídas + tabela completa (reaproveita
+   `window.activeExtrato`, mesmos dados do card do dashboard)
+4. **Gastos por Categoria** — novo: os dois gráficos (pizza + barra) inseridos como **imagem**
+   dentro do PDF (`chart.toBase64Image()`, respeitando a proporção original do gráfico pra não
+   esticar/achatar — `_pdfInserirGrafico()`), seguido de uma tabela Categoria/Valor. Decisão do
+   usuário: aparece **sempre** que houver algum gasto lançado, mesmo que o card "Acumulado por
+   Categoria" esteja oculto na tela (toggle em Configurações) — o relatório não segue esse toggle.
+5. **Resumo Financeiro** (já existia, sempre presente — é o fechamento do relatório)
+
+Nova função auxiliar `_pdfGarantirEspaco()`: antes de escrever o título de cada seção, checa se
+sobra espaço na página atual; se não sobrar, pula pra próxima página — evita um título "órfão" no
+rodapé de uma página com a tabela inteira começando sozinha na página seguinte.
+
+**Limitação de teste:** o ambiente sandbox onde isso foi implementado bloqueia por política de
+rede os CDNs usados pelo app (`cdn.jsdelivr.net`, `www.gstatic.com` — onde ficam Chart.js, jsPDF e
+o SDK do Firebase), então não foi possível abrir o app de verdade e exportar um PDF real pra
+conferir visualmente. Validado por revisão cuidadosa do código e checagem de sintaxe; **pedir pro
+usuário testar o botão "Relatório Mensal (PDF)" depois do deploy** e avisar se algo sair diferente
+do esperado (layout dos gráficos, quebra de página, seção que deveria ter sido pulada e não foi).
