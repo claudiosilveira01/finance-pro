@@ -179,7 +179,27 @@
             fecharModalNovaFixa();
         }
 
-        function togglePagoFixa(id) { window.activeFixas = window.activeFixas.map(c => c.id === id ? { ...c, pago: !c.pago } : c); salvarDadosDoMesAtual(); calcularEAtualizarVisual(); }
+        // Alterna Pago/Não Pago e guarda um registro do evento (data/hora reais do clique) — usado
+        // só no Relatório Mensal em PDF, não aparece em nenhuma tela do app.
+        function togglePagoFixa(id) {
+            const conta = window.activeFixas.find(c => c.id === id);
+            if (!conta) return;
+            const novoStatus = !conta.pago;
+            window.activeFixas = window.activeFixas.map(c => c.id === id ? { ...c, pago: novoStatus } : c);
+
+            if (!window.activeRegistroPagamentos) window.activeRegistroPagamentos = [];
+            window.activeRegistroPagamentos.push({
+                id: Date.now() + Math.floor(Math.random() * 1000),
+                contaId: id,
+                nome: conta.nome,
+                valor: conta.valor,
+                marcadoComoPago: novoStatus,
+                registradoEm: new Date().toISOString()
+            });
+
+            salvarDadosDoMesAtual();
+            calcularEAtualizarVisual();
+        }
 
         function toggleSelecaoFixa(id) {
             if (fixasSelecionadas.has(id)) fixasSelecionadas.delete(id); else fixasSelecionadas.add(id);
