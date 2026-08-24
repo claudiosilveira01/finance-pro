@@ -36,8 +36,8 @@
             const itensHtml = ordenadas.map(s => {
                 totalAssin += (s.valor || 0);
                 let valorFormatado = s.valor ? ` - R$ ${s.valor.toFixed(2)}` : '';
-                let alerta = calcularAlertaVencimento(s.vencimento, false);
                 const faturado = s.faturadoEm === mesAtualKey;
+                let alerta = calcularAlertaVencimento(s.vencimento, faturado);
                 const icone = s.categoria ? obterIconeCategoria(s.categoria) : 'bell';
                 return `<div class="sub-item">
                     <span><i class="ph ph-${icone}" style="color:var(--sub-color); vertical-align:-2px;"></i> ${s.nome} <strong style="color:var(--text-highlight)">${valorFormatado}</strong></span>
