@@ -58,13 +58,28 @@
             if(totalEl) totalEl.innerText = `R$ ${totalAssin.toFixed(2)}`;
         }
 
-        // Alterna o status de faturado da assinatura para o mês atualmente selecionado no app.
+        // Alterna o status de faturado da assinatura para o mês atualmente selecionado no app, e
+        // grava um registro do evento (mesmo mecanismo do Pago/Não Pago das contas fixas) — usado
+        // só no Relatório Mensal em PDF, não aparece em nenhuma tela do app.
         function toggleFaturadoAssinatura(id) {
             const sub = assinaturasConfig.find(s => s.id === id);
             if(!sub) return;
             const jaFaturado = sub.faturadoEm === mesAtualKey;
             sub.faturadoEm = jaFaturado ? null : mesAtualKey;
             salvarConfigGlobal();
+
+            if (!window.activeRegistroPagamentos) window.activeRegistroPagamentos = [];
+            window.activeRegistroPagamentos.push({
+                id: Date.now() + Math.floor(Math.random() * 1000),
+                contaId: id,
+                nome: sub.nome,
+                valor: sub.valor || 0,
+                marcadoComoPago: !jaFaturado,
+                tipo: 'assinatura',
+                registradoEm: new Date().toISOString()
+            });
+            salvarDadosDoMesAtual();
+
             renderizarAssinaturas();
             mostrarToast(jaFaturado ? `"${sub.nome}" voltou para não faturada.` : `"${sub.nome}" marcada como faturada em ${mesAtualKey}.`, 'success');
         }

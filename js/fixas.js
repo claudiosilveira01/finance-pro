@@ -194,6 +194,7 @@
                 nome: conta.nome,
                 valor: conta.valor,
                 marcadoComoPago: novoStatus,
+                tipo: 'fixa',
                 registradoEm: new Date().toISOString()
             });
 

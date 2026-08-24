@@ -102,17 +102,23 @@
             if (registroPagamentos.length > 0) {
                 y = _pdfGarantirEspaco(doc, y, 30);
                 doc.setFontSize(13);
-                doc.text('Registro de Pagamentos (Pago / Não Pago)', 14, y);
+                doc.text('Registro de Pagamentos (Pago / Não Pago / Faturado)', 14, y);
                 doc.autoTable({
-                    head: [['Data/Hora', 'Conta', 'Valor (R$)', 'Ação']],
+                    head: [['Data/Hora', 'Tipo', 'Item', 'Valor (R$)', 'Ação']],
                     body: [...registroPagamentos]
                         .sort((a, b) => a.registradoEm.localeCompare(b.registradoEm))
-                        .map(r => [
-                            new Date(r.registradoEm).toLocaleString('pt-BR'),
-                            r.nome,
-                            r.valor.toFixed(2),
-                            r.marcadoComoPago ? 'Marcado como Pago' : 'Marcado como Não Pago'
-                        ]),
+                        .map(r => {
+                            const ehAssinatura = r.tipo === 'assinatura';
+                            return [
+                                new Date(r.registradoEm).toLocaleString('pt-BR'),
+                                ehAssinatura ? 'Assinatura' : 'Conta Fixa',
+                                r.nome,
+                                r.valor.toFixed(2),
+                                ehAssinatura
+                                    ? (r.marcadoComoPago ? 'Marcada como Faturada' : 'Voltou para Não Faturada')
+                                    : (r.marcadoComoPago ? 'Marcado como Pago' : 'Marcado como Não Pago')
+                            ];
+                        }),
                     startY: y + 4,
                     theme: 'striped',
                     headStyles: { fillColor: corCabecalho },
