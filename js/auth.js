@@ -10,6 +10,7 @@
                 document.getElementById('fatData').value = new Date().toISOString().split('T')[0];
                 atualizarLabelDataFat();
                 initChart();
+                initChartSobraFalta();
                 atualizarBotaoTema();
                 carregarConfigGlobal(() => {
                     loading.style.display = 'none';

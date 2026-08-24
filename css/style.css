@@ -156,6 +156,9 @@
         /* Tabela compacta (usada em Receitas): linhas mais baixas que a tabela padrão */
         .tabela-compacta th, .tabela-compacta td { padding: 6px 6px; }
         .tabela-compacta .btn-action { padding: 4px; }
+        .tabela-receitas { font-size: 1.08rem; }
+        .tabela-receitas td { padding: 12px 6px; }
+        .tabela-receitas .item-link { font-size: 1.08rem; }
 
         /* Resumo compacto do card de Extrato Bancário — os detalhes ficam num modal à parte */
         .extrato-resumo-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -210,6 +213,9 @@
             .item-link { font-size: 0.76rem; }
             .fixa-sub { font-size: 0.64rem; }
             .fixa-valor { font-size: 0.76rem; }
+            /* Tabela de Receitas fica com letra maior que as outras de propósito — ainda encolhe
+               nesse ponto de corte, só que menos, pra continuar legível sem estourar a largura. */
+            .tabela-receitas, .tabela-receitas .item-link { font-size: 0.92rem; }
         }
         @container (max-width: 340px) {
             th, td { padding: 6px 1px; }
@@ -217,6 +223,7 @@
             .status-badge { width: 32px; font-size: 0.54rem; }
             .vencimento-tag { font-size: 0.5rem; padding: 1px 2px; }
             .item-link { font-size: 0.72rem; }
+            .tabela-receitas, .tabela-receitas .item-link { font-size: 0.84rem; }
         }
         .btn-action { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display:flex; align-items:center; padding: 6px; border-radius: 8px; transition: background 0.15s, color 0.15s; }
         .btn-action:hover { color: var(--blue-accent); background: var(--bg-blue-light); }
@@ -238,6 +245,10 @@
         .sobra-falta-linha span { display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
         .sobra-falta-linha strong { color: var(--text-main); }
         .sobra-falta-rotulo { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; }
+        .sobra-falta-limpar { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; background: var(--bg-light); color: var(--text-muted); border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; margin-bottom: 16px; transition: background 0.15s, color 0.15s; }
+        .sobra-falta-limpar:hover { background: var(--bg-blue-light); color: var(--blue-accent); }
+        .sobra-falta-chart-wrap { height: 130px; margin-bottom: 16px; }
+        @media (min-width: 600px) { .sobra-falta-chart-wrap { height: 160px; } }
 
         .acumulados-list { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
         .acumulado-item { display: flex; justify-content: space-between; padding: 10px 14px; background: var(--bg-light); border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; transition: 0.2s; }

@@ -476,13 +476,20 @@
 
                         <label class="sobra-falta-rotulo">Orçamento</label>
                         <select id="sobraFaltaOrcamento" onchange="renderizarSobraFaltaEstimada()" style="width:100%; margin-bottom:16px;">
+                            <option value="nenhuma">Nenhuma</option>
                             <option value="fixo">Orçamento Fixo</option>
                             <option value="restante">Restante Contas</option>
                         </select>
 
+                        <button type="button" class="sobra-falta-limpar" onclick="limparSobraFaltaEstimada()"><i class="ph ph-arrow-counter-clockwise"></i> Limpar Seleção</button>
+
                         <div class="sobra-falta-resultado" id="sobraFaltaResultadoBox">
                             <span class="sobra-falta-resultado-label" id="sobraFaltaResultadoLabel">Sobra estimada</span>
                             <span class="sobra-falta-resultado-valor" id="sobraFaltaZ">R$ 0,00</span>
+                        </div>
+
+                        <div class="sobra-falta-chart-wrap">
+                            <canvas id="chartSobraFalta"></canvas>
                         </div>
 
                         <div class="sobra-falta-detalhe">
@@ -521,13 +528,13 @@
                             </div>
                         </div>
                         <div class="table-responsive" style="margin-bottom: 15px;">
-                            <table class="tabela-compacta">
+                            <table class="tabela-compacta tabela-receitas">
                                 <thead>
                                     <tr>
                                         <th class="sortable" onclick="ordenarTabela('faturamentos', 'data')">Data <i class="ph ph-caret-up-down"></i></th>
                                         <th>Origem</th>
                                         <th class="sortable" onclick="ordenarTabela('faturamentos', 'valor')">Valor <i class="ph ph-caret-up-down"></i></th>
-                                        <th style="width: 70px;"></th>
+                                        <th style="width: 60px;"></th>
                                     </tr>
                                 </thead>
                                 <tbody id="listaFaturamentos"></tbody>

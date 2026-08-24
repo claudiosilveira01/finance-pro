@@ -57,11 +57,10 @@
                 tbodyFat.innerHTML += `
                     <tr>
                         <td data-label="Data" style="color:var(--text-muted); font-size:0.85rem">${formatarData(f.data)}</td>
-                        <td data-label="Origem" style="font-weight: 500">${f.nome}</td>
+                        <td data-label="Origem"><button class="item-link" onclick="editarFaturamento(${f.id})">${f.nome}</button></td>
                         <td data-label="Valor" style="color:var(--green-success); font-weight:700;">+ R$ ${f.valor.toFixed(2)}</td>
                         <td data-label="" style="text-align:right; white-space:nowrap;">
                             <button class="btn-action ${f.noCaixa ? 'btn-no-caixa-ativo' : ''}" onclick="toggleReceitaNoCaixa(${f.id})" title="${f.noCaixa ? 'Já somada ao Caixa Atual — clique pra remover' : 'Somar ao Caixa Atual'}"><i class="ph ${f.noCaixa ? 'ph-check-circle' : 'ph-plus-circle'}"></i></button>
-                            <button class="btn-action" onclick="editarFaturamento(${f.id})" title="Editar"><i class="ph ph-pencil-simple"></i></button>
                             <button class="btn-action btn-delete" onclick="deletarItemGeral(${f.id}, 'faturamento')" title="Excluir"><i class="ph ph-trash"></i></button>
                         </td>
                     </tr>
@@ -114,9 +113,9 @@
         }
 
         // Card "Sobra/Falta Estimada": consulta livre, não faz parte do cálculo automático do
-        // Painel de Controle. Base = Caixa Atual + Receitas (uma específica ou todas somadas);
-        // Orçamento = Orçamento Fixo total ou só o Restante Contas (ainda não pago); resultado =
-        // (Caixa Atual + Receitas) - Orçamento.
+        // Painel de Controle. Base = Caixa Atual + Receitas ("Nenhuma", uma específica ou todas
+        // somadas); Orçamento = "Nenhuma", Orçamento Fixo total ou só o Restante Contas (ainda não
+        // pago); resultado = (Caixa Atual + Receitas) - Orçamento.
         function renderizarSobraFaltaEstimada() {
             const selectReceita = document.getElementById('sobraFaltaReceita');
             const selectOrcamento = document.getElementById('sobraFaltaOrcamento');
@@ -124,6 +123,7 @@
 
             const receitaSelecionadaAntes = selectReceita.value;
             const opcoesReceita = [
+                { value: 'nenhuma', label: 'Nenhuma' },
                 { value: 'total', label: 'Todas as Receitas' },
                 ...(window.activeFaturamentos || []).map(f => ({ value: `fat-${f.id}`, label: `${f.nome} — R$ ${f.valor.toFixed(2)}` }))
             ];
@@ -133,15 +133,19 @@
             let receitas = 0;
             if (selectReceita.value === 'total') {
                 receitas = (window.activeFaturamentos || []).reduce((s, f) => s + f.valor, 0);
-            } else {
+            } else if (selectReceita.value !== 'nenhuma') {
                 const fatId = Number(selectReceita.value.replace('fat-', ''));
                 const f = (window.activeFaturamentos || []).find(item => item.id === fatId);
                 receitas = f ? f.valor : 0;
             }
 
             const caixaAtual = parseFloat(document.getElementById('saldoInput').value) || 0;
-            const orcamento = selectOrcamento.value === 'restante' ? (window.__ultimoRestanteContas || 0) : (window.__ultimoOrcamentoFixo || 0);
-            const z = (caixaAtual + receitas) - orcamento;
+            let orcamento = 0;
+            if (selectOrcamento.value === 'fixo') orcamento = window.__ultimoOrcamentoFixo || 0;
+            else if (selectOrcamento.value === 'restante') orcamento = window.__ultimoRestanteContas || 0;
+
+            const disponivel = caixaAtual + receitas;
+            const z = disponivel - orcamento;
 
             document.getElementById('sobraFaltaCaixa').innerText = `R$ ${caixaAtual.toFixed(2)}`;
             document.getElementById('sobraFaltaX').innerText = `R$ ${receitas.toFixed(2)}`;
@@ -149,4 +153,15 @@
             document.getElementById('sobraFaltaZ').innerText = `R$ ${Math.abs(z).toFixed(2)}`;
             document.getElementById('sobraFaltaResultadoLabel').innerText = z >= 0 ? 'Sobra estimada' : 'Falta estimada';
             document.getElementById('sobraFaltaResultadoBox').className = 'sobra-falta-resultado ' + (z >= 0 ? 'positivo' : 'negativo');
+
+            if (typeof atualizarChartSobraFalta === 'function') atualizarChartSobraFalta(disponivel, orcamento, z >= 0);
+        }
+
+        // Reseta os dois seletores do card Sobra/Falta pra "Nenhuma" — atalho pra zerar a consulta.
+        function limparSobraFaltaEstimada() {
+            const selectReceita = document.getElementById('sobraFaltaReceita');
+            const selectOrcamento = document.getElementById('sobraFaltaOrcamento');
+            if (selectReceita) selectReceita.value = 'nenhuma';
+            if (selectOrcamento) selectOrcamento.value = 'nenhuma';
+            renderizarSobraFaltaEstimada();
         }
