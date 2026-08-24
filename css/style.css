@@ -45,8 +45,8 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        html { overflow-x: hidden; font-size: 17.5px; }
-        body { background-color: var(--bg-light); color: var(--text-main); transition: background 0.3s, color 0.3s; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        html { overflow-x: hidden; font-size: 17.5px; overscroll-behavior-y: none; }
+        body { background-color: var(--bg-light); color: var(--text-main); transition: background 0.3s, color 0.3s; -webkit-font-smoothing: antialiased; overflow-x: hidden; overscroll-behavior-y: none; }
 
         /* Botão de navegação de mês — vive dentro de um card normal agora, não num header roxo */
         .month-nav { display: flex; align-items: center; gap: 4px; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 4px; flex: 1 1 180px; min-width: 0; }
