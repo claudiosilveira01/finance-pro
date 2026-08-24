@@ -31,6 +31,7 @@
         let ordExtrato = { col: 'data', asc: false };
         let meuGraficoPizza;
         let meuGraficoBarra;
+        let chartSobraFalta;
         let idEditandoFixa = null;
         let idEditandoFaturamento = null;
         let diaCalendarioSelecionado = null;
