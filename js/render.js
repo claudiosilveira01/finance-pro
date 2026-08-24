@@ -144,7 +144,7 @@
 
             document.getElementById('sobraFaltaX').innerText = `R$ ${x.toFixed(2)}`;
             document.getElementById('sobraFaltaY').innerText = `R$ ${orcamento.toFixed(2)}`;
-            const elZ = document.getElementById('sobraFaltaZ');
-            elZ.innerText = `R$ ${z.toFixed(2)}`;
-            elZ.style.color = z >= 0 ? 'var(--green-success)' : 'var(--red-danger)';
+            document.getElementById('sobraFaltaZ').innerText = `R$ ${Math.abs(z).toFixed(2)}`;
+            document.getElementById('sobraFaltaResultadoLabel').innerText = z >= 0 ? 'Sobra estimada' : 'Falta estimada';
+            document.getElementById('sobraFaltaResultadoBox').className = 'sobra-falta-resultado ' + (z >= 0 ? 'positivo' : 'negativo');
         }
