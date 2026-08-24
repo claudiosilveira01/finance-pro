@@ -96,7 +96,10 @@
                 dataPagamento: dataPagamento,
                 registradoEm: new Date().toISOString()
             });
-            salvarDadosDoMesAtual();
+
+            // O dinheiro sai de verdade do Caixa Atual ao marcar como faturada, e volta se
+            // desmarcar (ex.: clicou por engano). ajustarCaixaAtual() já salva tudo de uma vez.
+            ajustarCaixaAtual(marcarComoFaturado ? -(sub.valor || 0) : (sub.valor || 0));
 
             renderizarAssinaturas();
             mostrarToast(marcarComoFaturado ? `"${sub.nome}" marcada como faturada em ${mesAtualKey}.` : `"${sub.nome}" voltou para não faturada.`, 'success');

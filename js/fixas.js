@@ -216,7 +216,9 @@
                 registradoEm: new Date().toISOString()
             });
 
-            salvarDadosDoMesAtual();
+            // O dinheiro sai de verdade do Caixa Atual ao marcar como pago, e volta se desmarcar
+            // (ex.: clicou por engano). ajustarCaixaAtual() já salva tudo de uma vez.
+            ajustarCaixaAtual(novoStatus ? -conta.valor : conta.valor);
             calcularEAtualizarVisual();
         }
 
@@ -237,6 +239,14 @@
             excluirComUndo({
                 mensagem: `Item excluído: ${item.nome}`,
                 restaurar: () => { arr.splice(idx, 0, item); calcularEAtualizarVisual(); },
-                persistir: () => salvarDadosDoMesAtual()
+                persistir: () => {
+                    // Se a receita excluída já tinha sido somada ao Caixa Atual, desconta de volta
+                    // — senão o Caixa Atual ficaria contando um dinheiro que não existe mais no app.
+                    if (tipo === 'faturamento' && item.noCaixa) {
+                        ajustarCaixaAtual(-item.valor);
+                    } else {
+                        salvarDadosDoMesAtual();
+                    }
+                }
             });
         }

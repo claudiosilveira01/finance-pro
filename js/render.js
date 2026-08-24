@@ -8,7 +8,7 @@
             const classeAnim = animarAgora ? ' item-anim' : '';
             const classeAnimBadge = animarAgora ? ' anim-pop' : '';
 
-            let orcamento = 0, pago = 0, restante = 0, totalFaturamentos = 0, totalFaturamentosFuturos = 0;
+            let orcamento = 0, pago = 0, restante = 0, totalFaturamentos = 0;
             let totalPorCategoria = {};
             categoriasAtuais.forEach(c => totalPorCategoria[c] = 0);
 
@@ -49,11 +49,7 @@
 
             // Tabela Faturamentos
             let fatOrdenados = aplicarOrdenacao(window.activeFaturamentos, ordFaturamentos);
-            // "Caixa Atual" já reflete o dinheiro que entrou até hoje — somar de novo as receitas
-            // com data <= hoje no Saldo Estimado duplicaria esse valor. Só entram aqui as receitas
-            // com data futura (ainda não recebidas, então ainda não estão no Caixa Atual).
-            const hojeStr = new Date().toISOString().split('T')[0];
-            fatOrdenados.forEach(f => { totalFaturamentos += f.valor; if (f.data > hojeStr) totalFaturamentosFuturos += f.valor; });
+            fatOrdenados.forEach(f => { totalFaturamentos += f.valor; });
 
             const tbodyFat = document.getElementById('listaFaturamentos');
             tbodyFat.innerHTML = '';
@@ -64,6 +60,7 @@
                         <td data-label="Origem" style="font-weight: 500">${f.nome}</td>
                         <td data-label="Valor" style="color:var(--green-success); font-weight:700;">+ R$ ${f.valor.toFixed(2)}</td>
                         <td data-label="" style="text-align:right; white-space:nowrap;">
+                            <button class="btn-action ${f.noCaixa ? 'btn-no-caixa-ativo' : ''}" onclick="toggleReceitaNoCaixa(${f.id})" title="${f.noCaixa ? 'Já somada ao Caixa Atual — clique pra remover' : 'Somar ao Caixa Atual'}"><i class="ph ${f.noCaixa ? 'ph-check-circle' : 'ph-plus-circle'}"></i></button>
                             <button class="btn-action" onclick="editarFaturamento(${f.id})" title="Editar"><i class="ph ph-pencil-simple"></i></button>
                             <button class="btn-action btn-delete" onclick="deletarItemGeral(${f.id}, 'faturamento')" title="Excluir"><i class="ph ph-trash"></i></button>
                         </td>
@@ -71,18 +68,14 @@
                 `;
             });
 
-            const saldoCaixaInicial = parseFloat(document.getElementById('saldoInput').value) || 0;
-            const saldoEstimado = saldoCaixaInicial + totalFaturamentosFuturos;
-            let resultadoFinal = saldoEstimado - restante;
+            window.__ultimoOrcamentoFixo = orcamento;
 
-            animarNumero('mSaldoEstimado', saldoEstimado, duracaoOdometro);
+            animarNumero('mTotalReceitas', totalFaturamentos, duracaoOdometro);
             animarNumero('mOrcamento', orcamento, duracaoOdometro);
             animarNumero('mPago', pago, duracaoOdometro);
             animarNumero('mRestante', restante, duracaoOdometro);
 
-            const elRes = document.getElementById('mResultado');
-            animarNumero('mResultado', resultadoFinal, duracaoOdometro);
-            elRes.style.color = resultadoFinal >= 0 ? 'var(--green-success)' : 'var(--red-danger)';
+            renderizarSobraFaltaEstimada();
 
             const divAcumulados = document.getElementById('listaAcumulados');
             divAcumulados.innerHTML = '';
@@ -117,4 +110,41 @@
 
             // Consumida: até a próxima carga/troca de mês/troca de aba, os recálculos ficam "quietos".
             animarNaCarga = false;
+        }
+
+        // Card "Sobra/Falta Estimada": consulta livre, não faz parte do cálculo automático do
+        // Painel de Controle. X = base escolhida pelo usuário (total das receitas, o Caixa Atual,
+        // ou uma receita específica), Y = Orçamento Fixo total, Z = X - Y.
+        function renderizarSobraFaltaEstimada() {
+            const select = document.getElementById('sobraFaltaBase');
+            if (!select) return;
+
+            const valorSelecionadoAntes = select.value;
+            const opcoes = [
+                { value: 'total', label: 'Total das Receitas' },
+                { value: 'caixa', label: 'Caixa Atual' },
+                ...(window.activeFaturamentos || []).map(f => ({ value: `fat-${f.id}`, label: `${f.nome} — R$ ${f.valor.toFixed(2)}` }))
+            ];
+            select.innerHTML = opcoes.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+            select.value = opcoes.some(o => o.value === valorSelecionadoAntes) ? valorSelecionadoAntes : 'total';
+
+            let x = 0;
+            if (select.value === 'total') {
+                x = (window.activeFaturamentos || []).reduce((s, f) => s + f.valor, 0);
+            } else if (select.value === 'caixa') {
+                x = parseFloat(document.getElementById('saldoInput').value) || 0;
+            } else {
+                const fatId = Number(select.value.replace('fat-', ''));
+                const f = (window.activeFaturamentos || []).find(item => item.id === fatId);
+                x = f ? f.valor : 0;
+            }
+
+            const orcamento = window.__ultimoOrcamentoFixo || 0;
+            const z = x - orcamento;
+
+            document.getElementById('sobraFaltaX').innerText = `R$ ${x.toFixed(2)}`;
+            document.getElementById('sobraFaltaY').innerText = `R$ ${orcamento.toFixed(2)}`;
+            const elZ = document.getElementById('sobraFaltaZ');
+            elZ.innerText = `R$ ${z.toFixed(2)}`;
+            elZ.style.color = z >= 0 ? 'var(--green-success)' : 'var(--red-danger)';
         }

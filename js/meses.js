@@ -159,3 +159,13 @@
             salvarDadosDoMesAtual();
             calcularEAtualizarVisual();
         }
+
+        // Ajusta o Caixa Atual em `delta` (positivo soma, negativo desconta) e salva. Usado quando
+        // marca/desmarca uma conta fixa ou assinatura como paga (o dinheiro sai/volta de verdade)
+        // e quando o usuário confirma que uma receita específica já caiu na conta.
+        function ajustarCaixaAtual(delta) {
+            const input = document.getElementById('saldoInput');
+            const atual = parseFloat(input.value) || 0;
+            input.value = (atual + delta).toFixed(2);
+            salvarDadosDoMesAtual();
+        }
