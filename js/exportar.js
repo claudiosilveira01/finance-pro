@@ -1,42 +1,4 @@
-// Exportação de dados: CSV manual (com BOM UTF-8) e relatório mensal em PDF via jsPDF + autoTable
-        function _csvEscape(valor) {
-            const str = String(valor ?? '');
-            if(/["\n;]/.test(str)) return '"' + str.replace(/"/g, '""') + '"';
-            return str;
-        }
-
-        function _baixarCSV(nomeArquivo, cabecalho, linhas) {
-            const conteudo = [cabecalho, ...linhas].map(l => l.map(_csvEscape).join(';')).join('\r\n');
-            const BOM = '﻿'; // garante acentuação correta ao abrir no Excel
-            const blob = new Blob([BOM + conteudo], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = nomeArquivo;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-        }
-
-        function exportarFixasCSV() {
-            const cabecalho = ['Item', 'Categoria', 'Vencimento', 'Valor (R$)', 'Pago', 'Observações'];
-            const linhas = (window.activeFixas || []).map(c => [
-                c.nome, c.categoria, `Dia ${c.vencimento}`, c.valor.toFixed(2), c.pago ? 'Sim' : 'Não', c.obs || ''
-            ]);
-            _baixarCSV(`contas-fixas-${mesAtualKey}.csv`, cabecalho, linhas);
-            mostrarToast('CSV de contas fixas exportado.', 'success');
-        }
-
-        function exportarFaturamentosCSV() {
-            const cabecalho = ['Data', 'Origem', 'Valor (R$)'];
-            const linhas = (window.activeFaturamentos || []).map(f => [
-                formatarData(f.data), f.nome, f.valor.toFixed(2)
-            ]);
-            _baixarCSV(`faturamentos-${mesAtualKey}.csv`, cabecalho, linhas);
-            mostrarToast('CSV de faturamentos exportado.', 'success');
-        }
-
+// Exportação de dados: relatório mensal completo em PDF via jsPDF + autoTable
         // Pula pra próxima página se não sobrar espaço suficiente pro título + início da próxima seção.
         function _pdfGarantirEspaco(doc, y, minimo) {
             const alturaPagina = doc.internal.pageSize.getHeight();
@@ -48,8 +10,14 @@
         }
 
         // Insere um gráfico Chart.js como imagem, mantendo a proporção original (sem esticar/achatar).
+        // Usa o <canvas> real (não chart.width/height, que ficam 0 se o gráfico estiver numa aba
+        // escondida no mobile no momento da exportação) — e se ainda assim não der pra saber o
+        // tamanho, pula só essa imagem em vez de travar o relatório inteiro.
         function _pdfInserirGrafico(doc, chart, x, y, larguraMax, alturaMax) {
-            const larguraOriginal = chart.width, alturaOriginal = chart.height;
+            const larguraOriginal = chart.canvas && chart.canvas.width;
+            const alturaOriginal = chart.canvas && chart.canvas.height;
+            if (!larguraOriginal || !alturaOriginal) return 0;
+
             let largura = larguraMax, altura = larguraMax * (alturaOriginal / larguraOriginal);
             if (altura > alturaMax) { altura = alturaMax; largura = alturaMax * (larguraOriginal / alturaOriginal); }
             doc.addImage(chart.toBase64Image(), 'PNG', x, y, largura, altura);
@@ -59,6 +27,14 @@
         // Relatório mensal completo: Receitas, Contas Fixas, Extrato Bancário, Gastos por Categoria
         // (com gráficos) e Resumo Financeiro. Seções sem nenhum dado no mês são puladas inteiras.
         function exportarRelatorioMensalPDF() {
+            try {
+                _gerarRelatorioMensalPDF();
+            } catch (err) {
+                mostrarToast('Erro ao gerar o relatório: ' + err.message, 'error', 6000);
+            }
+        }
+
+        function _gerarRelatorioMensalPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             const corCabecalho = [67, 28, 93];
@@ -172,7 +148,8 @@
                 if (meuGraficoPizza && meuGraficoBarra) {
                     const alturaPizza = _pdfInserirGrafico(doc, meuGraficoPizza, 14, y, 85, 65);
                     const alturaBarra = _pdfInserirGrafico(doc, meuGraficoBarra, 105, y, 85, 65);
-                    y += Math.max(alturaPizza, alturaBarra) + 8;
+                    const alturaMaxima = Math.max(alturaPizza, alturaBarra);
+                    if (alturaMaxima > 0) y += alturaMaxima + 8;
                 }
 
                 const catArray = categoriasAtuais
