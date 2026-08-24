@@ -39,19 +39,19 @@
                 const faturado = s.faturadoEm === mesAtualKey;
                 let alerta = calcularAlertaVencimento(s.vencimento, faturado);
                 const icone = s.categoria ? obterIconeCategoria(s.categoria) : 'bell';
-                return `<div class="sub-item">
-                    <div class="sub-item-icon"><i class="ph ph-${icone}"></i></div>
-                    <div class="sub-item-main">
-                        <div class="sub-item-top">
-                            <span class="sub-item-nome">${s.nome}</span>
-                            <span class="sub-item-valor">${valorFormatado}</span>
+                return `<div class="assinatura-item">
+                    <div class="assinatura-item-icon"><i class="ph ph-${icone}"></i></div>
+                    <div class="assinatura-item-main">
+                        <div class="assinatura-item-top">
+                            <span class="assinatura-item-nome">${s.nome}</span>
+                            <span class="assinatura-item-valor">${valorFormatado}</span>
                         </div>
-                        <div class="sub-item-tags">
+                        <div class="assinatura-item-tags">
                             <button class="status-badge wide ${faturado ? 'sim' : 'nao'}" onclick="toggleFaturadoAssinatura(${s.id})" title="Marcar/desmarcar como faturado neste mês">${faturado ? 'Faturado' : 'Faturar'}</button>
                             <span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span>
                         </div>
                     </div>
-                    <button class="btn-action sub-item-menu" onclick="abrirMenuAssinatura(${s.id}, this)" title="Mais opções"><i class="ph ph-dots-three-vertical" style="font-size:1.2rem;"></i></button>
+                    <button class="btn-action assinatura-item-menu" onclick="abrirMenuAssinatura(${s.id}, this)" title="Mais opções"><i class="ph ph-dots-three-vertical" style="font-size:1.2rem;"></i></button>
                 </div>`;
             }).join('');
 
