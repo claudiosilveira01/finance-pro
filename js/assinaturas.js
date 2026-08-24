@@ -35,17 +35,23 @@
             const ordenadas = [...assinaturasConfig].sort((a, b) => (a.vencimento || 0) - (b.vencimento || 0));
             const itensHtml = ordenadas.map(s => {
                 totalAssin += (s.valor || 0);
-                let valorFormatado = s.valor ? ` - R$ ${s.valor.toFixed(2)}` : '';
+                let valorFormatado = s.valor ? `R$ ${s.valor.toFixed(2)}` : '';
                 const faturado = s.faturadoEm === mesAtualKey;
                 let alerta = calcularAlertaVencimento(s.vencimento, faturado);
                 const icone = s.categoria ? obterIconeCategoria(s.categoria) : 'bell';
                 return `<div class="sub-item">
-                    <span><i class="ph ph-${icone}" style="color:var(--sub-color); vertical-align:-2px;"></i> ${s.nome} <strong style="color:var(--text-highlight)">${valorFormatado}</strong></span>
-                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                        <button class="status-badge wide ${faturado ? 'sim' : 'nao'}" onclick="toggleFaturadoAssinatura(${s.id})" title="Marcar/desmarcar como faturado neste mês">${faturado ? 'Faturado' : 'Faturar'}</button>
-                        <span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span>
-                        <button class="btn-action" onclick="abrirMenuAssinatura(${s.id}, this)" title="Mais opções"><i class="ph ph-dots-three-vertical" style="font-size:1.2rem;"></i></button>
+                    <div class="sub-item-icon"><i class="ph ph-${icone}"></i></div>
+                    <div class="sub-item-main">
+                        <div class="sub-item-top">
+                            <span class="sub-item-nome">${s.nome}</span>
+                            <span class="sub-item-valor">${valorFormatado}</span>
+                        </div>
+                        <div class="sub-item-tags">
+                            <button class="status-badge wide ${faturado ? 'sim' : 'nao'}" onclick="toggleFaturadoAssinatura(${s.id})" title="Marcar/desmarcar como faturado neste mês">${faturado ? 'Faturado' : 'Faturar'}</button>
+                            <span class="vencimento-tag" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span>
+                        </div>
                     </div>
+                    <button class="btn-action sub-item-menu" onclick="abrirMenuAssinatura(${s.id}, this)" title="Mais opções"><i class="ph ph-dots-three-vertical" style="font-size:1.2rem;"></i></button>
                 </div>`;
             }).join('');
 
