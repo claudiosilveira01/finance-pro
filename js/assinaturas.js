@@ -1,4 +1,102 @@
 // Assinaturas informativas (fora do orçamento fixo)
+
+        // Banco de ícones por categoria de assinatura — cada categoria já vem com um ícone Phosphor
+        // pensado pro tipo de serviço (streaming, fitness, rastreamento...), escolhido na hora de
+        // criar/editar a assinatura. Separado das categorias de orçamento (usadas em Contas Fixas).
+        const CATEGORIAS_ASSINATURA = [
+            { nome: 'Streaming de Vídeo', icone: 'youtube-logo' },
+            { nome: 'Streaming de Música', icone: 'spotify-logo' },
+            { nome: 'Nuvem / Armazenamento', icone: 'cloud' },
+            { nome: 'Inteligência Artificial', icone: 'robot' },
+            { nome: 'Produtividade', icone: 'briefcase' },
+            { nome: 'Academia / Fitness', icone: 'barbell' },
+            { nome: 'Rastreamento / Segurança', icone: 'satellite' },
+            { nome: 'Internet / Telefonia', icone: 'wifi-high' },
+            { nome: 'Jogos', icone: 'game-controller' },
+            { nome: 'Notícias / Leitura', icone: 'newspaper' },
+            { nome: 'Educação / Cursos', icone: 'graduation-cap' },
+            { nome: 'Compras / Clube', icone: 'shopping-bag-open' },
+            { nome: 'Saúde / Bem-estar', icone: 'heartbeat' },
+            { nome: 'Seguro', icone: 'shield-check' },
+            { nome: 'Alimentação / Delivery', icone: 'hamburger' },
+            { nome: 'Transporte', icone: 'car' },
+            { nome: 'Design / Criação', icone: 'palette' },
+            { nome: 'Redes Sociais', icone: 'share-network' },
+            { nome: 'Apple / Serviços', icone: 'apple-logo' },
+            { nome: 'Google / Serviços', icone: 'google-logo' },
+            { nome: 'Outros', icone: 'bell' }
+        ];
+
+        function obterIconeAssinatura(categoria) {
+            const cat = CATEGORIAS_ASSINATURA.find(c => c.nome === categoria);
+            return cat ? cat.icone : 'bell';
+        }
+
+        // Popup único de criar/editar assinatura (substitui o formulário que ficava em
+        // Configurações). id=null cria uma nova; um id existente abre pra edição.
+        function abrirModalAssinatura(id) {
+            const editando = id != null;
+            const sub = editando ? assinaturasConfig.find(s => s.id === id) : null;
+            if (editando && !sub) return;
+
+            const categoriaInicial = (sub && sub.categoria) || CATEGORIAS_ASSINATURA[0].nome;
+            const opcoesCategoria = CATEGORIAS_ASSINATURA.map(c =>
+                `<option value="${c.nome}" ${c.nome === categoriaInicial ? 'selected' : ''}>${c.nome}</option>`
+            ).join('');
+
+            const html = `
+                <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">
+                    <i class="ph ph-${editando ? 'pencil-simple' : 'plus-circle'}"></i> ${editando ? 'Editar Assinatura' : 'Nova Assinatura'}
+                </h3>
+                <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+                    <div class="assinatura-item-icon" id="modalAssinIconePreview" style="width:52px; height:52px; min-width:52px; font-size:1.5rem;">
+                        <i class="ph ph-${obterIconeAssinatura(categoriaInicial)}"></i>
+                    </div>
+                    <select id="modalAssinCategoriaSel" style="flex:1;">${opcoesCategoria}</select>
+                </div>
+                <input type="text" id="modalAssinNomeInput" placeholder="Ex: Netflix" style="width:100%; margin-bottom:12px;" value="${sub ? sub.nome : ''}">
+                <div class="input-inline" style="margin-bottom: 20px;">
+                    <input type="number" id="modalAssinValorInput" placeholder="Valor (R$)" style="flex:1;" value="${sub && sub.valor ? sub.valor : ''}">
+                    <input type="number" id="modalAssinVencInput" placeholder="Dia Venc." min="1" max="31" style="flex:1;" value="${sub ? sub.vencimento : ''}">
+                </div>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">Cancelar</button>
+                    <button class="btn-flat" id="modalBtnConfirmar" style="flex: 1;">${editando ? 'Salvar' : 'Adicionar'}</button>
+                </div>
+            `;
+            const overlay = _renderModalGenerico(html);
+
+            const selectCat = overlay.querySelector('#modalAssinCategoriaSel');
+            const iconePreview = overlay.querySelector('#modalAssinIconePreview');
+            selectCat.onchange = () => {
+                iconePreview.innerHTML = `<i class="ph ph-${obterIconeAssinatura(selectCat.value)}"></i>`;
+            };
+
+            overlay.querySelector('#modalBtnConfirmar').onclick = () => {
+                const nome = overlay.querySelector('#modalAssinNomeInput').value.trim();
+                const valor = parseFloat(overlay.querySelector('#modalAssinValorInput').value);
+                const venc = parseInt(overlay.querySelector('#modalAssinVencInput').value);
+                const categoria = selectCat.value;
+                if (!nome || isNaN(venc)) {
+                    mostrarToast('Preencha ao menos o nome e o dia de vencimento.', 'warning');
+                    return;
+                }
+                _fecharModalGenerico();
+                if (editando) {
+                    sub.nome = nome;
+                    sub.valor = isNaN(valor) ? 0 : valor;
+                    sub.vencimento = venc;
+                    sub.categoria = categoria;
+                } else {
+                    assinaturasConfig.push({ id: Date.now(), nome, valor: isNaN(valor) ? 0 : valor, vencimento: venc, categoria });
+                }
+                salvarConfigGlobal();
+                calcularEAtualizarVisual();
+                mostrarToast(editando ? `"${nome}" atualizada.` : `"${nome}" adicionada.`, 'success');
+            };
+            overlay.querySelector('#modalBtnCancelar').onclick = _fecharModalGenerico;
+        }
+
         function deletarAssinatura(id) {
             const idx = assinaturasConfig.findIndex(s => s.id === id);
             if(idx === -1) return;
@@ -14,19 +112,6 @@
             });
         }
 
-        function addAssinaturaInformativa() {
-            const nome = document.getElementById('subNome').value.trim();
-            const valor = parseFloat(document.getElementById('subValor').value);
-            const venc = parseInt(document.getElementById('subVenc').value);
-            if(!nome || isNaN(venc)) return;
-            assinaturasConfig.push({ id: Date.now(), nome, valor: isNaN(valor) ? 0 : valor, vencimento: venc });
-            salvarConfigGlobal();
-            document.getElementById('subNome').value = '';
-            document.getElementById('subValor').value = '';
-            document.getElementById('subVenc').value = '';
-            calcularEAtualizarVisual();
-        }
-
         // Alimenta os dois lugares onde a lista de assinaturas aparece: o card do Dashboard e Configurações.
         // Sempre ordenada por dia de vencimento; "faturado" é por mês (faturadoEm guarda o mesAtualKey em
         // que foi marcado), então navegar entre meses mostra corretamente o status daquele mês específico.
@@ -38,12 +123,12 @@
                 let valorFormatado = s.valor ? `R$ ${s.valor.toFixed(2)}` : '';
                 const faturado = s.faturadoEm === mesAtualKey;
                 let alerta = calcularAlertaVencimento(s.vencimento, faturado);
-                const icone = s.categoria ? obterIconeCategoria(s.categoria) : 'bell';
+                const icone = obterIconeAssinatura(s.categoria);
                 return `<div class="assinatura-item">
                     <div class="assinatura-item-icon"><i class="ph ph-${icone}"></i></div>
                     <div class="assinatura-item-main">
                         <div class="assinatura-item-top">
-                            <span class="assinatura-item-nome">${s.nome}</span>
+                            <button class="item-link assinatura-item-nome" onclick="abrirModalAssinatura(${s.id})">${s.nome}</button>
                             <span class="assinatura-item-valor">${valorFormatado}</span>
                         </div>
                         <div class="assinatura-item-tags">
@@ -118,29 +203,10 @@
             const faturado = sub.faturadoEm === mesAtualKey;
             abrirMenuContexto([
                 { label: faturado ? 'Desfazer Faturamento' : 'Faturar', icone: faturado ? 'arrow-counter-clockwise' : 'check-circle', onClick: () => toggleFaturadoAssinatura(id) },
+                { label: 'Editar', icone: 'pencil-simple', onClick: () => abrirModalAssinatura(id) },
                 { label: 'Adicionar às Contas Fixas', icone: 'list-plus', onClick: () => abrirModalAssinaturaParaFixa(id) },
-                { label: 'Classificação', icone: 'tag', onClick: () => definirCategoriaAssinatura(id) },
                 { label: 'Excluir', icone: 'trash', perigo: true, onClick: () => deletarAssinatura(id) }
             ], btnEl);
-        }
-
-        // Define/edita a categoria (classificação) de uma assinatura, reaproveitando as categorias globais existentes.
-        function definirCategoriaAssinatura(id) {
-            const sub = assinaturasConfig.find(s => s.id === id);
-            if(!sub) return;
-            abrirModalSelecao({
-                titulo: 'Classificação da Assinatura',
-                mensagem: `Escolha a categoria de "${sub.nome}":`,
-                opcoes: categoriasAtuais,
-                valorInicial: sub.categoria || categoriasAtuais[0],
-                textoConfirmar: 'Salvar',
-                onConfirmar: (categoria) => {
-                    sub.categoria = categoria;
-                    salvarConfigGlobal();
-                    renderizarAssinaturas();
-                    mostrarToast(`"${sub.nome}" classificada como ${categoria}.`, 'success');
-                }
-            });
         }
 
         // Abre modal pré-preenchido para transformar uma assinatura informativa numa conta fixa avulsa do mês atual
