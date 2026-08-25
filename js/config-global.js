@@ -5,6 +5,7 @@
                     let data = doc.data();
                     categoriasAtuais = data.categorias || categoriasAtuais;
                     assinaturasConfig = data.assinaturas || assinaturasConfig;
+                    cartoesConfig = data.cartoesConfig || cartoesConfig;
                     mesesDisponiveis = data.meses || [];
                     ocultarCardAcumulado = data.ocultarCardAcumulado || false;
                 }
@@ -27,6 +28,7 @@
 
                 renderizarMeses();
                 renderizarListasDeCategorias();
+                renderizarCartoesConfig();
 
                 document.getElementById('mesSeletor').value = mesAtualKey;
                 carregarMes(mesAtualKey);
@@ -44,6 +46,7 @@
             getConfigDocRef().set({
                 categorias: categoriasAtuais,
                 assinaturas: assinaturasConfig,
+                cartoesConfig: cartoesConfig,
                 meses: mesesDisponiveis,
                 ocultarCardAcumulado: ocultarCardAcumulado
             }, {merge: true}).catch(err => {

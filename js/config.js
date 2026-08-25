@@ -23,6 +23,7 @@
         let currentUser = null;
         let categoriasAtuais = ["Alimentação", "Transporte", "Lazer", "Educação", "Assinaturas", "Saúde", "Comunicação", "Tributos", "PIX Terceiros", "Outros"];
         let assinaturasConfig = [];
+        let cartoesConfig = [];
         let mesesDisponiveis = [];
 
         let mesAtualKey = "";

@@ -281,6 +281,14 @@
 
             <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700; display:flex; justify-content:space-between; align-items:center;">
+                <span><i class="ph ph-credit-card" style="vertical-align:-2px;"></i> Meus Cartões de Crédito</span>
+                <button class="card-action-btn card-action-btn-round" onclick="abrirModalCartao()" title="Novo Cartão"><i class="ph ph-plus"></i></button>
+            </h4>
+            <div id="listaCartoesConfig"></div>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
             <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-envelope-simple-open" style="vertical-align:-2px;"></i> Verificação Automática de Extrato</h4>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
                 Normalmente a checagem do e-mail de extrato do Nubank roda sozinha de hora em hora. Cole aqui a URL e o token do App da Web (veja SETUP.md) para poder disparar essa checagem na hora, pelo botão do card "Extrato Bancário". Esses dados ficam salvos só neste aparelho.
@@ -607,6 +615,7 @@
     <script src="js/fixas.js"></script>
     <script src="js/faturamentos.js"></script>
     <script src="js/assinaturas.js"></script>
+    <script src="js/cartoes.js"></script>
     <script src="js/calendario.js"></script>
     <script src="js/calculadora.js"></script>
     <script src="js/tabelas.js"></script>
