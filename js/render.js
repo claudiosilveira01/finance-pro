@@ -38,11 +38,13 @@
 
             const tbodyFixas = document.getElementById('listaFixas');
             if (tbodyFixas) tbodyFixas.innerHTML = '';
+            // Soma sempre a partir de TODAS as contas do mês, não só da tabela filtrada — senão
+            // um item marcado que um filtro esconde some da soma sem o usuário desmarcar nada.
             let somaSelecionadaFixas = 0;
+            (window.activeFixas || []).forEach(c => { if (fixasSelecionadas.has(c.id)) somaSelecionadaFixas += c.valor; });
             fixasOrdenadas.forEach(c => {
                 let alerta = calcularAlertaVencimento(c.vencimento, c.pago, c.origemCartaoId ? 1 : 0);
                 const marcado = fixasSelecionadas.has(c.id);
-                if (marcado) somaSelecionadaFixas += c.valor;
                 if (!tbodyFixas) return;
 
                 tbodyFixas.innerHTML += `
@@ -58,7 +60,7 @@
                     </tr>
                 `;
             });
-            [...fixasSelecionadas].forEach(id => { if (!fixasOrdenadas.some(c => c.id === id)) fixasSelecionadas.delete(id); });
+            [...fixasSelecionadas].forEach(id => { if (!(window.activeFixas || []).some(c => c.id === id)) fixasSelecionadas.delete(id); });
             animarNumero('mSomaSelecionadasCard', somaSelecionadaFixas, duracaoOdometro);
 
             // Tabela Faturamentos

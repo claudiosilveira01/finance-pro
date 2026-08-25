@@ -162,13 +162,34 @@
             return { novos, ignorados };
         }
 
+        // Créditos/pagamentos não viram transações lançadas (só abatem o valor sugerido), então
+        // não têm onde marcar "origemImportId" pra dedup normal — por isso a fatura guarda à parte
+        // as chaves dos créditos já contabilizados em importações anteriores, senão reimportar o
+        // mesmo arquivo soma o mesmo pagamento de novo e reduz a sugestão duas vezes.
+        function _dedupCreditosCartao(fatura, creditos) {
+            if (!fatura._creditosImportados) fatura._creditosImportados = [];
+            const contagemExistente = {};
+            fatura._creditosImportados.forEach(chave => { contagemExistente[chave] = (contagemExistente[chave] || 0) + 1; });
+            const contagemVistosAgora = {};
+            const novos = [];
+            creditos.forEach(item => {
+                contagemVistosAgora[item.chave] = (contagemVistosAgora[item.chave] || 0) + 1;
+                const ordinalNoArquivo = contagemVistosAgora[item.chave];
+                const jaExistiam = contagemExistente[item.chave] || 0;
+                if (ordinalNoArquivo <= jaExistiam) return;
+                novos.push(item);
+            });
+            return novos;
+        }
+
         // === Tela de revisão: usuário confere categorias, desmarca o que não quer e confirma o valor real ===
         function _abrirRevisaoImportacaoCartao(cartaoId, itensBrutos) {
             const cartao = cartoesConfig.find(c => c.id === cartaoId);
             const fatura = _faturaDoCartao(cartaoId);
 
             const compras = itensBrutos.filter(i => i.valor > 0);
-            const creditos = itensBrutos.filter(i => i.valor < 0);
+            const creditosBrutos = itensBrutos.filter(i => i.valor < 0);
+            const creditos = _dedupCreditosCartao(fatura, creditosBrutos);
             const { novos, ignorados } = _dedupImportacaoCartao(fatura, compras);
 
             if (novos.length === 0) {
@@ -185,6 +206,8 @@
             // o valor correto dos pagamentos/estornos do total de compras.
             const somaCreditos = creditos.reduce((s, i) => s + i.valor, 0);
             const totalJaExistente = fatura.transacoes.reduce((s, t) => s + t.valor, 0);
+            // Guardados pra recalcular a sugestão se o usuário desmarcar algum item na revisão.
+            window._cartaoRevisaoBase = totalJaExistente + somaCreditos;
             const somaNovos = novos.reduce((s, n) => s + n.valor, 0);
             const sugestaoTotal = Math.max(0, totalJaExistente + somaNovos + somaCreditos);
 
@@ -236,14 +259,17 @@
                 });
                 fatura.valorConfirmado = isNaN(valorReal) ? null : valorReal;
                 fatura.valorEstimado = null; // a fatura já tem dado real agora — a estimativa deixa de valer
+                if (!fatura._creditosImportados) fatura._creditosImportados = [];
+                creditos.forEach(c => fatura._creditosImportados.push(c.chave));
 
                 _sincronizarContaFixaDoCartao(cartao);
                 calcularEAtualizarVisual();
                 salvarDadosDoMesAtual();
                 mostrarToast(`${incluidos.length} compra${incluidos.length > 1 ? 's' : ''} importada${incluidos.length > 1 ? 's' : ''}.`, 'success');
                 delete window._cartaoRevisaoItens;
+                delete window._cartaoRevisaoBase;
             };
-            overlay.querySelector('#modalBtnCancelar').onclick = () => { _fecharModalGenerico(); delete window._cartaoRevisaoItens; };
+            overlay.querySelector('#modalBtnCancelar').onclick = () => { _fecharModalGenerico(); delete window._cartaoRevisaoItens; delete window._cartaoRevisaoBase; };
         }
 
         function _renderizarListaRevisaoCartao(overlay, opcoesCategoria) {
@@ -270,6 +296,17 @@
             if (window._cartaoRevisaoItens && window._cartaoRevisaoItens[idx]) {
                 window._cartaoRevisaoItens[idx]._incluir = !window._cartaoRevisaoItens[idx]._incluir;
             }
+            _revisaoCartaoAtualizarTotal();
+        }
+
+        // Recalcula o "VALOR REAL DA FATURA" sugerido sempre que o usuário marca/desmarca um item
+        // na revisão — senão desmarcar uma compra deixava a sugestão contando um valor que não
+        // vai entrar na fatura.
+        function _revisaoCartaoAtualizarTotal() {
+            const input = document.getElementById('cartaoRevisaoValorReal');
+            if (!input || window._cartaoRevisaoBase == null || !window._cartaoRevisaoItens) return;
+            const somaIncluidos = window._cartaoRevisaoItens.filter(n => n._incluir).reduce((s, n) => s + n.valor, 0);
+            input.value = Math.max(0, window._cartaoRevisaoBase + somaIncluidos).toFixed(2);
         }
         function _revisaoCartaoCampo(idx, campo, valor) {
             if (window._cartaoRevisaoItens && window._cartaoRevisaoItens[idx]) {

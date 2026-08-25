@@ -102,13 +102,29 @@
             if (idx === -1) return;
             const item = cartoesConfig[idx];
 
+            // Remove também a conta fixa vinculada e a fatura do mês atual — senão a conta fica
+            // "pendurada" em Contas Fixas pra sempre, apontando pra um cartão que não existe mais,
+            // com o valor travado (sem como editar) e sem nunca mais sincronizar.
+            const fixaVinculadaIdx = window.activeFixas.findIndex(f => f.origemCartaoId === id);
+            const fixaVinculada = fixaVinculadaIdx > -1 ? window.activeFixas[fixaVinculadaIdx] : null;
+            if (fixaVinculadaIdx > -1) window.activeFixas.splice(fixaVinculadaIdx, 1);
+            const faturaVinculada = window.activeCartoesFaturas ? window.activeCartoesFaturas[id] : null;
+            if (window.activeCartoesFaturas) delete window.activeCartoesFaturas[id];
+            if (cartaoSelecionadoId === id) cartaoSelecionadoId = null;
+
             cartoesConfig.splice(idx, 1);
             renderizarCartoesConfig();
-            renderizarCartoesDashboard();
+            calcularEAtualizarVisual();
 
             excluirComUndo({
                 mensagem: `Cartão excluído: ${item.nome}`,
-                restaurar: () => { cartoesConfig.splice(idx, 0, item); renderizarCartoesConfig(); renderizarCartoesDashboard(); },
-                persistir: () => salvarConfigGlobal()
+                restaurar: () => {
+                    cartoesConfig.splice(idx, 0, item);
+                    if (fixaVinculada) window.activeFixas.splice(fixaVinculadaIdx, 0, fixaVinculada);
+                    if (faturaVinculada) { if (!window.activeCartoesFaturas) window.activeCartoesFaturas = {}; window.activeCartoesFaturas[id] = faturaVinculada; }
+                    renderizarCartoesConfig();
+                    calcularEAtualizarVisual();
+                },
+                persistir: () => { salvarConfigGlobal(); salvarDadosDoMesAtual(); }
             });
         }
