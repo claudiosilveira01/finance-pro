@@ -410,8 +410,9 @@
                     <div class="card-title">
                         <span class="card-title-left"><i class="ph ph-credit-card"></i> Cartões de Crédito</span>
                         <span style="display:flex; gap:8px;">
+                            <button class="card-action-btn card-action-btn-danger" onclick="confirmarLimparFaturaCartao()" title="Limpar fatura do cartão selecionado"><i class="ph ph-trash"></i></button>
                             <button class="card-action-btn" onclick="importarFaturaCartao()" title="Importar Fatura (.ofx/.csv)"><i class="ph ph-upload-simple"></i></button>
-                            <button class="card-action-btn" onclick="abrirModalNovaCompraCartao()" title="Nova Compra"><i class="ph ph-plus"></i></button>
+                            <button class="card-action-btn" onclick="abrirMenuNovoItemCartao(this)" title="Adicionar"><i class="ph ph-plus"></i></button>
                         </span>
                     </div>
 
