@@ -92,6 +92,26 @@
             const transacoesOrdenadas = [...fatura.transacoes].sort((a, b) => b.data.localeCompare(a.data));
             const total = _totalFatura(fatura);
 
+            // Gráfico de acumulado por categoria — só desse cartão, só as categorias com gasto de verdade.
+            const totaisPorCategoria = {};
+            fatura.transacoes.forEach(t => { totaisPorCategoria[t.categoria] = (totaisPorCategoria[t.categoria] || 0) + t.valor; });
+            const entradasCategoria = Object.entries(totaisPorCategoria).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+
+            const chartWrapEl = document.getElementById('cartaoChartWrap');
+            const listaCategoriaEl = document.getElementById('listaCartaoCategoria');
+            if (chartWrapEl) chartWrapEl.style.display = entradasCategoria.length > 0 ? 'block' : 'none';
+            if (listaCategoriaEl) {
+                listaCategoriaEl.innerHTML = entradasCategoria.map(([cat, valor]) => `
+                    <div class="acumulado-item">
+                        <span style="display:flex; align-items:center; gap:8px;">
+                            <i class="ph ph-${obterIconeCategoria(cat)}" style="font-size:18px; color:var(--text-muted);"></i> ${cat}
+                        </span>
+                        <span style="color:var(--text-highlight); font-weight:700">R$ ${valor.toFixed(2)}</span>
+                    </div>
+                `).join('');
+            }
+            atualizarChartCartaoCategoria(entradasCategoria);
+
             const classeAnim = animarNaCarga ? ' item-anim' : '';
             const listaEl = document.getElementById('listaCartaoTransacoes');
             if (listaEl) {
