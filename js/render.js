@@ -70,6 +70,7 @@
 
             window.__ultimoOrcamentoFixo = orcamento;
             window.__ultimoRestanteContas = restante;
+            window.__ultimoSomaSelecionada = somaSelecionadaFixas;
 
             animarNumero('mTotalReceitas', totalFaturamentos, duracaoOdometro);
             animarNumero('mOrcamento', orcamento, duracaoOdometro);
@@ -144,6 +145,7 @@
             let orcamento = 0;
             if (selectOrcamento.value === 'fixo') orcamento = window.__ultimoOrcamentoFixo || 0;
             else if (selectOrcamento.value === 'restante') orcamento = window.__ultimoRestanteContas || 0;
+            else if (selectOrcamento.value === 'soma') orcamento = window.__ultimoSomaSelecionada || 0;
 
             const disponivel = caixaAtual + receitas;
             const z = disponivel - orcamento;

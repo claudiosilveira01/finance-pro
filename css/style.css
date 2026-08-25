@@ -63,6 +63,7 @@
 
         /* Botão de ação secundária dentro de cards (ex: abrir calculadora/configurações/sair) */
         .card-action-btn { background: var(--bg-light); border: 1px solid var(--border-color); color: var(--text-highlight); width: 38px; height: 38px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
+        .card-action-btn-round { border-radius: 50%; width: 32px; height: 32px; font-size: 0.9rem; }
         .card-action-btn:hover { background: var(--gradient-btn); color: white; border-color: transparent; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
         .card-action-btn.card-action-btn-danger:hover { background: var(--red-danger); }
 
@@ -251,8 +252,6 @@
         .sobra-falta-linha span { display: flex; align-items: center; gap: 6px; color: var(--text-muted); }
         .sobra-falta-linha strong { color: var(--text-main); }
         .sobra-falta-rotulo { display: block; font-size: 0.78rem; font-weight: 700; color: var(--text-muted); margin-bottom: 5px; }
-        .sobra-falta-limpar { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; background: var(--bg-light); color: var(--text-muted); border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px; font-size: 0.85rem; font-weight: 700; cursor: pointer; margin-bottom: 16px; transition: background 0.15s, color 0.15s; }
-        .sobra-falta-limpar:hover { background: var(--bg-blue-light); color: var(--blue-accent); }
         .sobra-falta-chart-wrap { height: 130px; margin-bottom: 16px; }
         @media (min-width: 600px) { .sobra-falta-chart-wrap { height: 160px; } }
 
@@ -337,6 +336,16 @@
         .cal-day.has-pending { background: rgba(239,68,68,0.13); color: var(--red-danger); }
         .cal-day.has-paid { background: rgba(22,163,74,0.13); color: var(--green-success); }
         .cal-day.has-sub { background: rgba(147, 51, 234, 0.13); color: var(--sub-color); }
+
+        /* Lista "Todos os eventos do mês" / "Eventos - Dia X" — classe própria (não reaproveita
+           .sub-item, que é usado pelo Extrato) pra poder dar mais respiro sem afetar outros cards. */
+        .cal-eventos-voltar { display: flex; align-items: center; gap: 6px; background: var(--bg-light); color: var(--text-highlight); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 9px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-bottom: 14px; width: 100%; justify-content: center; transition: background 0.15s; }
+        .cal-eventos-voltar:hover { background: var(--bg-blue-light); }
+        .cal-eventos-titulo { font-size: 0.85rem; margin-bottom: 10px; color: var(--text-highlight); }
+        .cal-evento-item { display: flex; align-items: center; gap: 12px; padding: 13px 6px; border-bottom: 1px solid var(--border-color); }
+        .cal-evento-item:last-child { border-bottom: none; }
+        .cal-evento-item > .ph { font-size: 18px; flex-shrink: 0; }
+        .cal-evento-texto { flex: 1; min-width: 0; font-size: 0.88rem; line-height: 1.5; }
 
         .cal-dot { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
         .sub-dot { position: absolute; bottom: 5px; left: 50%; transform: translateX(-50%); width: 5px; height: 5px; border-radius: 50%; background: var(--sub-color); }
