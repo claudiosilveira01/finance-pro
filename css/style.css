@@ -47,12 +47,10 @@
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         html { overflow-x: hidden; font-size: 17.5px; }
         body { background-color: var(--bg-light); color: var(--text-main); transition: background 0.3s, color 0.3s; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
-        /* overscroll-behavior só no mobile: evita o rubber-band do iOS Safari que soltava a
-           barra inferior fixa (bottom-nav) da tela. Restrito ao breakpoint mobile porque,
-           aplicado também no desktop, impedia a rolagem normal da página em alguns navegadores. */
-        @media (max-width: 899px) {
-            html, body { overscroll-behavior-y: none; }
-        }
+        /* overscroll-behavior-y:none foi removido: em vez de só suprimir o efeito de "elástico"
+           nas bordas, em alguns navegadores/webviews ele travava a rolagem da página inteira —
+           tanto no desktop quanto, depois, no mobile. Sem essa regra o bottom-nav pode voltar a
+           se soltar um pouco durante o rubber-band do iOS, mas isso é preferível a travar o scroll. */
 
         /* Botão de navegação de mês — vive dentro de um card normal agora, não num header roxo */
         .month-nav { display: flex; align-items: center; gap: 4px; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 4px; flex: 1 1 180px; min-width: 0; }
