@@ -17,12 +17,25 @@
             return window.activeCartoesFaturas[cartaoId];
         }
 
-        // Valor total da fatura: normalmente é a soma das compras lançadas, mas depois de uma
-        // importação (Fase 3) pode ter sido confirmado manualmente com um valor diferente (ex.:
-        // juros que ainda não apareceram no arquivo) — nesse caso, esse valor confirmado manda.
+        // Valor total da fatura, em ordem de prioridade:
+        // 1. valorConfirmado — confirmado manualmente numa importação (Fase 3), quando o valor
+        //    real difere da soma das compras (ex.: juros que ainda não apareceram no arquivo).
+        // 2. Soma das compras lançadas (manual ou importada) — dado real, sempre que existir.
+        // 3. valorEstimado — só um chute pra planejamento, usado apenas enquanto NÃO existe
+        //    nenhum dado real ainda; assim que a fatura ganha uma compra de verdade (ou é
+        //    confirmada numa importação), o estimado deixa de valer sozinho.
         function _totalFatura(fatura) {
             if (fatura.valorConfirmado != null) return fatura.valorConfirmado;
-            return fatura.transacoes.reduce((s, t) => s + t.valor, 0);
+            const somaTransacoes = fatura.transacoes.reduce((s, t) => s + t.valor, 0);
+            if (somaTransacoes > 0) return somaTransacoes;
+            if (fatura.valorEstimado != null) return fatura.valorEstimado;
+            return 0;
+        }
+
+        // Verdadeiro só quando a fatura ainda não tem nenhum dado real (nem compra lançada, nem
+        // importação confirmada) — é a única situação em que o valor estimado está em uso.
+        function _faturaSemDadosReais(fatura) {
+            return fatura.valorConfirmado == null && fatura.transacoes.reduce((s, t) => s + t.valor, 0) === 0;
         }
 
         function selecionarCartao(id) {
@@ -136,6 +149,44 @@
             if (vencEl) vencEl.innerText = `Fecha dia ${cartao.diaFechamento} · Vence dia ${cartao.diaVencimento}`;
 
             animarNumero('cartaoTotalFatura', total, animarNaCarga ? 1800 : 500);
+
+            const semDadosReais = _faturaSemDadosReais(fatura);
+            const labelEl = document.getElementById('cartaoTotalFaturaLabel');
+            if (labelEl) labelEl.innerText = semDadosReais && fatura.valorEstimado != null ? 'TOTAL DA FATURA (ESTIMADO)' : 'TOTAL DA FATURA';
+            const estBtn = document.getElementById('cartaoEstimativaBtn');
+            if (estBtn) {
+                if (semDadosReais) {
+                    estBtn.style.display = 'inline-flex';
+                    estBtn.innerHTML = fatura.valorEstimado != null
+                        ? '<i class="ph ph-pencil-simple"></i> Editar valor estimado'
+                        : '<i class="ph ph-plus"></i> Definir valor estimado (planejamento)';
+                } else {
+                    estBtn.style.display = 'none';
+                }
+            }
+        }
+
+        // Valor estimado: só pra planejamento, enquanto a fatura ainda não tem nenhuma compra
+        // real lançada ou importada. Some sozinho assim que a fatura ganha dados reais.
+        function abrirModalEstimativaCartao() {
+            const cartao = _cartaoAtivo();
+            if (!cartao) return;
+            const fatura = _faturaDoCartao(cartao.id);
+            abrirModalPrompt({
+                titulo: 'Valor Estimado da Fatura',
+                mensagem: `Só pra planejamento — reflete em Contas Fixas até você lançar ou importar compras de verdade em "${cartao.nome}". A partir daí, some sozinho.`,
+                placeholder: 'Ex: 500',
+                valorInicial: fatura.valorEstimado != null ? String(fatura.valorEstimado) : '',
+                textoConfirmar: 'Salvar',
+                onConfirmar: (valorStr) => {
+                    const valor = parseFloat(String(valorStr).replace(',', '.'));
+                    fatura.valorEstimado = (isNaN(valor) || valor <= 0) ? null : valor;
+                    _sincronizarContaFixaDoCartao(cartao);
+                    calcularEAtualizarVisual();
+                    salvarDadosDoMesAtual();
+                    mostrarToast(fatura.valorEstimado != null ? 'Valor estimado salvo.' : 'Valor estimado removido.', 'success');
+                }
+            });
         }
 
         // Popup único de criar/editar uma compra da fatura. transacaoId=null cria uma nova.
@@ -185,8 +236,9 @@
                     fatura.transacoes.push({ id: Date.now(), descricao, valor, data, categoria });
                 }
                 // Lançamento manual: o total volta a ser a soma das compras lançadas (não fica
-                // preso a um valor confirmado de uma importação anterior).
+                // preso a um valor confirmado de uma importação anterior nem a uma estimativa).
                 fatura.valorConfirmado = null;
+                fatura.valorEstimado = null;
                 const cartao = cartoesConfig.find(c => c.id === cartaoId);
                 _sincronizarContaFixaDoCartao(cartao);
                 calcularEAtualizarVisual();
