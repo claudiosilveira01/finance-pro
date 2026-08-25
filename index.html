@@ -409,7 +409,10 @@
                 <div id="tab-cartoes" class="card tab-content">
                     <div class="card-title">
                         <span class="card-title-left"><i class="ph ph-credit-card"></i> Cartões de Crédito</span>
-                        <button class="card-action-btn" onclick="abrirModalNovaCompraCartao()" title="Nova Compra"><i class="ph ph-plus"></i></button>
+                        <span style="display:flex; gap:8px;">
+                            <button class="card-action-btn" onclick="importarFaturaCartao()" title="Importar Fatura (.ofx/.csv)"><i class="ph ph-upload-simple"></i></button>
+                            <button class="card-action-btn" onclick="abrirModalNovaCompraCartao()" title="Nova Compra"><i class="ph ph-plus"></i></button>
+                        </span>
                     </div>
 
                     <div id="cartaoSemCadastro" style="display:none; text-align:center; padding:20px 10px;">
@@ -653,6 +656,7 @@
     <script src="js/assinaturas.js"></script>
     <script src="js/cartoes.js"></script>
     <script src="js/cartaoFatura.js"></script>
+    <script src="js/cartaoImportar.js"></script>
     <script src="js/calendario.js"></script>
     <script src="js/calculadora.js"></script>
     <script src="js/tabelas.js"></script>
