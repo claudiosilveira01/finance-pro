@@ -40,7 +40,7 @@
             if (tbodyFixas) tbodyFixas.innerHTML = '';
             let somaSelecionadaFixas = 0;
             fixasOrdenadas.forEach(c => {
-                let alerta = calcularAlertaVencimento(c.vencimento, c.pago);
+                let alerta = calcularAlertaVencimento(c.vencimento, c.pago, c.origemCartaoId ? 1 : 0);
                 const marcado = fixasSelecionadas.has(c.id);
                 if (marcado) somaSelecionadaFixas += c.valor;
                 if (!tbodyFixas) return;
