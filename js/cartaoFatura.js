@@ -306,7 +306,7 @@
             }
             abrirModalConfirmacao({
                 titulo: 'Limpar fatura',
-                mensagem: `Isso vai apagar ${fatura.transacoes.length} compra(s) lançada(s) e qualquer valor confirmado/estimado da fatura de "${cartao.nome}" neste mês (a conta fixa vinculada zera junto). Essa ação não pode ser desfeita. Confirma?`,
+                mensagem: `Isso vai apagar ${fatura.transacoes.length} compra(s) lançada(s), qualquer valor confirmado/estimado, e a conta fixa vinculada à fatura de "${cartao.nome}" neste mês. Essa ação não pode ser desfeita. Confirma?`,
                 textoConfirmar: 'Apagar tudo',
                 corConfirmar: 'var(--red-danger)',
                 onConfirmar: () => _limparFaturaCartao(cartao)
@@ -318,7 +318,9 @@
             fatura.transacoes = [];
             fatura.valorConfirmado = null;
             fatura.valorEstimado = null;
-            _sincronizarContaFixaDoCartao(cartao);
+            // Remove a conta fixa vinculada de vez — não faz sentido deixar uma conta de R$ 0,00
+            // "pendurada" em Contas Fixas (e ainda por cima marcada como vencida) depois de limpar.
+            window.activeFixas = window.activeFixas.filter(f => f.origemCartaoId !== cartao.id);
             calcularEAtualizarVisual();
             salvarDadosDoMesAtual();
             mostrarToast(`Fatura de "${cartao.nome}" apagada.`, 'success');
