@@ -104,6 +104,7 @@
 
             renderizarAssinaturas();
             renderizarExtrato();
+            if (typeof renderizarCartoesDashboard === 'function') renderizarCartoesDashboard();
 
             let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
             window.__ultimoChartDataArray = chartDataArray;

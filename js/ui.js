@@ -52,3 +52,19 @@
             const toggle = document.getElementById('toggleOcultarAcumulado');
             if (toggle) toggle.checked = ocultarCardAcumulado;
         }
+
+        // Card/aba "Cartões de Crédito": visibilidade controlada em Configurações, igual o
+        // "Acumulado por Categoria" — mas aqui também esconde o botão da barra inferior no mobile.
+        function alternarVisibilidadeCartoes(ocultar) {
+            ocultarCardCartoes = ocultar;
+            aplicarVisibilidadeCartoes();
+            salvarConfigGlobal();
+        }
+        function aplicarVisibilidadeCartoes() {
+            const card = document.getElementById('tab-cartoes');
+            if (card) card.style.display = ocultarCardCartoes ? 'none' : '';
+            const navBtn = document.getElementById('navBtnCartoes');
+            if (navBtn) navBtn.style.display = ocultarCardCartoes ? 'none' : '';
+            const toggle = document.getElementById('toggleOcultarCartoes');
+            if (toggle) toggle.checked = ocultarCardCartoes;
+        }

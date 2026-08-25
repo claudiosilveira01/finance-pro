@@ -150,6 +150,8 @@
             document.getElementById('fixaValor').value = '';
             document.getElementById('fixaVenc').value = '';
             document.getElementById('fixaObs').value = '';
+            document.getElementById('fixaValor').disabled = false;
+            document.getElementById('fixaOrigemCartaoAviso').style.display = 'none';
             ['fixaNome', 'fixaValor', 'fixaVenc'].forEach(id => document.getElementById(id).classList.remove('campo-invalido'));
             document.getElementById('fixaRecorrente').checked = false;
             document.getElementById('fixaRecorrenteAte').value = '';
@@ -169,6 +171,12 @@
             document.getElementById('fixaVenc').value = conta.vencimento;
             document.getElementById('fixaCategoria').value = conta.categoria;
             document.getElementById('fixaObs').value = conta.obs || '';
+
+            // Conta vinda do card "Cartões de Crédito": o valor é sincronizado automaticamente
+            // por lá, então trava aqui pra nunca ficar dessincronizado do cartão.
+            const vemDeCartao = !!conta.origemCartaoId;
+            document.getElementById('fixaValor').disabled = vemDeCartao;
+            document.getElementById('fixaOrigemCartaoAviso').style.display = vemDeCartao ? 'block' : 'none';
 
             idEditandoFixa = id;
             document.getElementById('fixaRecorrenteSection').style.display = 'none';

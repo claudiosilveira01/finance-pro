@@ -64,6 +64,7 @@
                 }
                 salvarConfigGlobal();
                 renderizarCartoesConfig();
+                renderizarCartoesDashboard();
                 mostrarToast(editando ? `"${nome}" atualizado.` : `"${nome}" cadastrado.`, 'success');
             };
             overlay.querySelector('#modalBtnCancelar').onclick = _fecharModalGenerico;
@@ -85,10 +86,11 @@
 
             cartoesConfig.splice(idx, 1);
             renderizarCartoesConfig();
+            renderizarCartoesDashboard();
 
             excluirComUndo({
                 mensagem: `Cartão excluído: ${item.nome}`,
-                restaurar: () => { cartoesConfig.splice(idx, 0, item); renderizarCartoesConfig(); },
+                restaurar: () => { cartoesConfig.splice(idx, 0, item); renderizarCartoesConfig(); renderizarCartoesDashboard(); },
                 persistir: () => salvarConfigGlobal()
             });
         }

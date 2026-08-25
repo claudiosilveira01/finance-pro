@@ -40,6 +40,8 @@
         let extratoSelecionados = new Set();
         let extratoOrdemTipo = 'alfabetica'; // 'alfabetica' | 'valor' — classificação do resumo por tipo no card Extrato
         let ocultarCardAcumulado = false;
+        let ocultarCardCartoes = false;
+        let cartaoSelecionadoId = null;
 
         // Filtros em cascata para contas fixas
         let filtrosFixas = { valorMin: null, valorMax: null, vencimento: '', pago: '' };

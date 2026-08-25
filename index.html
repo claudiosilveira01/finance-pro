@@ -130,6 +130,9 @@
             <div class="input-inline">
                 <input type="text" id="fixaObs" style="flex:1;" placeholder="Observações (opcional)">
             </div>
+            <p id="fixaOrigemCartaoAviso" style="display:none; font-size:0.75rem; color:var(--text-muted); background:var(--bg-light); border-radius:var(--radius-sm); padding:8px 10px; margin-bottom:12px;">
+                <i class="ph ph-link" style="vertical-align:-2px;"></i> O valor desta conta vem do card "Cartões de Crédito" e só muda por lá — os outros campos continuam editáveis aqui.
+            </p>
 
             <div id="fixaRecorrenteSection">
                 <label class="toggle-row">
@@ -252,6 +255,13 @@
                     <span class="ios-toggle-track"></span>
                 </span>
                 Ocultar card "Acumulado por Categoria"
+            </label>
+            <label class="toggle-row" style="margin-bottom:0; margin-top:10px;">
+                <span class="ios-toggle">
+                    <input type="checkbox" id="toggleOcultarCartoes" onchange="alternarVisibilidadeCartoes(this.checked)">
+                    <span class="ios-toggle-track"></span>
+                </span>
+                Ocultar card "Cartões de Crédito"
             </label>
 
             <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
@@ -392,6 +402,31 @@
                     <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); flex-wrap:wrap; gap:10px; margin-top:12px;">
                         <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">SOMA SELECIONADA</span>
                         <span id="mSomaSelecionadasCard" style="font-weight:800; font-size:1.1rem; color:var(--text-highlight-alt);">R$ 0,00</span>
+                    </div>
+                </div>
+
+                <!-- ABA: CARTÕES DE CRÉDITO -->
+                <div id="tab-cartoes" class="card tab-content">
+                    <div class="card-title">
+                        <span class="card-title-left"><i class="ph ph-credit-card"></i> Cartões de Crédito</span>
+                        <button class="card-action-btn" onclick="abrirModalNovaCompraCartao()" title="Nova Compra"><i class="ph ph-plus"></i></button>
+                    </div>
+
+                    <div id="cartaoSemCadastro" style="display:none; text-align:center; padding:20px 10px;">
+                        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">Nenhum cartão cadastrado ainda.</p>
+                        <button class="btn-flat" style="width:100%; justify-content:center;" onclick="abrirModalConfig()"><i class="ph ph-gear"></i> Cadastrar em Configurações</button>
+                    </div>
+
+                    <div id="cartaoConteudo" style="display:none;">
+                        <div class="cartao-selector" id="cartaoSeletorPills"></div>
+
+                        <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-light); padding:12px 14px; border-radius:var(--radius-sm); margin-bottom:8px;">
+                            <span style="color:var(--text-muted); font-weight:600; font-size:0.8rem;">TOTAL DA FATURA</span>
+                            <span style="color:var(--text-highlight); font-size:1.1rem; font-weight:800;" id="cartaoTotalFatura">R$ 0,00</span>
+                        </div>
+                        <p id="cartaoVencimentoInfo" style="font-size:0.75rem; color:var(--text-muted); margin-bottom:14px;"></p>
+
+                        <div id="listaCartaoTransacoes"></div>
                     </div>
                 </div>
 
@@ -598,6 +633,7 @@
 
         <nav class="bottom-nav">
             <button class="nav-item active" onclick="switchTab(event, 'tab-fixas')"><i class="ph ph-clipboard-text"></i>Contas</button>
+            <button class="nav-item" id="navBtnCartoes" onclick="switchTab(event, 'tab-cartoes')"><i class="ph ph-credit-card"></i>Cartões</button>
             <button class="nav-item" onclick="switchTab(event, 'tab-calendario')"><i class="ph ph-calendar-blank"></i>Calendário</button>
             <button class="nav-item" onclick="switchTab(event, 'tab-dashboard')"><i class="ph ph-chart-line-up"></i>Mês</button>
         </nav>
@@ -616,6 +652,7 @@
     <script src="js/faturamentos.js"></script>
     <script src="js/assinaturas.js"></script>
     <script src="js/cartoes.js"></script>
+    <script src="js/cartaoFatura.js"></script>
     <script src="js/calendario.js"></script>
     <script src="js/calculadora.js"></script>
     <script src="js/tabelas.js"></script>

@@ -287,6 +287,26 @@
         .cartao-item-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
         .cartao-item-menu { flex-shrink: 0; }
 
+        /* === Card "Cartões de Crédito" (Dashboard) === */
+        .cartao-selector { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; margin-bottom: 14px; scrollbar-width: none; }
+        .cartao-selector::-webkit-scrollbar { display: none; }
+        .cartao-pill { flex-shrink: 0; padding: 8px 16px; border-radius: 999px; border: 1.5px solid var(--border-color); background: var(--card-bg); color: var(--text-muted); font-weight: 700; font-size: 0.85rem; cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s, transform 0.15s; }
+        .cartao-pill:hover { border-color: var(--purple-light); transform: translateY(-1px); }
+        .cartao-pill.ativo { background: var(--gradient-btn); border-color: transparent; color: white; box-shadow: var(--shadow-sm); }
+
+        .cartao-transacao-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 13px 4px; border-bottom: 1px solid var(--border-color); transition: background 0.15s; }
+        .cartao-transacao-item:last-child { border-bottom: none; }
+        .cartao-transacao-item:hover { background: var(--bg-light); border-radius: var(--radius-sm); }
+        .cartao-transacao-icon { width: 38px; height: 38px; min-width: 38px; border-radius: 50%; background: var(--bg-blue-light); color: var(--purple-main); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; }
+        .cartao-transacao-main { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+        .cartao-transacao-desc { font-weight: 700; font-size: 0.9rem; color: var(--text-main); text-align: left; }
+        .cartao-transacao-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .cartao-transacao-valor { font-weight: 800; font-size: 0.92rem; color: var(--text-highlight); white-space: nowrap; }
+        @container (max-width: 380px) {
+            .cartao-transacao-icon { width: 32px; height: 32px; min-width: 32px; font-size: 1rem; }
+            .cartao-transacao-desc, .cartao-transacao-valor { font-size: 0.8rem; }
+        }
+
         /* === Resumo por tipo do Extrato Bancário: linha com barra de fundo proporcional ao valor === */
         .tipo-grupo-label { font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 10px 2px 6px; }
         .tipo-grupo-label:first-child { margin-top: 0; }
