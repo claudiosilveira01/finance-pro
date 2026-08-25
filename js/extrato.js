@@ -294,10 +294,19 @@ function toggleSelecaoExtrato(id) {
 function excluirTransacaoExtrato(id) {
     const idx = (window.activeExtrato || []).findIndex(t => t.id === id);
     if (idx === -1) return;
+    const item = window.activeExtrato[idx];
     window.activeExtrato.splice(idx, 1);
     extratoSelecionados.delete(id);
-    salvarDadosDoMesAtual();
     renderizarExtrato();
+
+    excluirComUndo({
+        mensagem: `Transação excluída: ${item.item}`,
+        restaurar: () => {
+            window.activeExtrato.splice(idx, 0, item);
+            renderizarExtrato();
+        },
+        persistir: () => salvarDadosDoMesAtual()
+    });
 }
 
 function alternarOrdemTipoExtrato() {

@@ -65,6 +65,11 @@
             if(window.activeFixas) {
                 window.activeFixas.forEach(f => { if(f.categoria === antigo) f.categoria = novo; });
             }
+            if(window.activeCartoesFaturas) {
+                Object.values(window.activeCartoesFaturas).forEach(fatura => {
+                    (fatura.transacoes || []).forEach(t => { if(t.categoria === antigo) t.categoria = novo; });
+                });
+            }
 
             renderizarListasDeCategorias();
             calcularEAtualizarVisual();
@@ -80,10 +85,15 @@
             Promise.all(outrosMeses.map(m =>
                 getMesesCollectionRef().doc(m.key).get().then(doc => {
                     if(!doc.exists) return;
-                    const fixas = doc.data().fixas || [];
+                    const dados = doc.data();
+                    const fixas = dados.fixas || [];
+                    const cartoesFaturas = dados.cartoesFaturas || {};
                     let alterado = false;
                     fixas.forEach(f => { if(f.categoria === antigo) { f.categoria = novo; alterado = true; } });
-                    if(alterado) return getMesesCollectionRef().doc(m.key).update({ fixas });
+                    Object.values(cartoesFaturas).forEach(fatura => {
+                        (fatura.transacoes || []).forEach(t => { if(t.categoria === antigo) { t.categoria = novo; alterado = true; } });
+                    });
+                    if(alterado) return getMesesCollectionRef().doc(m.key).update({ fixas, cartoesFaturas });
                 })
             )).then(() => {
                 mostrarToast(`Categoria atualizada para "${novo}" em todos os meses.`, 'success');
@@ -96,7 +106,9 @@
 
         function excluirCategoriaGlobal(nome) {
             const outras = categoriasAtuais.filter(c => c !== nome);
-            const emUsoNoMesAtual = (window.activeFixas || []).some(f => f.categoria === nome);
+            const emUsoEmFixas = (window.activeFixas || []).some(f => f.categoria === nome);
+            const emUsoEmCartoes = Object.values(window.activeCartoesFaturas || {}).some(fatura => (fatura.transacoes || []).some(t => t.categoria === nome));
+            const emUsoNoMesAtual = emUsoEmFixas || emUsoEmCartoes;
 
             if(emUsoNoMesAtual) {
                 if(outras.length === 0) {
