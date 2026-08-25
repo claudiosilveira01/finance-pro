@@ -33,6 +33,7 @@
         let meuGraficoPizza;
         let meuGraficoBarra;
         let chartSobraFalta;
+        let chartCartaoCategoria;
         let idEditandoFixa = null;
         let idEditandoFaturamento = null;
         let diaCalendarioSelecionado = null;

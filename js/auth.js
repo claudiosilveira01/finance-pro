@@ -11,6 +11,7 @@
                 atualizarLabelDataFat();
                 initChart();
                 initChartSobraFalta();
+                initChartCartaoCategoria();
                 atualizarBotaoTema();
                 carregarConfigGlobal(() => {
                     loading.style.display = 'none';

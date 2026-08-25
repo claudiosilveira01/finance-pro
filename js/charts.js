@@ -68,3 +68,27 @@
             chartSobraFalta.data.datasets[0].backgroundColor = [positivo ? '#10B981' : '#EF4444', '#8B7CF6'];
             chartSobraFalta.update();
         }
+
+        // Gráfico "Gastos por Categoria" de dentro do card Cartões de Crédito: só as compras do
+        // cartão selecionado no momento, uma rosquinha (doughnut) com as categorias que de fato
+        // têm gasto (diferente do gráfico geral do Dashboard, que sempre mostra a lista fixa toda).
+        function initChartCartaoCategoria() {
+            const ctx = document.getElementById('chartCartaoCategoria');
+            if (!ctx) return;
+            chartCartaoCategoria = new Chart(ctx.getContext('2d'), {
+                type: 'doughnut',
+                data: { labels: [], datasets: [{ data: [], backgroundColor: [], borderWidth: 0 }] },
+                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: { duration: 1100, easing: 'easeOutQuart' } }
+            });
+        }
+
+        function atualizarChartCartaoCategoria(entradas) {
+            if (!chartCartaoCategoria) return;
+            chartCartaoCategoria.data.labels = entradas.map(([cat]) => cat);
+            chartCartaoCategoria.data.datasets[0].data = entradas.map(([, v]) => v);
+            chartCartaoCategoria.data.datasets[0].backgroundColor = entradas.map(([cat]) => {
+                const idx = categoriasAtuais.indexOf(cat);
+                return coresCategorias[idx >= 0 ? idx % coresCategorias.length : 0];
+            });
+            chartCartaoCategoria.update();
+        }

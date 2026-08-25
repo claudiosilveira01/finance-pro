@@ -23,7 +23,17 @@
             (window.activeFixas || []).forEach(c => {
                 orcamento += c.valor;
                 if(c.pago) pago += c.valor; else restante += c.valor;
+                // Conta vinda de um cartão de crédito: a parte dela no gráfico vem detalhada
+                // pelas categorias reais das compras da fatura (abaixo), não como um bloco só
+                // "Cartão de Crédito" — senão contaria o mesmo dinheiro duas vezes.
+                if (c.origemCartaoId) return;
                 if(totalPorCategoria[c.categoria] !== undefined) totalPorCategoria[c.categoria] += c.valor;
+            });
+
+            Object.values(window.activeCartoesFaturas || {}).forEach(fatura => {
+                (fatura.transacoes || []).forEach(t => {
+                    if (totalPorCategoria[t.categoria] !== undefined) totalPorCategoria[t.categoria] += t.valor;
+                });
             });
 
             const tbodyFixas = document.getElementById('listaFixas');
