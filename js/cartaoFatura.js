@@ -17,6 +17,14 @@
             return window.activeCartoesFaturas[cartaoId];
         }
 
+        // Valor total da fatura: normalmente é a soma das compras lançadas, mas depois de uma
+        // importação (Fase 3) pode ter sido confirmado manualmente com um valor diferente (ex.:
+        // juros que ainda não apareceram no arquivo) — nesse caso, esse valor confirmado manda.
+        function _totalFatura(fatura) {
+            if (fatura.valorConfirmado != null) return fatura.valorConfirmado;
+            return fatura.transacoes.reduce((s, t) => s + t.valor, 0);
+        }
+
         function selecionarCartao(id) {
             cartaoSelecionadoId = id;
             animarNaCarga = true; // reanima a troca de conteúdo (odômetro, itens) ao trocar de cartão
@@ -29,7 +37,7 @@
         function _sincronizarContaFixaDoCartao(cartao) {
             if (!cartao) return;
             const fatura = _faturaDoCartao(cartao.id);
-            const total = fatura.transacoes.reduce((s, t) => s + t.valor, 0);
+            const total = _totalFatura(fatura);
 
             if (!categoriasAtuais.includes('Cartão de Crédito')) {
                 categoriasAtuais.push('Cartão de Crédito');
@@ -82,7 +90,7 @@
 
             const fatura = _faturaDoCartao(cartao.id);
             const transacoesOrdenadas = [...fatura.transacoes].sort((a, b) => b.data.localeCompare(a.data));
-            const total = fatura.transacoes.reduce((s, t) => s + t.valor, 0);
+            const total = _totalFatura(fatura);
 
             const classeAnim = animarNaCarga ? ' item-anim' : '';
             const listaEl = document.getElementById('listaCartaoTransacoes');
@@ -156,6 +164,9 @@
                 } else {
                     fatura.transacoes.push({ id: Date.now(), descricao, valor, data, categoria });
                 }
+                // Lançamento manual: o total volta a ser a soma das compras lançadas (não fica
+                // preso a um valor confirmado de uma importação anterior).
+                fatura.valorConfirmado = null;
                 const cartao = cartoesConfig.find(c => c.id === cartaoId);
                 _sincronizarContaFixaDoCartao(cartao);
                 calcularEAtualizarVisual();
@@ -177,6 +188,7 @@
             if (idx === -1) return;
             const item = fatura.transacoes[idx];
             fatura.transacoes.splice(idx, 1);
+            fatura.valorConfirmado = null;
 
             const cartao = cartoesConfig.find(c => c.id === cartaoId);
             _sincronizarContaFixaDoCartao(cartao);
@@ -197,6 +209,6 @@
         // Botão "+" do card: abre direto o popup de nova compra pro cartão selecionado no momento.
         function abrirModalNovaCompraCartao() {
             const cartao = _cartaoAtivo();
-            if (!cartao) return;
+            if (!cartao) { mostrarToast('Cadastre um cartão em Configurações antes de lançar uma compra.', 'warning'); return; }
             abrirModalCartaoTransacao(cartao.id, null);
         }
