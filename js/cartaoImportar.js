@@ -235,6 +235,7 @@
                     });
                 });
                 fatura.valorConfirmado = isNaN(valorReal) ? null : valorReal;
+                fatura.valorEstimado = null; // a fatura já tem dado real agora — a estimativa deixa de valer
 
                 _sincronizarContaFixaDoCartao(cartao);
                 calcularEAtualizarVisual();
