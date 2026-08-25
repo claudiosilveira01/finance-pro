@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Metragem de Solda</title>
+<style>
+  :root {
+    --navy: #0b132b;
+    --navy-2: #1c2541;
+    --accent: #3a86ff;
+    --danger: #e63946;
+    --bg: #f4f6f9;
+    --card-bg: #ffffff;
+    --text: #1c1c1c;
+    --muted: #6b7280;
+    --border: #dbe1e8;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding-bottom: 40px;
+  }
+
+  header {
+    background: var(--navy);
+    color: #fff;
+    padding: 22px 16px;
+    text-align: center;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  header h1 {
+    margin: 0;
+    font-size: clamp(1.2rem, 4vw, 1.7rem);
+    letter-spacing: 0.5px;
+  }
+
+  main {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 20px 16px;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 10px;
+    padding: 18px;
+    margin-bottom: 18px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+    border: 1px solid var(--border);
+  }
+
+  .field {
+    margin-bottom: 14px;
+  }
+
+  .field:last-child { margin-bottom: 0; }
+
+  label {
+    display: block;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--navy-2);
+    margin-bottom: 6px;
+  }
+
+  input[type="text"],
+  input[type="number"] {
+    width: 100%;
+    padding: 10px 12px;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--text);
+  }
+
+  input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(58,134,255,0.15);
+  }
+
+  .row-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .row-header h2 {
+    font-size: 1rem;
+    color: var(--navy-2);
+    margin: 0;
+  }
+
+  .registros {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .registro-linha {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .registro-linha .indice {
+    flex: 0 0 28px;
+    text-align: right;
+    font-size: 0.85rem;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .registro-linha input[type="text"] {
+    flex: 1;
+  }
+
+  .registro-linha .unidade {
+    flex: 0 0 auto;
+    font-size: 0.85rem;
+    color: var(--muted);
+    min-width: 14px;
+  }
+
+  .remover-btn {
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 6px;
+    background: #fdeceb;
+    color: var(--danger);
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+  }
+
+  .remover-btn:hover {
+    background: var(--danger);
+    color: #fff;
+  }
+
+  .remover-btn:disabled {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .resultado-card {
+    background: var(--navy);
+    color: #fff;
+    border-radius: 10px;
+    padding: 22px 18px;
+    text-align: center;
+    box-shadow: 0 4px 14px rgba(11,19,43,0.35);
+  }
+
+  .resultado-item {
+    margin-bottom: 14px;
+  }
+
+  .resultado-item:last-child { margin-bottom: 0; }
+
+  .resultado-label {
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #a9b4d0;
+    margin-bottom: 4px;
+  }
+
+  .resultado-valor {
+    font-size: clamp(1.6rem, 6vw, 2.4rem);
+    font-weight: 700;
+  }
+
+  .resultado-valor.destaque {
+    color: #7fd88f;
+  }
+
+  .acoes {
+    text-align: center;
+    margin-top: 18px;
+  }
+
+  .btn-limpar {
+    background: #fff;
+    color: var(--danger);
+    border: 1px solid var(--danger);
+    padding: 10px 22px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .btn-limpar:hover {
+    background: var(--danger);
+    color: #fff;
+  }
+
+  .hint {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>CALCULADORA DE METRAGEM DE SOLDA</h1>
+</header>
+
+<main>
+  <div class="card">
+    <div class="field">
+      <label for="soldador">Soldador</label>
+      <input type="text" id="soldador" placeholder="Nome do soldador">
+    </div>
+    <div class="field">
+      <label for="valorMetro">Valor do Metro de Solda (R$)</label>
+      <input type="text" id="valorMetro" inputmode="decimal" value="5,00">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="row-header">
+      <h2>Registros de Solda (metros)</h2>
+    </div>
+    <div class="registros" id="registros"></div>
+    <div class="hint">Digite o valor e aperte Enter para lançar e ir para a próxima linha.</div>
+  </div>
+
+  <div class="resultado-card">
+    <div class="resultado-item">
+      <div class="resultado-label">Metragem Total</div>
+      <div class="resultado-valor" id="metragemTotal">0,00 m</div>
+    </div>
+    <div class="resultado-item">
+      <div class="resultado-label">Valor Total a Receber</div>
+      <div class="resultado-valor destaque" id="valorTotal">R$ 0,00</div>
+    </div>
+  </div>
+
+  <div class="acoes">
+    <button class="btn-limpar" id="btnLimpar" type="button">Limpar Tudo</button>
+  </div>
+</main>
+
+<script>
+(function () {
+  const registrosEl = document.getElementById('registros');
+  const soldadorEl = document.getElementById('soldador');
+  const valorMetroEl = document.getElementById('valorMetro');
+  const metragemTotalEl = document.getElementById('metragemTotal');
+  const valorTotalEl = document.getElementById('valorTotal');
+  const btnLimpar = document.getElementById('btnLimpar');
+
+  function parseNumero(str) {
+    if (typeof str !== 'string') return NaN;
+    const texto = str.trim();
+    if (texto === '') return NaN;
+    const normalizado = texto.includes(',')
+      ? texto.replace(/\./g, '').replace(',', '.')
+      : texto;
+    return parseFloat(normalizado);
+  }
+
+  function formatarMetros(valor) {
+    return valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' m';
+  }
+
+  function formatarMoeda(valor) {
+    return valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+  }
+
+  function renumerar() {
+    const linhas = registrosEl.querySelectorAll('.registro-linha');
+    linhas.forEach((linha, idx) => {
+      const indice = linha.querySelector('.indice');
+      indice.textContent = String(idx + 1).padStart(2, '0');
+      const removerBtn = linha.querySelector('.remover-btn');
+      removerBtn.disabled = linhas.length === 1;
+    });
+  }
+
+  function criarLinha() {
+    const linha = document.createElement('div');
+    linha.className = 'registro-linha';
+
+    const indice = document.createElement('div');
+    indice.className = 'indice';
+
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.inputMode = 'decimal';
+    input.className = 'registro-input';
+    input.placeholder = 'digite e aperte Enter';
+
+    const unidade = document.createElement('span');
+    unidade.className = 'unidade';
+    unidade.textContent = 'm';
+
+    const removerBtn = document.createElement('button');
+    removerBtn.type = 'button';
+    removerBtn.className = 'remover-btn';
+    removerBtn.innerHTML = '✕';
+    removerBtn.setAttribute('aria-label', 'Remover linha');
+
+    linha.appendChild(indice);
+    linha.appendChild(input);
+    linha.appendChild(unidade);
+    linha.appendChild(removerBtn);
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key !== 'Enter') return;
+      e.preventDefault();
+
+      const valorAtual = input.value.trim();
+      if (valorAtual === '') return;
+
+      const numero = parseNumero(valorAtual);
+      if (isNaN(numero) || numero < 0) {
+        input.value = '';
+        input.focus();
+        return;
+      }
+
+      const ehUltima = linha === registrosEl.lastElementChild;
+      if (ehUltima) {
+        const novaLinha = criarLinha();
+        registrosEl.appendChild(novaLinha);
+        renumerar();
+        novaLinha.querySelector('input').focus();
+      } else {
+        const proximaInput = linha.nextElementSibling.querySelector('input');
+        proximaInput.focus();
+      }
+
+      atualizarResultados();
+    });
+
+    input.addEventListener('input', atualizarResultados);
+
+    removerBtn.addEventListener('click', () => {
+      const linhas = registrosEl.querySelectorAll('.registro-linha');
+      if (linhas.length === 1) return;
+      linha.remove();
+      renumerar();
+      atualizarResultados();
+    });
+
+    return linha;
+  }
+
+  function atualizarResultados() {
+    const inputs = registrosEl.querySelectorAll('.registro-input');
+    let totalMetros = 0;
+
+    inputs.forEach((input) => {
+      const valor = input.value.trim();
+      if (valor === '') return;
+      const numero = parseNumero(valor);
+      if (!isNaN(numero) && numero >= 0) {
+        totalMetros += numero;
+      }
+    });
+
+    let valorMetro = parseNumero(valorMetroEl.value);
+    if (isNaN(valorMetro) || valorMetro < 0) valorMetro = 0;
+
+    const totalReceber = totalMetros * valorMetro;
+
+    metragemTotalEl.textContent = formatarMetros(totalMetros);
+    valorTotalEl.textContent = formatarMoeda(totalReceber);
+  }
+
+  function resetar() {
+    registrosEl.innerHTML = '';
+    soldadorEl.value = '';
+    valorMetroEl.value = '5,00';
+    const primeiraLinha = criarLinha();
+    registrosEl.appendChild(primeiraLinha);
+    renumerar();
+    atualizarResultados();
+    primeiraLinha.querySelector('input').focus();
+  }
+
+  valorMetroEl.addEventListener('input', atualizarResultados);
+
+  btnLimpar.addEventListener('click', () => {
+    if (confirm('Tem certeza que deseja limpar todos os dados?')) {
+      resetar();
+    }
+  });
+
+  resetar();
+})();
+</script>
+</body>
+</html>
