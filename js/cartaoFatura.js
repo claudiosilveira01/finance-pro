@@ -278,9 +278,48 @@
             });
         }
 
-        // Botão "+" do card: abre direto o popup de nova compra pro cartão selecionado no momento.
+        // Abre o popup de nova compra pro cartão selecionado no momento.
         function abrirModalNovaCompraCartao() {
             const cartao = _cartaoAtivo();
             if (!cartao) { mostrarToast('Cadastre um cartão em Configurações antes de lançar uma compra.', 'warning'); return; }
             abrirModalCartaoTransacao(cartao.id, null);
+        }
+
+        // Botão "+" do título do card: pergunta se é uma nova compra ou um novo cartão.
+        function abrirMenuNovoItemCartao(btnEl) {
+            abrirMenuContexto([
+                { label: 'Nova Compra', icone: 'shopping-cart-simple', onClick: () => abrirModalNovaCompraCartao() },
+                { label: 'Novo Cartão', icone: 'credit-card', onClick: () => abrirModalCartao(null) }
+            ], btnEl);
+        }
+
+        // Apaga todas as compras + valor confirmado/estimado da fatura do cartão selecionado no
+        // momento (a conta fixa vinculada zera junto). Pede confirmação antes, igual o "Limpar
+        // extrato do mês" do card de Extrato Bancário.
+        function confirmarLimparFaturaCartao() {
+            const cartao = _cartaoAtivo();
+            if (!cartao) { mostrarToast('Nenhum cartão selecionado.', 'warning'); return; }
+            const fatura = _faturaDoCartao(cartao.id);
+            if (fatura.transacoes.length === 0 && fatura.valorConfirmado == null && fatura.valorEstimado == null) {
+                mostrarToast(`Não há dados lançados na fatura de "${cartao.nome}" ainda.`, 'warning');
+                return;
+            }
+            abrirModalConfirmacao({
+                titulo: 'Limpar fatura',
+                mensagem: `Isso vai apagar ${fatura.transacoes.length} compra(s) lançada(s) e qualquer valor confirmado/estimado da fatura de "${cartao.nome}" neste mês (a conta fixa vinculada zera junto). Essa ação não pode ser desfeita. Confirma?`,
+                textoConfirmar: 'Apagar tudo',
+                corConfirmar: 'var(--red-danger)',
+                onConfirmar: () => _limparFaturaCartao(cartao)
+            });
+        }
+
+        function _limparFaturaCartao(cartao) {
+            const fatura = _faturaDoCartao(cartao.id);
+            fatura.transacoes = [];
+            fatura.valorConfirmado = null;
+            fatura.valorEstimado = null;
+            _sincronizarContaFixaDoCartao(cartao);
+            calcularEAtualizarVisual();
+            salvarDadosDoMesAtual();
+            mostrarToast(`Fatura de "${cartao.nome}" apagada.`, 'success');
         }

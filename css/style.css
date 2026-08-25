@@ -306,8 +306,8 @@
             .cartao-transacao-icon { width: 32px; height: 32px; min-width: 32px; font-size: 1rem; }
             .cartao-transacao-desc, .cartao-transacao-valor { font-size: 0.8rem; }
         }
-        .cartao-chart-wrap { height: 190px; margin-bottom: 12px; }
-        @media (min-width: 600px) { .cartao-chart-wrap { height: 220px; } }
+        .cartao-chart-wrap { height: 190px; max-width: 320px; margin: 0 auto 12px; }
+        @media (min-width: 600px) { .cartao-chart-wrap { height: 230px; max-width: 360px; } }
 
         /* === Tela de revisão de importação de fatura (Cartões de Crédito) === */
         .cartao-revisao-lista { max-height: 300px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--purple-light) transparent; }
