@@ -1,11 +1,18 @@
 // CRUD de contas fixas e cálculo de alerta de vencimento
-        function calcularAlertaVencimento(diaVenc, pago) {
+        //
+        // mesesAFrente: contas vindas de um cartão de crédito (origemCartaoId) são lançadas no mês
+        // em que a fatura foi trabalhada — que normalmente é o mês em que as compras aconteceram,
+        // não o mês em que a fatura de fato fecha/vence (o cartão fecha perto do fim do mês e vence
+        // uns dias depois, já no mês seguinte). Por isso, pra essas contas, o dia de vencimento é
+        // lido como sendo do mês SEGUINTE ao mês atual — senão "Dia 8" seria lido como já vencido
+        // em vez do dia 8 do mês que realmente vem depois.
+        function calcularAlertaVencimento(diaVenc, pago, mesesAFrente = 0) {
             if (pago) return { texto: `Dia ${diaVenc}`, cor: 'var(--badge-paid-text)', bg: 'var(--badge-paid-bg)' };
 
             const [ano, mes] = mesAtualKey.split('-').map(Number);
             const hoje = new Date(); hoje.setHours(0,0,0,0);
-            
-            const dataVenc = new Date(ano, mes - 1, diaVenc); 
+
+            const dataVenc = new Date(ano, mes - 1 + mesesAFrente, diaVenc);
             dataVenc.setHours(0,0,0,0);
             
             const diffTime = dataVenc - hoje;
