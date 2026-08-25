@@ -276,7 +276,6 @@
             .assinatura-item-icon { width: 34px; height: 34px; min-width: 34px; font-size: 1.05rem; }
             .assinatura-item-nome, .assinatura-item-valor { font-size: 0.86rem; }
         }
-        .sub-date { font-size: 0.8rem; color: var(--text-muted); font-weight: 600; background: var(--border-color); padding: 4px 8px; border-radius: 999px; }
 
         /* === Resumo por tipo do Extrato Bancário: linha com barra de fundo proporcional ao valor === */
         .tipo-grupo-label { font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 10px 2px 6px; }

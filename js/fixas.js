@@ -48,7 +48,14 @@
                 return;
             }
 
+            let ajusteCaixaPendente = 0;
             if (idEditandoFixa !== null) {
+                const contaAntiga = window.activeFixas.find(c => c.id === idEditandoFixa);
+                // Se a conta já estava paga, o valor antigo já tinha saído do Caixa Atual — corrige
+                // pela diferença, senão o Caixa Atual fica com o valor de antes da edição.
+                if (contaAntiga && contaAntiga.pago && contaAntiga.valor !== valor) {
+                    ajusteCaixaPendente = contaAntiga.valor - valor;
+                }
                 window.activeFixas = window.activeFixas.map(c =>
                     c.id === idEditandoFixa ? { ...c, nome: nome, valor: valor, vencimento: venc, categoria: cat, obs: obs } : c
                 );
@@ -67,7 +74,11 @@
             _resetarFormFixa();
             fecharModalNovaFixa();
 
-            salvarDadosDoMesAtual();
+            if (ajusteCaixaPendente !== 0) {
+                ajustarCaixaAtual(ajusteCaixaPendente); // já salva tudo, incluindo o activeFixas atualizado
+            } else {
+                salvarDadosDoMesAtual();
+            }
             calcularEAtualizarVisual();
         }
 

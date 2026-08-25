@@ -12,11 +12,15 @@
             let totalPorCategoria = {};
             categoriasAtuais.forEach(c => totalPorCategoria[c] = 0);
 
-            // Tabela Fixas — se houver filtros ativos, usa fixas filtradas; senão, usa todas
+            // Tabela Fixas — se houver filtros ativos, usa fixas filtradas; senão, usa todas.
+            // O filtro é só uma forma de achar itens na lista: Orçamento/Pago/Restante, o gráfico
+            // por categoria e o cálculo de Sobra/Falta sempre somam TODAS as contas fixas do mês,
+            // nunca só o subconjunto filtrado — senão um filtro ativo mudaria silenciosamente
+            // números que aparecem em outros cards do painel.
             const fixasParaRender = temFiltrosAtivos && temFiltrosAtivos() ? obterFixasFiltradas() : window.activeFixas;
             let fixasOrdenadas = aplicarOrdenacao(fixasParaRender, ordFixas);
 
-            fixasOrdenadas.forEach(c => {
+            (window.activeFixas || []).forEach(c => {
                 orcamento += c.valor;
                 if(c.pago) pago += c.valor; else restante += c.valor;
                 if(totalPorCategoria[c.categoria] !== undefined) totalPorCategoria[c.categoria] += c.valor;
