@@ -277,6 +277,16 @@
             .assinatura-item-nome, .assinatura-item-valor { font-size: 0.86rem; }
         }
 
+        /* === Lista "Meus Cartões" (Configurações) — mesmo padrão visual do card de Assinaturas. === */
+        .cartao-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--border-color); transition: background 0.15s; }
+        .cartao-item:last-child { border-bottom: none; }
+        .cartao-item:hover { background: var(--bg-light); border-radius: var(--radius-sm); }
+        .cartao-item-icon { width: 40px; height: 40px; min-width: 40px; border-radius: 50%; background: var(--bg-blue-light); color: var(--blue-accent); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
+        .cartao-item-main { min-width: 0; display: flex; flex-direction: column; gap: 7px; }
+        .cartao-item-nome { font-weight: 700; font-size: 0.95rem; color: var(--text-main); text-align: left; }
+        .cartao-item-tags { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .cartao-item-menu { flex-shrink: 0; }
+
         /* === Resumo por tipo do Extrato Bancário: linha com barra de fundo proporcional ao valor === */
         .tipo-grupo-label { font-size: 0.68rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; margin: 10px 2px 6px; }
         .tipo-grupo-label:first-child { margin-top: 0; }
