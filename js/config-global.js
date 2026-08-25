@@ -8,8 +8,10 @@
                     cartoesConfig = data.cartoesConfig || cartoesConfig;
                     mesesDisponiveis = data.meses || [];
                     ocultarCardAcumulado = data.ocultarCardAcumulado || false;
+                    ocultarCardCartoes = data.ocultarCardCartoes || false;
                 }
                 aplicarVisibilidadeAcumulado();
+                aplicarVisibilidadeCartoes();
                 verificarNotificacoesAtivas();
                 
                 const dataHoje = new Date();
@@ -48,7 +50,8 @@
                 assinaturas: assinaturasConfig,
                 cartoesConfig: cartoesConfig,
                 meses: mesesDisponiveis,
-                ocultarCardAcumulado: ocultarCardAcumulado
+                ocultarCardAcumulado: ocultarCardAcumulado,
+                ocultarCardCartoes: ocultarCardCartoes
             }, {merge: true}).catch(err => {
                 mostrarToast('Erro ao salvar as configurações. Verifique sua conexão.', 'error', 6000, {
                     acao: { texto: 'Tentar de novo', callback: salvarConfigGlobal }

@@ -10,12 +10,14 @@
                     window.activeFaturamentos = data.faturamentos || [];
                     window.activeExtrato = data.extrato || [];
                     window.activeRegistroPagamentos = data.registroPagamentos || [];
+                    window.activeCartoesFaturas = data.cartoesFaturas || {};
                     document.getElementById('saldoInput').value = data.saldo || 0;
                 } else {
                     window.activeFixas = [];
                     window.activeFaturamentos = [];
                     window.activeExtrato = [];
                     window.activeRegistroPagamentos = [];
+                    window.activeCartoesFaturas = {};
                     document.getElementById('saldoInput').value = 0;
                 }
                 fixasSelecionadas.clear();
@@ -39,6 +41,7 @@
                 faturamentos: window.activeFaturamentos || [],
                 extrato: window.activeExtrato || [],
                 registroPagamentos: window.activeRegistroPagamentos || [],
+                cartoesFaturas: window.activeCartoesFaturas || {},
                 saldo: parseFloat(document.getElementById('saldoInput').value) || 0
             };
             getMesesCollectionRef().doc(mesAtualKey).set(dados).catch(err => {

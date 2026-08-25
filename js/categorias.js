@@ -10,6 +10,7 @@
                 "Comunicação": "wifi-high",
                 "Tributos": "bank",
                 "PIX Terceiros": "paper-plane-tilt",
+                "Cartão de Crédito": "credit-card",
                 "Outros": "dots-three"
             };
             return iconesBase[cat] || "tag";
