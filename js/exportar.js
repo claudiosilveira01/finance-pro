@@ -209,6 +209,60 @@
                 y = doc.lastAutoTable.finalY + 14;
             }
 
+            // Cartões de Crédito: um bloco por cartão que teve compra lançada neste mês — tabela
+            // das compras e o acumulado por categoria daquele cartão (calculado direto dos dados,
+            // não a partir do gráfico da tela, que só reflete o cartão selecionado no momento).
+            const cartoesComDados = (cartoesConfig || []).filter(c => {
+                const fatura = (window.activeCartoesFaturas || {})[c.id];
+                return fatura && fatura.transacoes && fatura.transacoes.length > 0;
+            });
+            if (cartoesComDados.length > 0) {
+                y = _pdfGarantirEspaco(doc, y, 30);
+                _pdfTituloSecao(doc, 'Cartões de Crédito', 14, y, corPrimaria);
+                y += 8;
+
+                cartoesComDados.forEach(cartao => {
+                    const fatura = window.activeCartoesFaturas[cartao.id];
+                    const totalFaturaCartao = _totalFatura(fatura);
+
+                    y = _pdfGarantirEspaco(doc, y, 40);
+                    doc.setFontSize(11);
+                    doc.setFont(undefined, 'bold');
+                    doc.setTextColor(...corPrimaria);
+                    doc.text(cartao.nome, 14, y);
+                    doc.setFont(undefined, 'normal');
+                    doc.setFontSize(8);
+                    doc.setTextColor(..._PDF_COR_MUTED);
+                    doc.text(`Fecha dia ${cartao.diaFechamento} · Vence dia ${cartao.diaVencimento} · Total da fatura: R$ ${totalFaturaCartao.toFixed(2)}`, 14, y + 5);
+                    doc.setTextColor(30, 30, 30);
+                    y += 10;
+
+                    doc.autoTable(_pdfEstiloTabela({
+                        head: [['Data', 'Descrição', 'Categoria', 'Valor (R$)']],
+                        body: [...fatura.transacoes].sort((a, b) => b.data.localeCompare(a.data)).map(t => [formatarData(t.data), t.descricao, t.categoria, t.valor.toFixed(2)]),
+                        startY: y,
+                        styles: { fontSize: 8, textColor: [30, 30, 30], lineColor: _PDF_COR_BORDA, lineWidth: 0.1 }
+                    }));
+                    y = doc.lastAutoTable.finalY + 6;
+
+                    const totaisPorCategoriaCartao = {};
+                    fatura.transacoes.forEach(t => { totaisPorCategoriaCartao[t.categoria] = (totaisPorCategoriaCartao[t.categoria] || 0) + t.valor; });
+                    const catArrayCartao = Object.entries(totaisPorCategoriaCartao).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]);
+                    if (catArrayCartao.length > 0) {
+                        y = _pdfGarantirEspaco(doc, y, 20);
+                        doc.autoTable(_pdfEstiloTabela({
+                            head: [[`Categoria (${cartao.nome})`, 'Valor (R$)']],
+                            body: catArrayCartao.map(([c, v]) => [c, v.toFixed(2)]),
+                            startY: y,
+                            styles: { fontSize: 8, textColor: [30, 30, 30], lineColor: _PDF_COR_BORDA, lineWidth: 0.1 }
+                        }));
+                        y = doc.lastAutoTable.finalY + 14;
+                    } else {
+                        y += 8;
+                    }
+                });
+            }
+
             const registroPagamentos = window.activeRegistroPagamentos || [];
             if (registroPagamentos.length > 0) {
                 y = _pdfGarantirEspaco(doc, y, 30);
