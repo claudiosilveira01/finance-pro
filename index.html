@@ -281,12 +281,6 @@
 
             <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
-            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-bell" style="vertical-align:-2px;"></i> Controle de Assinaturas (Informativo)</h4>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">Pra adicionar ou editar uma assinatura, use o botão "+" no card "Suas Assinaturas" do painel.</p>
-            <div id="listaAssinaturasConfig"></div>
-
-            <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
-
             <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-envelope-simple-open" style="vertical-align:-2px;"></i> Verificação Automática de Extrato</h4>
             <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
                 Normalmente a checagem do e-mail de extrato do Nubank roda sozinha de hora em hora. Cole aqui a URL e o token do App da Web (veja SETUP.md) para poder disparar essa checagem na hora, pelo botão do card "Extrato Bancário". Esses dados ficam salvos só neste aparelho.
@@ -445,7 +439,12 @@
 
                     <!-- SOBRA / FALTA ESTIMADA (consulta livre, não entra no cálculo automático acima) -->
                     <div class="card">
-                        <div class="card-title"><span class="card-title-left"><i class="ph ph-scales"></i> Sobra / Falta Estimada</span></div>
+                        <div class="card-title">
+                            <span class="card-title-left">
+                                <button class="card-action-btn card-action-btn-round" onclick="limparSobraFaltaEstimada()" title="Limpar Seleção"><i class="ph ph-arrow-counter-clockwise"></i></button>
+                                <i class="ph ph-scales"></i> Sobra / Falta Estimada
+                            </span>
+                        </div>
                         <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Some o seu Caixa Atual com as receitas escolhidas e veja se cobre o orçamento.</p>
 
                         <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); flex-wrap:wrap; gap:10px; margin-bottom:16px;">
@@ -464,9 +463,8 @@
                             <option value="nenhuma">Nenhuma</option>
                             <option value="fixo">Orçamento Fixo</option>
                             <option value="restante">Restante Contas</option>
+                            <option value="soma">Soma das Contas</option>
                         </select>
-
-                        <button type="button" class="sobra-falta-limpar" onclick="limparSobraFaltaEstimada()"><i class="ph ph-arrow-counter-clockwise"></i> Limpar Seleção</button>
 
                         <div class="sobra-falta-resultado" id="sobraFaltaResultadoBox">
                             <span class="sobra-falta-resultado-label" id="sobraFaltaResultadoLabel">Sobra estimada</span>

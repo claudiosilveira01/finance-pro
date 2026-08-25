@@ -82,23 +82,26 @@
                 : [...(assinaturasConfig || [])].sort((a,b) => a.vencimento - b.vencimento);
 
             const titulo = dia ? `Eventos - Dia ${dia}` : 'Todos os eventos do mês';
+            // Só clicando de novo no mesmo dia (pra desmarcar) voltava a mostrar o mês inteiro —
+            // esse botão deixa explícito como voltar, sem depender de lembrar esse detalhe.
+            const botaoVoltar = dia ? `<button class="cal-eventos-voltar" onclick="verTodosEventosDoMes()"><i class="ph ph-arrow-left"></i> Ver todos os eventos do mês</button>` : '';
 
             if(listaContas.length === 0 && listaSubs.length === 0) {
-                container.innerHTML = `<h4 style="font-size:0.85rem; margin-bottom:8px; color:var(--text-highlight);">${titulo}</h4><p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:10px;">Nenhum evento encontrado.</p>`;
+                container.innerHTML = `${botaoVoltar}<h4 class="cal-eventos-titulo">${titulo}</h4><p style="font-size:0.85rem; color:var(--text-muted); text-align:center; padding:10px;">Nenhum evento encontrado.</p>`;
                 return;
             }
 
             const classeAnim = animarNaCarga ? ' item-anim' : '';
             const classeAnimBadge = animarNaCarga ? ' anim-pop' : '';
-            let html = `<h4 style="font-size:0.85rem; margin-bottom:8px; color:var(--text-highlight);">${titulo}</h4>`;
+            let html = `${botaoVoltar}<h4 class="cal-eventos-titulo">${titulo}</h4>`;
             let atrasoItem = 0;
 
             listaContas.forEach(f => {
                 html += `
-                <div class="sub-item${classeAnim}" style="animation-delay:${atrasoItem}s">
-                    <span>
-                        <i class="ph ph-${obterIconeCategoria(f.categoria)}" style="font-size:16px; vertical-align:middle; color:var(--text-muted);"></i>
-                        ${f.nome} <strong style="color:var(--text-highlight-alt)"> - R$ ${f.valor.toFixed(2)}</strong>
+                <div class="cal-evento-item${classeAnim}" style="animation-delay:${atrasoItem}s">
+                    <i class="ph ph-${obterIconeCategoria(f.categoria)}" style="color:var(--text-muted);"></i>
+                    <span class="cal-evento-texto">
+                        ${f.nome} <strong style="color:var(--text-highlight-alt)">- R$ ${f.valor.toFixed(2)}</strong>
                         ${f.obs ? `<div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">${f.obs}</div>` : ''}
                     </span>
                     <span class="vencimento-tag${classeAnimBadge}" style="color:white; background-color:${f.pago ? 'var(--green-success)' : 'var(--red-danger)'}">Dia ${f.vencimento} ${f.pago ? '✓' : ''}</span>
@@ -108,10 +111,10 @@
 
             listaSubs.forEach(s => {
                 html += `
-                <div class="sub-item${classeAnim}" style="animation-delay:${atrasoItem}s">
-                    <span>
-                        <i class="ph ph-${obterIconeAssinatura(s.categoria)}" style="font-size:16px; vertical-align:middle; color:var(--sub-color);"></i>
-                        ${s.nome} <strong style="color:var(--sub-color)"> - R$ ${(s.valor||0).toFixed(2)}</strong>
+                <div class="cal-evento-item${classeAnim}" style="animation-delay:${atrasoItem}s">
+                    <i class="ph ph-${obterIconeAssinatura(s.categoria)}" style="color:var(--sub-color);"></i>
+                    <span class="cal-evento-texto">
+                        ${s.nome} <strong style="color:var(--sub-color)">- R$ ${(s.valor||0).toFixed(2)}</strong>
                     </span>
                     <span class="vencimento-tag${classeAnimBadge}" style="color:white; background-color:var(--sub-color)">Dia ${s.vencimento}</span>
                 </div>`;
@@ -119,4 +122,10 @@
             });
 
             container.innerHTML = html;
+        }
+
+        // Volta a lista do calendário pra mostrar todos os eventos do mês (some a seleção de dia).
+        function verTodosEventosDoMes() {
+            diaCalendarioSelecionado = null;
+            renderizarCalendario();
         }

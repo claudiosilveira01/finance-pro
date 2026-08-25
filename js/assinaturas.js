@@ -10,7 +10,7 @@
             { nome: 'Inteligência Artificial', icone: 'robot' },
             { nome: 'Produtividade', icone: 'briefcase' },
             { nome: 'Academia / Fitness', icone: 'barbell' },
-            { nome: 'Rastreamento / Segurança', icone: 'satellite' },
+            { nome: 'Rastreamento / Segurança', icone: 'map-pin' },
             { nome: 'Internet / Telefonia', icone: 'wifi-high' },
             { nome: 'Jogos', icone: 'game-controller' },
             { nome: 'Notícias / Leitura', icone: 'newspaper' },
@@ -140,10 +140,8 @@
                 </div>`;
             }).join('');
 
-            ['listaAssinaturasCard', 'listaAssinaturasConfig'].forEach(elId => {
-                const el = document.getElementById(elId);
-                if(el) el.innerHTML = itensHtml;
-            });
+            const listaEl = document.getElementById('listaAssinaturasCard');
+            if (listaEl) listaEl.innerHTML = itensHtml;
 
             const totalEl = document.getElementById('totalAssinaturas');
             if(totalEl) totalEl.innerText = `R$ ${totalAssin.toFixed(2)}`;
