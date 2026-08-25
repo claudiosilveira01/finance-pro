@@ -83,18 +83,11 @@
                 }
                 _fecharModalGenerico();
                 if (editando) {
-                    const valorNovo = isNaN(valor) ? 0 : valor;
-                    const valorAntigo = sub.valor || 0;
                     sub.nome = nome;
-                    sub.valor = valorNovo;
+                    sub.valor = isNaN(valor) ? 0 : valor;
                     sub.vencimento = venc;
                     sub.categoria = categoria;
                     salvarConfigGlobal();
-                    // Se já estava faturada neste mês, o valor antigo já tinha saído do Caixa
-                    // Atual — corrige pela diferença, senão o Caixa Atual fica com o valor errado.
-                    if (sub.faturadoEm === mesAtualKey && valorNovo !== valorAntigo) {
-                        ajustarCaixaAtual(valorAntigo - valorNovo);
-                    }
                 } else {
                     assinaturasConfig.push({ id: Date.now(), nome, valor: isNaN(valor) ? 0 : valor, vencimento: venc, categoria });
                     salvarConfigGlobal();
@@ -116,16 +109,9 @@
             excluirComUndo({
                 mensagem: `Assinatura excluída: ${item.nome}`,
                 restaurar: () => { assinaturasConfig.splice(idx, 0, item); calcularEAtualizarVisual(); },
-                persistir: () => {
-                    // assinaturasConfig mora num documento à parte (config/geral) do Caixa Atual
-                    // (que fica no documento do mês) — os dois precisam ser salvos aqui.
-                    salvarConfigGlobal();
-                    // Se a assinatura excluída já estava faturada neste mês, o valor tinha sido
-                    // descontado do Caixa Atual — devolve, senão o Caixa Atual fica manco pra sempre.
-                    if (item.faturadoEm === mesAtualKey) {
-                        ajustarCaixaAtual(item.valor || 0);
-                    }
-                }
+                // Assinaturas são só consultivas — excluir uma não mexe no Caixa Atual (o valor
+                // nunca saiu de lá, já que faturar assinatura também não desconta mais).
+                persistir: () => salvarConfigGlobal()
             });
         }
 
@@ -203,9 +189,10 @@
                 registradoEm: new Date().toISOString()
             });
 
-            // O dinheiro sai de verdade do Caixa Atual ao marcar como faturada, e volta se
-            // desmarcar (ex.: clicou por engano). ajustarCaixaAtual() já salva tudo de uma vez.
-            ajustarCaixaAtual(marcarComoFaturado ? -(sub.valor || 0) : (sub.valor || 0));
+            // Assinaturas são só consultivas — o valor já sai da fatura do cartão (contabilizada
+            // em Contas Fixas/Extrato), então marcar como faturada aqui NÃO mexe no Caixa Atual,
+            // senão o valor seria descontado duas vezes. Só salva o registro pro Relatório Mensal.
+            salvarDadosDoMesAtual();
 
             renderizarAssinaturas();
             mostrarToast(marcarComoFaturado ? `"${sub.nome}" marcada como faturada em ${mesAtualKey}.` : `"${sub.nome}" voltou para não faturada.`, 'success');
