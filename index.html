@@ -415,9 +415,14 @@
                         </span>
                     </div>
 
-                    <div id="cartaoSemCadastro" style="display:none; text-align:center; padding:20px 10px;">
-                        <p style="font-size:0.85rem; color:var(--text-muted); margin-bottom:14px;">Nenhum cartão cadastrado ainda.</p>
-                        <button class="btn-flat" style="width:100%; justify-content:center;" onclick="abrirModalConfig()"><i class="ph ph-gear"></i> Cadastrar em Configurações</button>
+                    <div id="cartaoSemCadastro" style="display:none;">
+                        <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Cadastre seu primeiro cartão pra começar a acompanhar a fatura:</p>
+                        <input type="text" id="cartaoInlineNome" placeholder="Nome do cartão (Ex: Nubank)" style="width:100%; margin-bottom:10px;">
+                        <div class="input-inline" style="margin-bottom: 14px;">
+                            <input type="number" id="cartaoInlineFechamento" placeholder="Dia do Fechamento" min="1" max="31" style="flex:1;">
+                            <input type="number" id="cartaoInlineVencimento" placeholder="Dia do Vencimento" min="1" max="31" style="flex:1;">
+                        </div>
+                        <button class="btn-flat" style="width:100%; justify-content:center;" onclick="salvarPrimeiroCartaoInline()"><i class="ph ph-plus"></i> Cadastrar Cartão</button>
                     </div>
 
                     <div id="cartaoConteudo" style="display:none;">

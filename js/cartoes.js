@@ -24,6 +24,24 @@
             `).join('');
         }
 
+        // Cadastro do primeiro cartão direto pelo formulário aberto no próprio card "Cartões de
+        // Crédito" (sem precisar abrir o popup de Configurações) — usado só enquanto não existe
+        // nenhum cartão ainda.
+        function salvarPrimeiroCartaoInline() {
+            const nome = document.getElementById('cartaoInlineNome').value.trim();
+            const fechamento = parseInt(document.getElementById('cartaoInlineFechamento').value);
+            const vencimento = parseInt(document.getElementById('cartaoInlineVencimento').value);
+            if (!nome || isNaN(fechamento) || fechamento < 1 || fechamento > 31 || isNaN(vencimento) || vencimento < 1 || vencimento > 31) {
+                mostrarToast('Preencha o nome e os dois dias (entre 1 e 31).', 'warning');
+                return;
+            }
+            cartoesConfig.push({ id: Date.now(), nome, diaFechamento: fechamento, diaVencimento: vencimento });
+            salvarConfigGlobal();
+            renderizarCartoesConfig();
+            renderizarCartoesDashboard();
+            mostrarToast(`"${nome}" cadastrado.`, 'success');
+        }
+
         // Popup único de criar/editar cartão. id=null cria um novo; um id existente abre pra edição.
         function abrirModalCartao(id) {
             const editando = id != null;
