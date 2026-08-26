@@ -373,6 +373,13 @@
     <div id="mainApp">
         <div class="main-container">
             <div class="col-left">
+                <!-- Seletor de mês duplicado só no mobile, em cima do card de Contas Fixas -->
+                <div class="month-nav month-nav-mobile">
+                    <button onclick="navegarMes(-1)" title="Mês anterior"><i class="ph ph-caret-left"></i></button>
+                    <select id="mesSeletorMobile" onchange="mudarMesOuro(this)"></select>
+                    <button onclick="navegarMes(1)" title="Próximo mês"><i class="ph ph-caret-right"></i></button>
+                </div>
+
                 <!-- ABA: CONTAS FIXAS -->
                 <div id="tab-fixas" class="card tab-content active">
                     <div class="card-title">
@@ -465,7 +472,7 @@
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
                             <div class="month-nav">
                                 <button onclick="navegarMes(-1)" title="Mês anterior"><i class="ph ph-caret-left"></i></button>
-                                <select id="mesSeletor" onchange="mudarMesOuro()"></select>
+                                <select id="mesSeletor" onchange="mudarMesOuro(this)"></select>
                                 <button onclick="navegarMes(1)" title="Próximo mês"><i class="ph ph-caret-right"></i></button>
                             </div>
                             <button class="card-action-btn" onclick="abrirModalConfig()" title="Configurações"><i class="ph ph-gear"></i></button>

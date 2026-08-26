@@ -52,16 +52,19 @@
             });
         }
 
+        // Seletor de mês duplicado (desktop no card "Planner Financeiro" + mobile em cima de
+        // Contas Fixas) — os dois <select> ficam sempre com as mesmas opções e o mesmo valor.
+        function _seletoresDeMes() {
+            return [document.getElementById('mesSeletor'), document.getElementById('mesSeletorMobile')].filter(Boolean);
+        }
+
         function renderizarMeses() {
-            const seletor = document.getElementById('mesSeletor');
             const copiaSeletor = document.getElementById('mesCopiaSeletor');
-            seletor.innerHTML = '';
             if(copiaSeletor) copiaSeletor.innerHTML = '<option value="">Selecione um mês...</option>';
-            
-            mesesDisponiveis.forEach(m => {
-                seletor.innerHTML += `<option value="${m.key}">${m.label}</option>`;
-                if(copiaSeletor) copiaSeletor.innerHTML += `<option value="${m.key}">${m.label}</option>`;
-            });
+
+            const opcoesHtml = mesesDisponiveis.map(m => `<option value="${m.key}">${m.label}</option>`).join('');
+            _seletoresDeMes().forEach(seletor => { seletor.innerHTML = opcoesHtml; });
+            if(copiaSeletor) mesesDisponiveis.forEach(m => { copiaSeletor.innerHTML += `<option value="${m.key}">${m.label}</option>`; });
         }
 
         function addNovoMes() {
@@ -78,13 +81,14 @@
             salvarConfigGlobal();
             renderizarMeses();
             document.getElementById('novoMesInput').value = '';
-            document.getElementById('mesSeletor').value = inputVal;
+            _seletoresDeMes().forEach(seletor => { seletor.value = inputVal; });
             mudarMesOuro();
         }
 
-        function mudarMesOuro() {
+        function mudarMesOuro(origemEl) {
             flushPendingDelete();
-            mesAtualKey = document.getElementById('mesSeletor').value;
+            mesAtualKey = (origemEl || document.getElementById('mesSeletor')).value;
+            _seletoresDeMes().forEach(seletor => { seletor.value = mesAtualKey; });
             carregarMes(mesAtualKey);
         }
 
@@ -93,7 +97,7 @@
             const novoIndice = seletor.selectedIndex + direcao;
             if(novoIndice < 0 || novoIndice >= seletor.options.length) return;
             seletor.selectedIndex = novoIndice;
-            mudarMesOuro();
+            mudarMesOuro(seletor);
         }
 
         function copiarContasFixas() {
