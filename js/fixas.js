@@ -131,7 +131,7 @@
             promessa.then(() => {
                 mesesDisponiveis.sort((a, b) => a.key.localeCompare(b.key));
                 renderizarMeses();
-                document.getElementById('mesSeletor').value = mesAtualKey;
+                _seletoresDeMes().forEach(seletor => { seletor.value = mesAtualKey; });
                 salvarConfigGlobal();
                 mostrarToast(`"${contaBase.nome}" repetida até ${mesFinal}.`, 'success');
             }).catch(() => {

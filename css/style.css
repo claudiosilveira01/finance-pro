@@ -59,6 +59,11 @@
         .month-nav button:active { transform: scale(0.92); }
         .month-nav select { background: transparent; color: var(--text-main); border: none; font-weight: 700; font-size: 0.9rem; outline: none; cursor: pointer; padding: 4px 6px; text-align: center; flex: 1; min-width: 0; }
 
+        /* Seletor de mês duplicado em cima do card de Contas Fixas — só no mobile (a versão
+           desktop já tem o seletor lá em cima, no card "Planner Financeiro"). */
+        .month-nav-mobile { display: none; }
+        @media (max-width: 899px) { .month-nav-mobile { display: flex; margin-bottom: 20px; } }
+
         /* Botão de ação secundária dentro de cards (ex: abrir calculadora/configurações/sair) */
         .card-action-btn { background: var(--bg-light); border: 1px solid var(--border-color); color: var(--text-highlight); width: 38px; height: 38px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
         .card-action-btn-round { border-radius: 50%; width: 32px; height: 32px; font-size: 0.9rem; }

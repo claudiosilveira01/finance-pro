@@ -32,7 +32,7 @@
                 renderizarListasDeCategorias();
                 renderizarCartoesConfig();
 
-                document.getElementById('mesSeletor').value = mesAtualKey;
+                _seletoresDeMes().forEach(seletor => { seletor.value = mesAtualKey; });
                 carregarMes(mesAtualKey, callback);
             }).catch(err => {
                 document.getElementById('loadingDiv').style.display = 'none';
