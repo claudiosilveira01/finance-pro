@@ -33,8 +33,7 @@
                 renderizarCartoesConfig();
 
                 document.getElementById('mesSeletor').value = mesAtualKey;
-                carregarMes(mesAtualKey);
-                if(callback) callback();
+                carregarMes(mesAtualKey, callback);
             }).catch(err => {
                 document.getElementById('loadingDiv').style.display = 'none';
                 mostrarToast('Erro ao carregar seus dados. Verifique sua conexão.', 'error', 6000, {

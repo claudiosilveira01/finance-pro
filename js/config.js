@@ -12,6 +12,13 @@
         const auth = firebase.auth();
         const db = firebase.firestore();
 
+        // Cache local (IndexedDB) dos dados do Firestore: com conexão lenta/instável, os dados já
+        // vistos antes aparecem na hora (direto do cache) enquanto sincroniza em segundo plano, em
+        // vez de deixar a tela de "Sincronizando..." travada esperando a rede. Falha silenciosamente
+        // em abas múltiplas abertas ao mesmo tempo ou navegadores sem suporte — nesses casos o app
+        // continua funcionando normalmente, só sem o cache.
+        db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+
         // Único ponto de acesso aos documentos do usuário no Firestore.
         function getConfigDocRef() {
             return db.collection('users').doc(currentUser.uid).collection('config').doc('geral');

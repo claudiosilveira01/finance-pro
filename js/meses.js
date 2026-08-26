@@ -1,8 +1,8 @@
 // Carregamento/gravação dos dados do mês ativo e gestão da lista de meses
-        function carregarMes(anoMes) {
+        function carregarMes(anoMes, callback) {
             if(!currentUser) return;
             document.getElementById('loadingDiv').style.display = 'flex';
-            
+
             getMesesCollectionRef().doc(anoMes).get().then(doc => {
                 if(doc.exists) {
                     let data = doc.data();
@@ -26,10 +26,11 @@
                 animarNaCarga = true;
                 calcularEAtualizarVisual();
                 document.getElementById('loadingDiv').style.display = 'none';
+                if (callback) callback();
             }).catch(err => {
                 document.getElementById('loadingDiv').style.display = 'none';
                 mostrarToast('Erro ao carregar os dados do mês. Verifique sua conexão.', 'error', 6000, {
-                    acao: { texto: 'Tentar de novo', callback: () => carregarMes(anoMes) }
+                    acao: { texto: 'Tentar de novo', callback: () => carregarMes(anoMes, callback) }
                 });
             });
         }
