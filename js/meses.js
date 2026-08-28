@@ -11,7 +11,8 @@
                     window.activeExtrato = data.extrato || [];
                     window.activeRegistroPagamentos = data.registroPagamentos || [];
                     window.activeCartoesFaturas = data.cartoesFaturas || {};
-                    document.getElementById('saldoInput').value = data.saldo ? _formatarDinheiroInput(data.saldo) : '';
+                    const saldoArred = _arred2(data.saldo || 0);
+                    document.getElementById('saldoInput').value = saldoArred ? _formatarDinheiroInput(saldoArred) : '';
                 } else {
                     window.activeFixas = [];
                     window.activeFaturamentos = [];
@@ -43,7 +44,7 @@
                 extrato: window.activeExtrato || [],
                 registroPagamentos: window.activeRegistroPagamentos || [],
                 cartoesFaturas: window.activeCartoesFaturas || {},
-                saldo: _parseDinheiro(document.getElementById('saldoInput').value) || 0
+                saldo: _arred2(_parseDinheiro(document.getElementById('saldoInput').value) || 0)
             };
             getMesesCollectionRef().doc(mesAtualKey).set(dados).catch(err => {
                 mostrarToast('Erro ao salvar os dados do mês. Verifique sua conexão.', 'error', 6000, {
@@ -174,6 +175,6 @@
         function ajustarCaixaAtual(delta) {
             const input = document.getElementById('saldoInput');
             const atual = _parseDinheiro(input.value) || 0;
-            input.value = _formatarDinheiroInput(atual + delta);
+            input.value = _formatarDinheiroInput(_arred2(atual + delta));
             salvarDadosDoMesAtual();
         }
