@@ -158,7 +158,7 @@
                 receitas = f ? f.valor : 0;
             }
 
-            const caixaAtual = parseFloat(document.getElementById('saldoInput').value) || 0;
+            const caixaAtual = _parseDinheiro(document.getElementById('saldoInput').value) || 0;
             let orcamento = 0;
             if (selectOrcamento.value === 'fixo') orcamento = window.__ultimoOrcamentoFixo || 0;
             else if (selectOrcamento.value === 'restante') orcamento = window.__ultimoRestanteContas || 0;

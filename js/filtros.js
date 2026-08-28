@@ -40,8 +40,8 @@ function aplicarFiltrosFixas() {
     const vencimentoInput = document.getElementById('filtroFixaVencimento').value;
     const pagoInput = document.getElementById('filtroFixaPago').value;
 
-    const valorMin = valorMinInput ? parseFloat(valorMinInput) : null;
-    const valorMax = valorMaxInput ? parseFloat(valorMaxInput) : null;
+    const valorMin = valorMinInput ? _parseDinheiro(valorMinInput) : null;
+    const valorMax = valorMaxInput ? _parseDinheiro(valorMaxInput) : null;
     const vencimento = vencimentoInput || '';
     const pago = pagoInput || '';
 

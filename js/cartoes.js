@@ -54,8 +54,8 @@
                 </h3>
                 <input type="text" id="modalCartaoNomeInput" placeholder="Ex: Nubank" style="width:100%; margin-bottom:12px;" value="${cartao ? cartao.nome : ''}">
                 <div class="input-inline" style="margin-bottom: 20px;">
-                    <input type="number" id="modalCartaoFechamentoInput" placeholder="Dia do Fechamento" min="1" max="31" style="flex:1;" value="${cartao ? cartao.diaFechamento : ''}">
-                    <input type="number" id="modalCartaoVencimentoInput" placeholder="Dia do Vencimento" min="1" max="31" style="flex:1;" value="${cartao ? cartao.diaVencimento : ''}">
+                    <input type="number" inputmode="numeric" id="modalCartaoFechamentoInput" placeholder="Dia do Fechamento" min="1" max="31" style="flex:1;" value="${cartao ? cartao.diaFechamento : ''}">
+                    <input type="number" inputmode="numeric" id="modalCartaoVencimentoInput" placeholder="Dia do Vencimento" min="1" max="31" style="flex:1;" value="${cartao ? cartao.diaVencimento : ''}">
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">Cancelar</button>

@@ -121,10 +121,10 @@
             <div class="card-title" id="modalNovaFixaTitulo"><span class="card-title-left"><i class="ph ph-plus"></i> Nova Conta Fixa</span></div>
             <div class="input-inline">
                 <input type="text" id="fixaNome" style="flex:2;" placeholder="Item (Ex: Energia, Mensalidades)" oninput="this.classList.remove('campo-invalido')">
-                <input type="number" id="fixaValor" style="flex:1;" placeholder="R$" oninput="this.classList.remove('campo-invalido')">
+                <input type="text" inputmode="decimal" data-dinheiro id="fixaValor" style="flex:1;" placeholder="R$" oninput="this.classList.remove('campo-invalido')">
             </div>
             <div class="input-inline">
-                <input type="number" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31" oninput="this.classList.remove('campo-invalido')">
+                <input type="number" inputmode="numeric" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31" oninput="this.classList.remove('campo-invalido')">
                 <select id="fixaCategoria" style="flex:1.5;"></select>
             </div>
             <div class="input-inline">
@@ -164,7 +164,7 @@
             <div class="card-title"><span class="card-title-left"><i class="ph ph-pencil-simple"></i> Editar Receita</span></div>
             <div class="input-inline">
                 <input type="text" id="editFatNome" style="flex:2;" placeholder="Origem (Ex: Salário, Venda)">
-                <input type="number" id="editFatValor" class="no-spin" style="flex:1;" placeholder="R$">
+                <input type="text" inputmode="decimal" data-dinheiro id="editFatValor" class="no-spin" style="flex:1;" placeholder="R$">
             </div>
             <div class="input-inline">
                 <input type="date" id="editFatData" style="flex:1;">
@@ -338,11 +338,11 @@
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px;">
                 <div>
                     <label style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--text-muted);">Valor Mínimo</label>
-                    <input type="number" id="filtroFixaValorMin" placeholder="R$ 0" oninput="aplicarFiltrosFixas()" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
+                    <input type="text" inputmode="decimal" data-dinheiro id="filtroFixaValorMin" placeholder="R$ 0" oninput="aplicarFiltrosFixas()" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--text-muted);">Valor Máximo</label>
-                    <input type="number" id="filtroFixaValorMax" placeholder="R$ ∞" oninput="aplicarFiltrosFixas()" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
+                    <input type="text" inputmode="decimal" data-dinheiro id="filtroFixaValorMax" placeholder="R$ ∞" oninput="aplicarFiltrosFixas()" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main);">
                 </div>
                 <div>
                     <label style="display: block; margin-bottom: 4px; font-size: 0.85rem; color: var(--text-muted);">Vencimento</label>
@@ -427,8 +427,8 @@
                         <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">Cadastre seu primeiro cartão pra começar a acompanhar a fatura:</p>
                         <input type="text" id="cartaoInlineNome" placeholder="Nome do cartão (Ex: Nubank)" style="width:100%; margin-bottom:10px;">
                         <div class="input-inline" style="margin-bottom: 14px;">
-                            <input type="number" id="cartaoInlineFechamento" placeholder="Dia do Fechamento" min="1" max="31" style="flex:1;">
-                            <input type="number" id="cartaoInlineVencimento" placeholder="Dia do Vencimento" min="1" max="31" style="flex:1;">
+                            <input type="number" inputmode="numeric" id="cartaoInlineFechamento" placeholder="Dia do Fechamento" min="1" max="31" style="flex:1;">
+                            <input type="number" inputmode="numeric" id="cartaoInlineVencimento" placeholder="Dia do Vencimento" min="1" max="31" style="flex:1;">
                         </div>
                         <button class="btn-flat" style="width:100%; justify-content:center;" onclick="salvarPrimeiroCartaoInline()"><i class="ph ph-plus"></i> Cadastrar Cartão</button>
                     </div>
@@ -514,7 +514,7 @@
                             <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">CAIXA ATUAL</span>
                             <div style="display: flex; align-items: center; gap: 6px; background:var(--card-bg); border:1.5px solid var(--border-color); border-radius:var(--radius-sm); padding:8px 12px;">
                                 <span style="font-weight: 700; color: var(--text-highlight-alt);">R$</span>
-                                <input type="number" id="saldoInput" onblur="salvarSaldoDoMes()" style="background: transparent; border: none; width: 100px; text-align: right; font-weight: 700; font-size: 1.1rem; padding: 0; color: var(--text-highlight-alt); outline: none;">
+                                <input type="text" inputmode="decimal" data-dinheiro id="saldoInput" onblur="salvarSaldoDoMes()" style="background: transparent; border: none; width: 100px; text-align: right; font-weight: 700; font-size: 1.1rem; padding: 0; color: var(--text-highlight-alt); outline: none;">
                             </div>
                         </div>
 
@@ -566,7 +566,7 @@
                         <div class="receitas-form">
                             <input type="text" id="fatNome" class="receitas-origem" placeholder="Origem (Ex: Salário, Venda)">
                             <div class="receitas-linha2">
-                                <input type="number" id="fatValor" class="no-spin receitas-valor" placeholder="R$">
+                                <input type="text" inputmode="decimal" data-dinheiro id="fatValor" class="no-spin receitas-valor" placeholder="R$">
                                 <div class="data-picker-wrap">
                                     <button type="button" class="btn-data-picker" id="fatDataBtn" tabindex="-1" title="Escolher data">
                                         <i class="ph ph-calendar-blank"></i>
@@ -661,6 +661,7 @@
         </nav>
     </div>
 
+    <script src="js/mascaraDinheiro.js"></script>
     <script src="js/toast.js"></script>
     <script src="js/modal.js"></script>
     <script src="js/undo.js"></script>

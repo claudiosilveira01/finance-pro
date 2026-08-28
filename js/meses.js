@@ -11,14 +11,14 @@
                     window.activeExtrato = data.extrato || [];
                     window.activeRegistroPagamentos = data.registroPagamentos || [];
                     window.activeCartoesFaturas = data.cartoesFaturas || {};
-                    document.getElementById('saldoInput').value = data.saldo || 0;
+                    document.getElementById('saldoInput').value = _formatarDinheiroInput(data.saldo || 0);
                 } else {
                     window.activeFixas = [];
                     window.activeFaturamentos = [];
                     window.activeExtrato = [];
                     window.activeRegistroPagamentos = [];
                     window.activeCartoesFaturas = {};
-                    document.getElementById('saldoInput').value = 0;
+                    document.getElementById('saldoInput').value = _formatarDinheiroInput(0);
                 }
                 fixasSelecionadas.clear();
                 extratoSelecionados.clear();
@@ -43,7 +43,7 @@
                 extrato: window.activeExtrato || [],
                 registroPagamentos: window.activeRegistroPagamentos || [],
                 cartoesFaturas: window.activeCartoesFaturas || {},
-                saldo: parseFloat(document.getElementById('saldoInput').value) || 0
+                saldo: _parseDinheiro(document.getElementById('saldoInput').value) || 0
             };
             getMesesCollectionRef().doc(mesAtualKey).set(dados).catch(err => {
                 mostrarToast('Erro ao salvar os dados do mês. Verifique sua conexão.', 'error', 6000, {
@@ -173,7 +173,7 @@
         // e quando o usuário confirma que uma receita específica já caiu na conta.
         function ajustarCaixaAtual(delta) {
             const input = document.getElementById('saldoInput');
-            const atual = parseFloat(input.value) || 0;
-            input.value = (atual + delta).toFixed(2);
+            const atual = _parseDinheiro(input.value) || 0;
+            input.value = _formatarDinheiroInput(atual + delta);
             salvarDadosDoMesAtual();
         }

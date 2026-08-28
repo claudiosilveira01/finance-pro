@@ -208,7 +208,7 @@
                 </h3>
                 <input type="text" id="modalCartaoTransDescInput" placeholder="Ex: Supermercado" style="width:100%; margin-bottom:12px;" value="${t ? t.descricao : ''}">
                 <div class="input-inline" style="margin-bottom: 12px;">
-                    <input type="number" id="modalCartaoTransValorInput" placeholder="Valor (R$)" style="flex:1;" value="${t ? t.valor : ''}">
+                    <input type="text" inputmode="decimal" data-dinheiro id="modalCartaoTransValorInput" placeholder="Valor (R$)" style="flex:1;" value="${t ? _formatarDinheiroInput(t.valor) : ''}">
                     <input type="date" id="modalCartaoTransDataInput" style="flex:1;" value="${t ? t.data : hojeStr}">
                 </div>
                 <select id="modalCartaoTransCategoriaInput" style="width:100%; margin-bottom:20px;">${opcoesCategoria}</select>
@@ -222,7 +222,7 @@
 
             overlay.querySelector('#modalBtnConfirmar').onclick = () => {
                 const descricao = overlay.querySelector('#modalCartaoTransDescInput').value.trim();
-                const valor = parseFloat(overlay.querySelector('#modalCartaoTransValorInput').value);
+                const valor = _parseDinheiro(overlay.querySelector('#modalCartaoTransValorInput').value);
                 const data = overlay.querySelector('#modalCartaoTransDataInput').value;
                 const categoria = overlay.querySelector('#modalCartaoTransCategoriaInput').value;
                 if (!descricao || isNaN(valor) || !data) {
