@@ -45,8 +45,11 @@
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        html { overflow-x: hidden; font-size: 17.5px; }
-        body { background-color: var(--bg-light); color: var(--text-main); transition: background 0.3s, color 0.3s; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+        /* Bloqueia zoom por pinça/duplo-toque (só afeta toque — zoom do navegador no desktop via
+           teclado continua normal): junto com o viewport meta, deixa o app com a "cara" de app de
+           verdade no celular, sem a página inteira escalando ao encostar sem querer com dois dedos. */
+        html { overflow-x: hidden; font-size: 17.5px; touch-action: pan-x pan-y; }
+        body { background-color: var(--bg-light); color: var(--text-main); transition: background 0.3s, color 0.3s; -webkit-font-smoothing: antialiased; overflow-x: hidden; touch-action: pan-x pan-y; }
         /* overscroll-behavior-y:none foi removido: em vez de só suprimir o efeito de "elástico"
            nas bordas, em alguns navegadores/webviews ele travava a rolagem da página inteira —
            tanto no desktop quanto, depois, no mobile. Sem essa regra o bottom-nav pode voltar a
