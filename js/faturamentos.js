@@ -12,8 +12,8 @@
         }
 
         function addFaturamento() {
-            const nome = document.getElementById('fatNome').value.trim(); 
-            const valor = parseFloat(document.getElementById('fatValor').value); 
+            const nome = document.getElementById('fatNome').value.trim();
+            const valor = _parseDinheiro(document.getElementById('fatValor').value);
             let data = document.getElementById('fatData').value;
             if(!nome || isNaN(valor)) return;
             if(!data) data = new Date().toISOString().split('T')[0];
@@ -42,7 +42,7 @@
             if (!f) return;
             idEditandoFaturamento = id;
             document.getElementById('editFatNome').value = f.nome;
-            document.getElementById('editFatValor').value = f.valor;
+            document.getElementById('editFatValor').value = _formatarDinheiroInput(f.valor);
             document.getElementById('editFatData').value = f.data;
             document.getElementById('modalEditarFaturamento').style.display = 'flex';
         }
@@ -55,7 +55,7 @@
         function salvarEdicaoFaturamento() {
             if (idEditandoFaturamento === null) return;
             const nome = document.getElementById('editFatNome').value.trim();
-            const valor = parseFloat(document.getElementById('editFatValor').value);
+            const valor = _parseDinheiro(document.getElementById('editFatValor').value);
             const data = document.getElementById('editFatData').value;
             if (!nome || isNaN(valor) || !data) return;
 

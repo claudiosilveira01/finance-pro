@@ -153,7 +153,7 @@
             const selectOrcamento = document.getElementById('sobraFaltaOrcamento');
             const labelReceitaEscolhida = selectReceita && selectReceita.selectedOptions[0] ? selectReceita.selectedOptions[0].text : '—';
             const labelOrcamentoEscolhido = selectOrcamento && selectOrcamento.selectedOptions[0] ? selectOrcamento.selectedOptions[0].text : '—';
-            const caixaAtual = parseFloat(document.getElementById('saldoInput').value) || 0;
+            const caixaAtual = _parseDinheiro(document.getElementById('saldoInput').value) || 0;
             // sobraFaltaZ mostra o valor sempre positivo (o sinal vem do rótulo "Sobra"/"Falta" ao
             // lado); a classe do box (positivo/negativo) é a fonte confiável do sinal aqui.
             const sobraFaltaPositiva = (document.getElementById('sobraFaltaResultadoBox')?.className || '').includes('positivo');

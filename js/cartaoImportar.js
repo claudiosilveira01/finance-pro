@@ -225,7 +225,7 @@
                     <span style="color:var(--text-muted); font-weight:600; font-size:0.8rem;">VALOR REAL DA FATURA</span>
                     <div style="display:flex; align-items:center; gap:4px;">
                         <span style="font-weight:700; color:var(--text-highlight-alt);">R$</span>
-                        <input type="number" id="cartaoRevisaoValorReal" value="${sugestaoTotal.toFixed(2)}" style="width:100px; text-align:right; border:none; background:transparent; font-weight:800; font-size:1.05rem; color:var(--text-highlight-alt);">
+                        <input type="text" inputmode="decimal" data-dinheiro id="cartaoRevisaoValorReal" value="${_formatarDinheiroInput(sugestaoTotal)}" style="width:100px; text-align:right; border:none; background:transparent; font-weight:800; font-size:1.05rem; color:var(--text-highlight-alt);">
                     </div>
                 </div>
                 <p style="font-size:0.7rem; color:var(--text-muted); margin-bottom:18px;">Pré-preenchido com a soma das compras menos os pagamentos encontrados no arquivo. Ajuste aqui se o valor mostrado no app do banco for diferente.</p>
@@ -244,7 +244,7 @@
                     mostrarToast('Marque ao menos uma compra pra importar, ou cancele.', 'warning');
                     return;
                 }
-                const valorReal = parseFloat(overlay.querySelector('#cartaoRevisaoValorReal').value);
+                const valorReal = _parseDinheiro(overlay.querySelector('#cartaoRevisaoValorReal').value);
                 _fecharModalGenerico();
 
                 incluidos.forEach(n => {
@@ -306,7 +306,7 @@
             const input = document.getElementById('cartaoRevisaoValorReal');
             if (!input || window._cartaoRevisaoBase == null || !window._cartaoRevisaoItens) return;
             const somaIncluidos = window._cartaoRevisaoItens.filter(n => n._incluir).reduce((s, n) => s + n.valor, 0);
-            input.value = Math.max(0, window._cartaoRevisaoBase + somaIncluidos).toFixed(2);
+            input.value = _formatarDinheiroInput(Math.max(0, window._cartaoRevisaoBase + somaIncluidos));
         }
         function _revisaoCartaoCampo(idx, campo, valor) {
             if (window._cartaoRevisaoItens && window._cartaoRevisaoItens[idx]) {

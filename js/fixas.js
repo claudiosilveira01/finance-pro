@@ -38,7 +38,7 @@
             const obs = document.getElementById('fixaObs').value.trim();
 
             const nome = elNome.value.trim();
-            const valor = parseFloat(elValor.value);
+            const valor = _parseDinheiro(elValor.value);
             const venc = parseInt(elVenc.value);
 
             [elNome, elValor, elVenc].forEach(el => el.classList.remove('campo-invalido'));
@@ -174,7 +174,7 @@
             abrirModalNovaFixa();
 
             document.getElementById('fixaNome').value = conta.nome;
-            document.getElementById('fixaValor').value = conta.valor;
+            document.getElementById('fixaValor').value = _formatarDinheiroInput(conta.valor);
             document.getElementById('fixaVenc').value = conta.vencimento;
             document.getElementById('fixaCategoria').value = conta.categoria;
             document.getElementById('fixaObs').value = conta.obs || '';
