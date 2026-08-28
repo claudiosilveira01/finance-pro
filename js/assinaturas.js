@@ -56,7 +56,7 @@
                 </div>
                 <input type="text" id="modalAssinNomeInput" placeholder="Ex: Netflix" style="width:100%; margin-bottom:12px;" value="${sub ? sub.nome : ''}">
                 <div class="input-inline" style="margin-bottom: 20px;">
-                    <input type="text" inputmode="decimal" data-dinheiro id="modalAssinValorInput" placeholder="Valor (R$)" style="flex:1;" value="${sub && sub.valor ? _formatarDinheiroInput(sub.valor) : ''}">
+                    <input type="text" inputmode="decimal" data-dinheiro id="modalAssinValorInput" placeholder="Valor (R$)" style="flex:1;" value="${sub ? _formatarDinheiroInput(sub.valor) : ''}">
                     <input type="number" inputmode="numeric" id="modalAssinVencInput" placeholder="Dia Venc." min="1" max="31" style="flex:1;" value="${sub ? sub.vencimento : ''}">
                 </div>
                 <div style="display: flex; gap: 10px;">
@@ -222,7 +222,7 @@
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Confirme os dados da conta fixa a criar no mês atual, baseada em "${sub.nome}":</p>
                 <div class="input-inline" style="margin-bottom: 10px;">
                     <input type="text" id="modalAssinNome" style="flex:2;" value="${sub.nome}" placeholder="Item">
-                    <input type="text" inputmode="decimal" data-dinheiro id="modalAssinValor" style="flex:1;" value="${sub.valor ? _formatarDinheiroInput(sub.valor) : ''}" placeholder="R$">
+                    <input type="text" inputmode="decimal" data-dinheiro id="modalAssinValor" style="flex:1;" value="${_formatarDinheiroInput(sub.valor)}" placeholder="R$">
                 </div>
                 <div class="input-inline" style="margin-bottom: 20px;">
                     <input type="number" inputmode="numeric" id="modalAssinVenc" style="flex:1;" value="${sub.vencimento}" min="1" max="31" placeholder="Dia Venc.">

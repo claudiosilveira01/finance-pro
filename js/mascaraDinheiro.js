@@ -42,3 +42,11 @@ function _formatarDinheiroInput(valor) {
     if (valor == null || valor === '' || isNaN(valor)) return '';
     return Number(valor).toFixed(2).replace('.', ',');
 }
+
+// Arredonda pra 2 casas decimais (centavos) — usar em toda soma/subtração de dinheiro que vai ser
+// salva ou comparada, senão erros de ponto flutuante (0.1 + 0.2 = 0.30000000000000004) acumulam
+// ao longo de várias operações (ex.: Caixa Atual ajustado dezenas de vezes) e deixam um resto
+// residual tipo "0,00" que na real é 0.0000000000003 — nunca exatamente vazio/zero de novo.
+function _arred2(valor) {
+    return Math.round((Number(valor) + Number.EPSILON) * 100) / 100;
+}
