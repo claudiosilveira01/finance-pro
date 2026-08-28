@@ -177,11 +177,15 @@
             if (typeof atualizarChartSobraFalta === 'function') atualizarChartSobraFalta(disponivel, orcamento, z >= 0);
         }
 
-        // Reseta os dois seletores do card Sobra/Falta pra "Nenhuma" — atalho pra zerar a consulta.
+        // Limpa tudo do card Sobra/Falta: os dois seletores voltam pra "Nenhuma" E o Caixa Atual
+        // volta a ficar vazio (não "0,00" — vazio de verdade, esperando um novo valor).
         function limparSobraFaltaEstimada() {
             const selectReceita = document.getElementById('sobraFaltaReceita');
             const selectOrcamento = document.getElementById('sobraFaltaOrcamento');
+            const saldoInput = document.getElementById('saldoInput');
             if (selectReceita) selectReceita.value = 'nenhuma';
             if (selectOrcamento) selectOrcamento.value = 'nenhuma';
+            if (saldoInput) saldoInput.value = '';
+            salvarDadosDoMesAtual();
             renderizarSobraFaltaEstimada();
         }
