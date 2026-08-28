@@ -11,14 +11,14 @@
                     window.activeExtrato = data.extrato || [];
                     window.activeRegistroPagamentos = data.registroPagamentos || [];
                     window.activeCartoesFaturas = data.cartoesFaturas || {};
-                    document.getElementById('saldoInput').value = _formatarDinheiroInput(data.saldo || 0);
+                    document.getElementById('saldoInput').value = data.saldo ? _formatarDinheiroInput(data.saldo) : '';
                 } else {
                     window.activeFixas = [];
                     window.activeFaturamentos = [];
                     window.activeExtrato = [];
                     window.activeRegistroPagamentos = [];
                     window.activeCartoesFaturas = {};
-                    document.getElementById('saldoInput').value = _formatarDinheiroInput(0);
+                    document.getElementById('saldoInput').value = '';
                 }
                 fixasSelecionadas.clear();
                 extratoSelecionados.clear();
