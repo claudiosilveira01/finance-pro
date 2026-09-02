@@ -7,40 +7,46 @@
 
         function _iniciarAuth() {
         sb.auth.onAuthStateChange((event, session) => {
-            const loading = document.getElementById('loadingDiv');
             const user = session ? session.user : null;
 
-            if (user) {
-                // onAuthStateChange dispara em vários eventos (INITIAL_SESSION, SIGNED_IN,
-                // TOKEN_REFRESHED...). Se já é o mesmo usuário, não faz nada — TOKEN_REFRESHED
-                // em segundo plano não deve piscar a tela nem recarregar dados.
-                if (currentUser && currentUser.id === user.id) return;
-                currentUser = user;
+            // IMPORTANTE: não chamar outras funções do supabase-js (ex.: sb.rpc) direto aqui
+            // dentro — o callback roda segurando um lock interno do cliente, e a primeira RPC
+            // sairia sem o token novo (como anon → 401). setTimeout(0) joga o trabalho pra fora
+            // do callback, com a sessão já publicada.
+            setTimeout(() => {
+                const loading = document.getElementById('loadingDiv');
 
-                document.getElementById('loginScreen').style.display = 'none';
-                document.getElementById('mainApp').style.display = 'block';
-                loading.style.display = 'flex';
+                if (user) {
+                    // Vários eventos (INITIAL_SESSION, SIGNED_IN, TOKEN_REFRESHED...). Se já é o
+                    // mesmo usuário, não faz nada — TOKEN_REFRESHED não deve piscar a tela.
+                    if (currentUser && currentUser.id === user.id) return;
+                    currentUser = user;
 
-                document.getElementById('fatData').value = new Date().toISOString().split('T')[0];
-                atualizarLabelDataFat();
-                // Os gráficos ficam presos ao <canvas> — inicializar de novo (ex.: logout e
-                // login sem recarregar a página) faz o Chart.js estourar "Canvas already in use".
-                if (!_graficosIniciados) {
-                    initChart();
-                    initChartSobraFalta();
-                    initChartCartaoCategoria();
-                    _graficosIniciados = true;
+                    document.getElementById('loginScreen').style.display = 'none';
+                    document.getElementById('mainApp').style.display = 'block';
+                    loading.style.display = 'flex';
+
+                    document.getElementById('fatData').value = new Date().toISOString().split('T')[0];
+                    atualizarLabelDataFat();
+                    // Os gráficos ficam presos ao <canvas> — reinicializar (logout→login sem
+                    // recarregar) faz o Chart.js estourar "Canvas already in use".
+                    if (!_graficosIniciados) {
+                        initChart();
+                        initChartSobraFalta();
+                        initChartCartaoCategoria();
+                        _graficosIniciados = true;
+                    }
+                    atualizarBotaoTema();
+                    carregarConfigGlobal(() => {
+                        loading.style.display = 'none';
+                        iniciarAnimacoesDeEntrada();
+                    });
+                } else {
+                    currentUser = null;
+                    document.getElementById('loginScreen').style.display = 'block';
+                    document.getElementById('mainApp').style.display = 'none';
                 }
-                atualizarBotaoTema();
-                carregarConfigGlobal(() => {
-                    loading.style.display = 'none';
-                    iniciarAnimacoesDeEntrada();
-                });
-            } else {
-                currentUser = null;
-                document.getElementById('loginScreen').style.display = 'block';
-                document.getElementById('mainApp').style.display = 'none';
-            }
+            }, 0);
         });
         }
         // Scripts no fim do <body> rodam com readyState 'interactive' — ainda falta o
