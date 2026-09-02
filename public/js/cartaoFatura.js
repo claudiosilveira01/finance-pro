@@ -34,7 +34,9 @@
         //    nenhum dado real ainda; assim que a fatura ganha uma compra de verdade (ou é
         //    confirmada numa importação), o estimado deixa de valer sozinho.
         function _totalFatura(fatura) {
-            if (fatura.valorConfirmado != null) return fatura.valorConfirmado;
+            // > 0, não só != null: um "valor confirmado" de 0 (dado antigo, ou fat-finger) não
+            // deve zerar uma fatura que tem compras lançadas.
+            if (fatura.valorConfirmado != null && fatura.valorConfirmado > 0) return fatura.valorConfirmado;
             const somaTransacoes = fatura.transacoes.reduce((s, t) => s + t.valor, 0);
             if (somaTransacoes > 0) return somaTransacoes;
             if (fatura.valorEstimado != null) return fatura.valorEstimado;

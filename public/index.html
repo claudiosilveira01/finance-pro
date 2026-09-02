@@ -232,6 +232,20 @@
 
             <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
 
+            <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-bell-ringing" style="vertical-align:-2px;"></i> Notificações de Vencimento</h4>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 10px;">
+                Avisa neste dispositivo 3 dias antes e no dia do vencimento de contas fixas e assinaturas.
+                No iPhone só funciona com o app instalado na tela inicial.
+            </p>
+            <button class="btn-flat" id="btnAtivarNotificacoes" style="width:100%; justify-content:center;" onclick="ativarNotificacoesVencimento()">
+                <i class="ph ph-bell"></i> Ativar notificações de vencimento
+            </button>
+            <button class="btn-action" style="font-size:0.75rem; color:var(--text-muted); margin-top:6px; padding:4px;" onclick="resetarNotificacoesVencimento()" title="Use se as notificações pararem de funcionar direito (ex.: depois de reinstalar o app) ou se chegarem em dobro">
+                <i class="ph ph-arrow-counter-clockwise"></i> Notificação com problema? Desativar neste aparelho
+            </button>
+
+            <hr style="border:0; border-top:1px solid var(--border-color); margin:20px 0;">
+
             <h4 style="margin: 0 0 8px 0; font-size: 0.9rem; font-weight: 700;"><i class="ph ph-chart-pie" style="vertical-align:-2px;"></i> Exibição de Cards</h4>
             <label class="toggle-row" style="margin-bottom:0;">
                 <span class="ios-toggle">

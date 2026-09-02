@@ -4,7 +4,7 @@
 // rede, o usuário pega a versão nova na hora — nada de código velho preso em cache. O cache
 // só entra como plano B quando está offline. Requisições pra fora (Supabase, CDNs) passam direto.
 
-const CACHE = 'finance-pro-v1';
+const CACHE = 'finance-pro-v2';
 
 self.addEventListener('install', () => self.skipWaiting());
 
@@ -31,5 +31,33 @@ self.addEventListener('fetch', (e) => {
         return resp;
       })
       .catch(() => caches.match(req).then(hit => hit || caches.match('index.html')))
+  );
+});
+
+// --- Web Push: avisos de vencimento (Edge Function avisos-vencimento) ---
+self.addEventListener('push', (e) => {
+  let dados = {};
+  try { dados = e.data ? e.data.json() : {}; } catch (_) { dados = { body: e.data && e.data.text() }; }
+  const titulo = dados.title || 'Planner Financeiro';
+  e.waitUntil(
+    self.registration.showNotification(titulo, {
+      body: dados.body || '',
+      icon: 'icons/icon-192.png',
+      badge: 'icons/icon-192.png',
+      data: { url: dados.url || '/' }
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (e) => {
+  e.notification.close();
+  const alvo = (e.notification.data && e.notification.data.url) || '/';
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(lista => {
+      for (const c of lista) {
+        if ('focus' in c) { c.navigate(alvo); return c.focus(); }
+      }
+      return self.clients.openWindow(alvo);
+    })
   );
 });

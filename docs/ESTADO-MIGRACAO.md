@@ -192,8 +192,51 @@ fica como está, por decisão do usuário). Destaques:
 - **M2/M3/M4, B3–B13, U6–U9:** ver tabela de status no relatório.
 - **U4** (fila offline completa) e **U9 iOS splash** ficam fora de escopo — anotados.
 
-Único item de schema pendente pra Fase 2: `extrato.origem_import_id` (dedup de reimportação
-por e-mail).
+## Fases 1–3 (02/09/2026)
+
+### Fase 1 — import de cartão (.ofx/.csv): VERIFICADA ✅
+Pipeline funciona contra o Supabase (dados reais: 29 transações importadas via CSV com
+`origem_import_id`). Parsers OFX/CSV, dedup por chave e roundtrip `get_mes`/`salvar_mes`
+testados. Achados corrigidos:
+- Fatura-fantasma de 2026-09 (resíduo do bug M2) — removida do banco.
+- `cartaoImportar.js`: `valorConfirmado <= 0` vira `null` (gravar 0 zerava a fatura).
+- `_totalFatura`: só usa `valorConfirmado` se `> 0` — o agosto do claudio tinha
+  `valorConfirmado = 0` com R$ 469,41 em compras, mostrando R$ 0. **Ao reabrir agosto no app,
+  a conta fixa vinculada vai sincronizar pra R$ 469,41** (o Caixa/orçamento daquele mês muda).
+
+### Fase 2 — import de extrato por e-mail: RECONSTRUÍDA ✅ (falta o usuário reimplantar)
+- Migração `0007`: coluna `extrato.origem_import_id` + `get_mes`/`salvar_mes` fazem o roundtrip
+  de `origemImportId` (testado).
+- Migração `0008`: RPC `importar_extrato_email(p_user_id, p_transacoes)` — só `service_role`,
+  merge incremental por `origem_import_id`, sem delete. Testada (dedup ok).
+- `scripts/apps-script/Code.gs` + `SETUP.md` reescritos: Gmail/parse iguais, escrita Firestore →
+  `POST /rest/v1/rpc/importar_extrato_email`. Push saiu daqui (virou Edge Function).
+- `verificacaoEmail.js`: no sucesso, atualiza `mesesDisponiveis`.
+- **Pendência do usuário:** reimplantar o Apps Script (ver `scripts/apps-script/SETUP.md`,
+  seção "Migração da versão antiga"): trocar as Script Properties `FIRESTORE_*` pelas 3
+  `SUPABASE_*`, colar o `Code.gs` novo, Deploy → Nova versão. A URL do Web App continua a mesma.
+
+### Fase 3 — notificações de vencimento (Web Push nativo): CONSTRUÍDA ✅ (falta o usuário setar 4 secrets)
+- Migração `0009`: tabelas `push_subscriptions` / `avisos_enviados` + RPCs
+  `salvar_push_subscription` / `remover_push_subscription`.
+- Migração `0010`: `pg_cron` + `pg_net` + agendamento `avisos-vencimento-diario` (`0 12 * * *`),
+  lê o segredo do Vault (`cron_secret_avisos`, já criado).
+- Edge Function `avisos-vencimento` (deployada, v2, `verify_jwt=false`, auth por `x-cron-secret`):
+  porta a lógica do antigo `verificarVencimentosEEnviarPush` (3 dias antes / no dia),
+  `npm:web-push`, remove subscription morta (404/410), poda `avisos_enviados` > 60 dias.
+- Front: `pwa.js` reescrito (Web Push subscribe/unsubscribe + RPCs + deviceId), `sw.js` com
+  listeners `push`/`notificationclick`, seção "Notificações de Vencimento" de volta no
+  `index.html`, `config-global.js` chama `verificarNotificacoesAtivas()` no login.
+- Par VAPID gerado. **Pública** já no `pwa.js`:
+  `BEfBKjRCJuagF6uQjzE5UnK1Cha30uenNJrz0jWlq292VOLIILYWfBEa1hrUAJWOdB7Gmmzz_WJOpumN6wOXp0Q`.
+- **Pendência do usuário:** setar 4 secrets na Edge Function (Supabase → Edge Functions →
+  avisos-vencimento → Secrets, ou `supabase secrets set`):
+  - `VAPID_PUBLIC_KEY` = a pública acima
+  - `VAPID_PRIVATE_KEY` = a privada (Claude passou no chat; pode rotacionar com
+    `npx web-push generate-vapid-keys` + atualizar os 2 lados)
+  - `VAPID_SUBJECT` = `mailto:<seu-email>`
+  - `CRON_SECRET` = o mesmo valor do Vault `cron_secret_avisos` (Claude passou no chat)
+- **iPhone:** só funciona com o app instalado na tela inicial (mesma limitação do Firebase).
 
 ## Pendências / decisões do usuário
 

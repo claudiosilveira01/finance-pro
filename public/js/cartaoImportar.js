@@ -260,7 +260,9 @@
                         origemImportId: n.origemImportId
                     });
                 });
-                fatura.valorConfirmado = isNaN(valorReal) ? null : valorReal;
+                // <= 0 vira null (sem override): _totalFatura trata "valorConfirmado != null" como
+                // valor fixo, então gravar 0 zerava a fatura mesmo com compras lançadas.
+                fatura.valorConfirmado = (isNaN(valorReal) || valorReal <= 0) ? null : valorReal;
                 fatura.valorEstimado = null; // a fatura já tem dado real agora — a estimativa deixa de valer
                 if (!fatura._creditosImportados) fatura._creditosImportados = [];
                 creditos.forEach(c => fatura._creditosImportados.push(c.chave));

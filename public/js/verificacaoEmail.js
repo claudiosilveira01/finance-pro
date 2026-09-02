@@ -70,6 +70,12 @@ function verificarExtratoEmailAgora() {
             }
             if (dados.novasTransacoes > 0) {
                 mostrarToast(`✅ ${dados.novasTransacoes} transação(ões) nova(s) importada(s) de ${dados.novosEmails} e-mail(s)!`, 'success', 5000);
+                // A importação pode ter criado mês(es) que ainda não estão no seletor.
+                rpc('get_meses_disponiveis').then(m => {
+                    mesesDisponiveis = _montarMesesDisponiveis(m);
+                    renderizarMeses();
+                    _seletoresDeMes().forEach(s => { s.value = mesAtualKey; });
+                }).catch(() => {});
                 carregarMes(mesAtualKey);
             } else if (dados.novosEmails > 0) {
                 mostrarToast(`${dados.novosEmails} e-mail(s) verificado(s), mas nenhuma transação nova.`, 'info');

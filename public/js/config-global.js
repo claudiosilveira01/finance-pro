@@ -37,6 +37,11 @@
                 renderizarCartoesConfig();
 
                 _seletoresDeMes().forEach(seletor => { seletor.value = mesAtualKey; });
+
+                // Se as notificações já foram ativadas antes neste aparelho, renova a inscrição
+                // em silêncio (o endpoint do push pode ter mudado).
+                if (typeof verificarNotificacoesAtivas === 'function') verificarNotificacoesAtivas();
+
                 carregarMes(mesAtualKey, callback);
             } catch (err) {
                 document.getElementById('loadingDiv').style.display = 'none';
