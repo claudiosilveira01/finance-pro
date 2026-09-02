@@ -11,9 +11,8 @@
             const label = document.getElementById('calendarioMesLabel');
             if(!cal || !label) return;
 
-            const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
             const [ano, mes] = mesAtualKey.split('-').map(Number);
-            label.innerText = `${mesesNomes[mes-1]} De ${ano}`;
+            label.innerText = `${_NOMES_MES[mes-1]} De ${ano}`;
 
             const diasNoMes = new Date(ano, mes, 0).getDate();
             const primeiroDiaSemana = new Date(ano, mes - 1, 1).getDay();

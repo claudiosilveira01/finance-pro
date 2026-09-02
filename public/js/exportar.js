@@ -1,9 +1,8 @@
 // Exportação de dados: relatório mensal completo em PDF via jsPDF + autoTable
-        const _PDF_MESES_NOMES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
         function _pdfNomeMes(mesKey) {
             const [ano, mes] = (mesKey || '').split('-').map(Number);
             if (!ano || !mes) return mesKey || '';
-            return `${_PDF_MESES_NOMES[mes - 1]} de ${ano}`;
+            return `${_NOMES_MES[mes - 1]} de ${ano}`;
         }
 
         // Paleta do relatório — os mesmos tons de roxo/verde/vermelho do app (ver :root em

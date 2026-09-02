@@ -73,11 +73,8 @@
             if (error) mostrarErroAuth("Erro: E-mail ou senha incorretos.");
         }
 
-        // Cadastro fechado: as contas são criadas manualmente no painel do Supabase pelo
-        // administrador. O botão "Criar Conta" fica escondido no index.html.
-        function criarConta() {
-            mostrarErroAuth("Cadastro fechado. Peça ao administrador para criar sua conta.");
-        }
+        // Cadastro fechado: contas são criadas manualmente no painel do Supabase. O botão
+        // "Criar Conta" foi removido do index.html na migração — não há função de cadastro.
 
         async function fazerLogout() {
             await sb.auth.signOut();
