@@ -77,25 +77,12 @@
         }
 
         function _persistirRenomeioCategoria(antigo, novo) {
+            // Array de categorias (config) + mês atual pelo caminho normal; renomear_categoria
+            // propaga o novo nome pras fixas e transações de cartão de TODOS os meses de uma vez.
             salvarConfigGlobal();
             salvarDadosDoMesAtual();
 
-            const outrosMeses = mesesDisponiveis.filter(m => m.key !== mesAtualKey);
-
-            Promise.all(outrosMeses.map(m =>
-                getMesesCollectionRef().doc(m.key).get().then(doc => {
-                    if(!doc.exists) return;
-                    const dados = doc.data();
-                    const fixas = dados.fixas || [];
-                    const cartoesFaturas = dados.cartoesFaturas || {};
-                    let alterado = false;
-                    fixas.forEach(f => { if(f.categoria === antigo) { f.categoria = novo; alterado = true; } });
-                    Object.values(cartoesFaturas).forEach(fatura => {
-                        (fatura.transacoes || []).forEach(t => { if(t.categoria === antigo) { t.categoria = novo; alterado = true; } });
-                    });
-                    if(alterado) return getMesesCollectionRef().doc(m.key).update({ fixas, cartoesFaturas });
-                })
-            )).then(() => {
+            rpc('renomear_categoria', { p_antigo: antigo, p_novo: novo }).then(() => {
                 mostrarToast(`Categoria atualizada para "${novo}" em todos os meses.`, 'success');
             }).catch(err => {
                 mostrarToast('Não foi possível atualizar a categoria em todos os meses. Verifique sua conexão.', 'error', 6000, {

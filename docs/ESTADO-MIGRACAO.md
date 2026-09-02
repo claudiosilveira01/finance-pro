@@ -73,21 +73,56 @@ Atualizar ao fim de cada passo. Este arquivo é a fonte de verdade do progresso.
     pelo `user_id` do A).
   - Dados de teste limpos — banco vazio confirmado.
 
-## Próximo passo
+### Passo 3 — reescrever a camada de dados (Firebase → Supabase) — CÓDIGO PRONTO E TESTADO
 
-**Passo 3 — reescrever a camada de dados** (Firebase → Supabase). Ver plano em
-`~/.claude/plans/migra-o-finance-pro-quiet-whistle.md`. Próxima migration a criar:
-`0004_rpcs_multimes.sql` (`renomear_categoria`, `excluir_categoria`, `repetir_fixa`).
+- Migrations: `0004_rpcs_multimes.sql` (`renomear_categoria`, `repetir_fixa`),
+  `0005_drop_cartao_entity_fks.sql` (tira as FKs de `cartao_faturas.cartao_id` e
+  `fixas.origem_cartao_id` pra `cartoes` — o cliente grava cartão e fatura em chamadas
+  separadas sem ordem garantida; o app sempre tolerou referência órfã).
+- `index.html`: 4 `<script>` do Firebase → 1 do `@supabase/supabase-js@2.112.4` (UMD, com SRI).
+  Botão "Criar Conta" e a seção de notificações removidos.
+- `js/config.js`: cliente Supabase (`sb`) + helper `rpc()` + `_labelMes()`. `mesesDisponiveis`
+  não é mais persistido — derivado de `get_meses_disponiveis()`.
+- `js/auth.js`: `sb.auth.*` (signInWithPassword / signOut / resetPasswordForEmail /
+  onAuthStateChange). Registrado no `DOMContentLoaded` (o INITIAL_SESSION dispara cedo demais).
+  Guarda `_graficosIniciados` pra não reinicializar Chart.js no ciclo logout→login.
+- `js/config-global.js` / `meses.js` / `categorias.js` / `fixas.js`: todas as leituras/escritas
+  passam pelas RPCs. Laços cross-mês (renomear categoria, repetir conta) viraram 1 RPC.
+- `js/pwa.js`: FCM removido; registra `sw.js` mínimo (network-first, offline como plano B).
+  `firebase-messaging-sw.js` deletado.
+- **Testado em `wrangler dev` contra o Supabase real, 0 erro no console:** login / logout /
+  logout→login sem recarregar; criar/editar conta fixa; marcar como paga (registro_pagamentos
+  + caixa); cadastrar cartão + lançar compra na fatura + conta fixa vinculada sincronizando;
+  repetir conta fixa em vários meses (`repetir_fixa`); renomear categoria em todos os meses
+  (`renomear_categoria`); copiar contas fixas de outro mês; trocar de mês; exportar PDF; erro
+  de rede → toast "Tentar de novo". **Não exercitado no navegador:** importação de fatura
+  OFX/CSV (código não toca Firebase, usa `salvarDadosDoMesAtual` — testar com arquivo real).
+- Conta de teste no Supabase Auth: `teste@financepro.local` / `Teste12345` — **apagar antes
+  do corte** (Passo 6).
+
+## Decisão revista — Auth (01/09/2026)
+
+Antes: "recriar contas do zero, reset de senha no 1º acesso". **Agora: migrar as senhas.**
+O Firebase guarda as senhas com `SCRYPT` e o Supabase Auth verifica esse formato nativamente,
+então as 3 pessoas que usam o app **continuam com a mesma senha, sem reset**. Ferramenta:
+`supabase-community/firebase-to-supabase` (pasta `/auth`) — `firestoreusers2json.js` exporta
+os usuários (com hash + salt), `import_users.js` insere em `auth.users` já no formato certo.
+Precisa dos *Password hash parameters* do projeto Firebase (Console → Authentication → Users →
+menu ⋮ → Password hash parameters: `base64_signer_key`, `base64_salt_separator`, `rounds`,
+`mem_cost`). Sai o risco "reset de senha no 1º acesso".
 
 ## Pendências do usuário
 
 - Confirmar contagem de docs/coleções no console do Firebase (opcional, não bloqueia).
-- Passo 3: nenhuma — a `anon key` do Supabase é pública e já vai no código.
-- Passo 3 (opcional, recomendado): no painel Supabase → Authentication, desligar
-  *Allow new users to sign up* e configurar as *Redirect URLs* pro reset de senha.
-- Passo 4: gerar a chave de conta de serviço do Firebase (Console → Contas de serviço) e
-  rodar o export.
-- Passo 4: recriar as contas de usuário no painel do Supabase Auth.
+- Passo 3: nenhuma — a `publishable key` do Supabase é pública e já vai no código.
+- Passo 3 (recomendado): no painel Supabase → Authentication, desligar *Allow new users to
+  sign up* (cadastro já está escondido no app) e configurar as *Redirect URLs* pro link de
+  recuperação de senha.
+- Passo 4: gerar a chave do Admin SDK do Firebase (Console → Configurações → Contas de
+  serviço → Firebase Admin SDK → Gerar nova chave privada).
+- Passo 4: copiar os *Password hash parameters* do Firebase Auth (menu ⋮ na lista de usuários).
+- Passo 4: rodar `firestoreusers2json.js` + `import_users.js` (migra as senhas) e depois o
+  export/import dos dados do Firestore.
 - Passo 5: criar API Token no Cloudflare (Edit Cloudflare Workers) e cadastrar como secret
   `CLOUDFLARE_API_TOKEN` no GitHub.
 - Passo 5b: adquirir o domínio próprio quando decidir.

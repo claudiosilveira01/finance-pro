@@ -73,5 +73,12 @@ mês fixa) — schema final não guarda essa lista, só os `ano_mes` distintos d
 - Colisão histórica de IDs gerados via `Date.now()` na importação — não recuperável
   retroativamente se ocorrer; nenhuma colisão identificada até o momento desta auditoria.
 - Janela com dois sistemas vivos (Vercel+Firestore e Workers+Supabase) durante a validação.
-- `serviceAccountKey.json` gerado no Passo 4 deve ser apagado do disco assim que o export
-  terminar (pasta sob sync do Google Drive Desktop).
+- `serviceAccountKey.json` / `firebase-service.json` / `supabase-service.json` gerados no
+  Passo 4 devem ser apagados do disco assim que o import terminar (pasta sob sync do Google
+  Drive Desktop) — todos já estão no `.gitignore` mas o Drive sincroniza mesmo assim.
+- Auth: a migração de senha via `SCRYPT` depende dos *Password hash parameters* corretos do
+  projeto Firebase. Se algum usuário não conseguir logar depois do import, o fallback é o
+  "Esqueci minha senha" (reset por e-mail) — não trava o corte.
+
+**Removido:** o risco "recriar contas exige reset de senha no 1º acesso" — a decisão de Auth
+mudou (01/09/2026) para migrar os hashes `SCRYPT`, então ninguém precisa redefinir senha.

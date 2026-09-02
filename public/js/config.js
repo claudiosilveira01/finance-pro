@@ -1,30 +1,29 @@
-// Configuração do Firebase, referências globais (auth, db) e estado global do app
-        const firebaseConfig = {
-            apiKey: "AIzaSyBJa2FQ7LGJNTIne8iiyRXCr0Og8V1NtVs",
-            authDomain: "finance-pro-v1.firebaseapp.com",
-            projectId: "finance-pro-v1",
-            storageBucket: "finance-pro-v1.firebasestorage.app",
-            messagingSenderId: "866672231232",
-            appId: "1:866672231232:web:1b4401c3123bb42c26b0a5"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
+// Cliente Supabase, helper de RPC e estado global do app
+        const SUPABASE_URL = "https://jasrlsyfsbagnkkhifxq.supabase.co";
+        // Chave publishable (pública — pode ficar no código do cliente, o RLS é a barreira real).
+        const SUPABASE_KEY = "sb_publishable_FYufcM7KqKg1s_OGVopj3w_vO7INmEq";
 
-        // Cache local (IndexedDB) dos dados do Firestore: com conexão lenta/instável, os dados já
-        // vistos antes aparecem na hora (direto do cache) enquanto sincroniza em segundo plano, em
-        // vez de deixar a tela de "Sincronizando..." travada esperando a rede. Falha silenciosamente
-        // em abas múltiplas abertas ao mesmo tempo ou navegadores sem suporte — nesses casos o app
-        // continua funcionando normalmente, só sem o cache.
-        db.enablePersistence({ synchronizeTabs: true }).catch(() => {});
+        const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // Único ponto de acesso aos documentos do usuário no Firestore.
-        function getConfigDocRef() {
-            return db.collection('users').doc(currentUser.uid).collection('config').doc('geral');
+        // Único ponto de acesso ao banco: toda leitura/escrita passa por uma RPC do Postgres
+        // (get_config/salvar_config, get_mes/salvar_mes, get_meses_disponiveis, renomear_categoria,
+        // repetir_fixa). Erro vira exceção — os módulos já tratam com toast + "Tentar de novo".
+        async function rpc(nome, args) {
+            const { data, error } = await sb.rpc(nome, args || {});
+            if (error) throw error;
+            return data;
         }
-        function getMesesCollectionRef() {
-            return db.collection('users').doc(currentUser.uid).collection('meses');
+
+        // "YYYY-MM" -> "Setembro / 2026". A lista de meses não é mais persistida (era o array
+        // config.meses no Firestore): o banco guarda só os ano_mes distintos e o label é derivado aqui.
+        const _NOMES_MES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+        function _labelMes(key) {
+            const [ano, mes] = key.split('-');
+            return `${_NOMES_MES[parseInt(mes, 10) - 1]} / ${ano}`;
+        }
+        // Monta mesesDisponiveis ([{key,label}]) a partir do array de strings do get_meses_disponiveis.
+        function _montarMesesDisponiveis(anoMesArray) {
+            return (anoMesArray || []).map(key => ({ key, label: _labelMes(key) }));
         }
 
         let currentUser = null;

@@ -55,11 +55,13 @@ create table public.fixas (
   categoria text not null,
   obs text not null default '',
   pago boolean not null default false,
-  origem_cartao_id bigint references public.cartoes(id) on delete set null,
+  -- Sem FK pra public.cartoes: o cliente cria cartão (salvar_config) e fatura/fixa vinculada
+  -- (salvar_mes) em chamadas separadas e não-ordenadas — uma FK aqui geraria erro de ordem de
+  -- inserção. O app tolera referência órfã (era assim no Firestore); deletarCartao limpa em JS.
+  origem_cartao_id bigint,
   foreign key (user_id, ano_mes) references public.meses(user_id, ano_mes) on delete cascade
 );
 create index fixas_user_mes_idx on public.fixas (user_id, ano_mes);
-create index fixas_origem_cartao_id_idx on public.fixas (origem_cartao_id);
 
 create table public.faturamentos (
   id bigint primary key,
@@ -105,14 +107,13 @@ create index registro_pagamentos_user_mes_idx on public.registro_pagamentos (use
 create table public.cartao_faturas (
   user_id uuid not null,
   ano_mes text not null,
-  cartao_id bigint not null references public.cartoes(id) on delete cascade,
+  cartao_id bigint not null,  -- sem FK pra public.cartoes (mesma razão de fixas.origem_cartao_id)
   valor_confirmado numeric,
   valor_estimado numeric,
   creditos_importados text[] not null default '{}',
   primary key (user_id, ano_mes, cartao_id),
   foreign key (user_id, ano_mes) references public.meses(user_id, ano_mes) on delete cascade
 );
-create index cartao_faturas_cartao_id_idx on public.cartao_faturas (cartao_id);
 
 create table public.cartao_transacoes (
   id bigint primary key,

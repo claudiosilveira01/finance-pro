@@ -89,50 +89,25 @@
             calcularEAtualizarVisual();
         }
 
-        // Copia a conta fixa para todos os meses entre o mês atual (exclusive) e mesFinal ("AAAA-MM", inclusive)
+        // Copia a conta fixa para todos os meses entre o mês atual (exclusive) e mesFinal ("AAAA-MM", inclusive).
+        // O servidor cria as linhas de `meses` que faltarem e devolve a lista atualizada de meses.
         function _duplicarContaEmMesesFuturos(contaBase, mesFinal) {
             if (mesFinal <= mesAtualKey) {
                 mostrarToast('Escolha um mês futuro para repetir a conta.', 'warning');
                 return;
             }
 
-            const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-            let [ano, mes] = mesAtualKey.split('-').map(Number);
-            const chaves = [];
-
-            while (chaves.length < 60) {
-                mes++;
-                if (mes > 12) { mes = 1; ano++; }
-                const chave = `${ano}-${String(mes).padStart(2, '0')}`;
-                chaves.push(chave);
-                if (chave >= mesFinal) break;
-            }
-
-            let promessa = Promise.resolve();
-            chaves.forEach(chave => {
-                promessa = promessa.then(() => {
-                    if (!mesesDisponiveis.some(m => m.key === chave)) {
-                        const [a, m] = chave.split('-');
-                        mesesDisponiveis.push({ key: chave, label: `${mesesNomes[parseInt(m) - 1]} / ${a}` });
-                    }
-                    return getMesesCollectionRef().doc(chave).get().then(doc => {
-                        const dados = doc.exists ? doc.data() : { fixas: [], faturamentos: [], saldo: 0 };
-                        dados.fixas = dados.fixas || [];
-                        dados.fixas.push({
-                            id: Date.now() + Math.floor(Math.random() * 100000),
-                            nome: contaBase.nome, valor: contaBase.valor, vencimento: contaBase.vencimento,
-                            categoria: contaBase.categoria, obs: contaBase.obs, pago: false
-                        });
-                        return getMesesCollectionRef().doc(chave).set(dados);
-                    });
-                });
-            });
-
-            promessa.then(() => {
-                mesesDisponiveis.sort((a, b) => a.key.localeCompare(b.key));
+            rpc('repetir_fixa', {
+                p_base: {
+                    nome: contaBase.nome, valor: contaBase.valor, vencimento: contaBase.vencimento,
+                    categoria: contaBase.categoria, obs: contaBase.obs || ''
+                },
+                p_de: mesAtualKey,
+                p_ate: mesFinal
+            }).then(mesesAtualizados => {
+                mesesDisponiveis = _montarMesesDisponiveis(mesesAtualizados);
                 renderizarMeses();
                 _seletoresDeMes().forEach(seletor => { seletor.value = mesAtualKey; });
-                salvarConfigGlobal();
                 mostrarToast(`"${contaBase.nome}" repetida até ${mesFinal}.`, 'success');
             }).catch(() => {
                 mostrarToast('Erro ao duplicar a conta para os próximos meses. Verifique sua conexão.', 'error', 6000);
