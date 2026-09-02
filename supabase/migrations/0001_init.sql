@@ -1,0 +1,4 @@
+-- Placeholder — schema real escrito no Passo 2 da migração (docs/ESTADO-MIGRACAO.md).
+-- Vai criar: config, assinaturas, meses, fixas, faturamentos, extrato (todas com
+-- user_id uuid references auth.users(id) on delete cascade), RLS por auth.uid(),
+-- trigger de atualizado_em, e as RPCs get_mes/salvar_mes/get_config/salvar_config.
