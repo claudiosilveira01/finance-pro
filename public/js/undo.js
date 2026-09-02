@@ -1,4 +1,4 @@
-// Exclusão otimista com "Desfazer": remove da UI na hora, só persiste no Firestore
+// Exclusão otimista com "Desfazer": remove da UI na hora, só persiste no banco
         // se a janela de undo expirar sem o usuário desfazer.
         let _pendingDelete = null;
 

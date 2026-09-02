@@ -1,29 +1,33 @@
-// Configuração global do usuário no Firestore (categorias, assinaturas, meses)
-        function carregarConfigGlobal(callback) {
-            getConfigDocRef().get().then(doc => {
-                if(doc.exists) {
-                    let data = doc.data();
-                    categoriasAtuais = data.categorias || categoriasAtuais;
-                    assinaturasConfig = data.assinaturas || assinaturasConfig;
-                    cartoesConfig = data.cartoesConfig || cartoesConfig;
-                    mesesDisponiveis = data.meses || [];
-                    ocultarCardAcumulado = data.ocultarCardAcumulado || false;
-                    ocultarCardCartoes = data.ocultarCardCartoes || false;
+// Configuração global do usuário no Supabase (categorias, assinaturas, cartões, visibilidade de cards)
+        async function carregarConfigGlobal(callback) {
+            try {
+                const [c, meses] = await Promise.all([
+                    rpc('get_config'),
+                    rpc('get_meses_disponiveis')
+                ]);
+
+                if (c) {
+                    if (Array.isArray(c.categorias) && c.categorias.length) categoriasAtuais = c.categorias;
+                    assinaturasConfig = c.assinaturas || [];
+                    cartoesConfig = c.cartoesConfig || [];
+                    ocultarCardAcumulado = c.ocultarCardAcumulado || false;
+                    ocultarCardCartoes = c.ocultarCardCartoes || false;
                 }
+
+                mesesDisponiveis = _montarMesesDisponiveis(meses);
+
                 aplicarVisibilidadeAcumulado();
                 aplicarVisibilidadeCartoes();
-                verificarNotificacoesAtivas();
-                
+
                 const dataHoje = new Date();
                 const mesString = String(dataHoje.getMonth() + 1).padStart(2, '0');
                 const anoMesAtualReal = `${dataHoje.getFullYear()}-${mesString}`;
-                
-                if(!mesesDisponiveis.some(m => m.key === anoMesAtualReal)) {
-                    const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-                    const label = `${mesesNomes[dataHoje.getMonth()]} / ${dataHoje.getFullYear()}`;
-                    mesesDisponiveis.push({ key: anoMesAtualReal, label: label });
+
+                // O mês corrente sempre aparece no seletor mesmo sem nada salvo ainda. A linha em
+                // `meses` só é criada de fato quando o primeiro item do mês for gravado (salvar_mes).
+                if (!mesesDisponiveis.some(m => m.key === anoMesAtualReal)) {
+                    mesesDisponiveis.push({ key: anoMesAtualReal, label: _labelMes(anoMesAtualReal) });
                     mesesDisponiveis.sort((a, b) => a.key.localeCompare(b.key));
-                    salvarConfigGlobal();
                 }
 
                 mesAtualKey = anoMesAtualReal;
@@ -34,24 +38,23 @@
 
                 _seletoresDeMes().forEach(seletor => { seletor.value = mesAtualKey; });
                 carregarMes(mesAtualKey, callback);
-            }).catch(err => {
+            } catch (err) {
                 document.getElementById('loadingDiv').style.display = 'none';
                 mostrarToast('Erro ao carregar seus dados. Verifique sua conexão.', 'error', 6000, {
                     acao: { texto: 'Tentar de novo', callback: () => carregarConfigGlobal(callback) }
                 });
-            });
+            }
         }
 
         function salvarConfigGlobal() {
             if(!currentUser) return;
-            getConfigDocRef().set({
+            rpc('salvar_config', { p: {
                 categorias: categoriasAtuais,
                 assinaturas: assinaturasConfig,
                 cartoesConfig: cartoesConfig,
-                meses: mesesDisponiveis,
                 ocultarCardAcumulado: ocultarCardAcumulado,
                 ocultarCardCartoes: ocultarCardCartoes
-            }, {merge: true}).catch(err => {
+            } }).catch(() => {
                 mostrarToast('Erro ao salvar as configurações. Verifique sua conexão.', 'error', 6000, {
                     acao: { texto: 'Tentar de novo', callback: salvarConfigGlobal }
                 });

@@ -3,24 +3,16 @@
             if(!currentUser) return;
             document.getElementById('loadingDiv').style.display = 'flex';
 
-            getMesesCollectionRef().doc(anoMes).get().then(doc => {
-                if(doc.exists) {
-                    let data = doc.data();
-                    window.activeFixas = data.fixas || [];
-                    window.activeFaturamentos = data.faturamentos || [];
-                    window.activeExtrato = data.extrato || [];
-                    window.activeRegistroPagamentos = data.registroPagamentos || [];
-                    window.activeCartoesFaturas = data.cartoesFaturas || {};
-                    const saldoArred = _arred2(data.saldo || 0);
-                    document.getElementById('saldoInput').value = saldoArred ? _formatarDinheiroInput(saldoArred) : '';
-                } else {
-                    window.activeFixas = [];
-                    window.activeFaturamentos = [];
-                    window.activeExtrato = [];
-                    window.activeRegistroPagamentos = [];
-                    window.activeCartoesFaturas = {};
-                    document.getElementById('saldoInput').value = '';
-                }
+            rpc('get_mes', { p_ano_mes: anoMes }).then(data => {
+                data = data || {};
+                window.activeFixas = data.fixas || [];
+                window.activeFaturamentos = data.faturamentos || [];
+                window.activeExtrato = data.extrato || [];
+                window.activeRegistroPagamentos = data.registroPagamentos || [];
+                window.activeCartoesFaturas = data.cartoesFaturas || {};
+                const saldoArred = _arred2(data.saldo || 0);
+                document.getElementById('saldoInput').value = saldoArred ? _formatarDinheiroInput(saldoArred) : '';
+
                 fixasSelecionadas.clear();
                 extratoSelecionados.clear();
                 diaCalendarioSelecionado = null;
@@ -37,7 +29,7 @@
         }
 
         function salvarDadosDoMesAtual() {
-            if(!currentUser) return;
+            if(!currentUser) return Promise.resolve();
             let dados = {
                 fixas: window.activeFixas,
                 faturamentos: window.activeFaturamentos || [],
@@ -46,7 +38,14 @@
                 cartoesFaturas: window.activeCartoesFaturas || {},
                 saldo: _arred2(_parseDinheiro(document.getElementById('saldoInput').value) || 0)
             };
-            getMesesCollectionRef().doc(mesAtualKey).set(dados).catch(err => {
+            // Mês novo passa a aparecer no seletor assim que tem algo salvo.
+            if (!mesesDisponiveis.some(m => m.key === mesAtualKey)) {
+                mesesDisponiveis.push({ key: mesAtualKey, label: _labelMes(mesAtualKey) });
+                mesesDisponiveis.sort((a, b) => a.key.localeCompare(b.key));
+                renderizarMeses();
+                _seletoresDeMes().forEach(seletor => { seletor.value = mesAtualKey; });
+            }
+            return rpc('salvar_mes', { p_ano_mes: mesAtualKey, p_dados: dados }).catch(err => {
                 mostrarToast('Erro ao salvar os dados do mês. Verifique sua conexão.', 'error', 6000, {
                     acao: { texto: 'Tentar de novo', callback: salvarDadosDoMesAtual }
                 });
@@ -69,17 +68,19 @@
         }
 
         function addNovoMes() {
-            const inputVal = document.getElementById('novoMesInput').value; 
+            const inputVal = document.getElementById('novoMesInput').value;
             if(!inputVal || mesesDisponiveis.some(m => m.key === inputVal)) return;
 
-            const [ano, mes] = inputVal.split('-');
-            const mesesNomes = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
-            const label = `${mesesNomes[parseInt(mes)-1]} / ${ano}`;
+            mesesDisponiveis.push({ key: inputVal, label: _labelMes(inputVal) });
+            mesesDisponiveis.sort((a, b) => a.key.localeCompare(b.key));
 
-            mesesDisponiveis.push({ key: inputVal, label: label });
-            mesesDisponiveis.sort((a, b) => a.key.localeCompare(b.key)); 
-            
-            salvarConfigGlobal();
+            // Cria a linha vazia do mês no banco pra ele "grudar" mesmo sem nenhum item ainda.
+            rpc('salvar_mes', { p_ano_mes: inputVal, p_dados: {
+                fixas: [], faturamentos: [], extrato: [], registroPagamentos: [], cartoesFaturas: {}, saldo: 0
+            } }).catch(() => {
+                mostrarToast('Erro ao criar o mês. Verifique sua conexão.', 'error', 6000);
+            });
+
             renderizarMeses();
             document.getElementById('novoMesInput').value = '';
             _seletoresDeMes().forEach(seletor => { seletor.value = inputVal; });
@@ -118,35 +119,30 @@
         function _executarCopiaContasFixas(mesOrigemKey) {
             document.getElementById('loadingDiv').style.display = 'flex';
 
-            getMesesCollectionRef().doc(mesOrigemKey).get().then(doc => {
-                if(doc.exists) {
-                    let data = doc.data();
-                    let fixasOrigem = data.fixas || [];
-                    
-                    if(fixasOrigem.length === 0) {
-                        mostrarToast('Nenhuma conta fixa localizada no mês de origem.', 'warning');
-                    } else {
-                        fixasOrigem.forEach(f => {
-                            window.activeFixas.push({
-                                id: Date.now() + Math.floor(Math.random() * 1000),
-                                nome: f.nome,
-                                valor: f.valor,
-                                vencimento: f.vencimento,
-                                categoria: f.categoria,
-                                obs: f.obs || '',
-                                pago: false
-                            });
-                        });
-                        salvarDadosDoMesAtual();
-                        calcularEAtualizarVisual();
-                        mostrarToast('Contas fixas copiadas com sucesso!', 'success');
-                    }
+            rpc('get_mes', { p_ano_mes: mesOrigemKey }).then(data => {
+                const fixasOrigem = (data && data.fixas) || [];
+
+                if(fixasOrigem.length === 0) {
+                    mostrarToast('Nenhuma conta fixa localizada no mês de origem.', 'warning');
                 } else {
-                    mostrarToast('Dados indisponíveis para o mês de origem.', 'error');
+                    fixasOrigem.forEach(f => {
+                        window.activeFixas.push({
+                            id: Date.now() + Math.floor(Math.random() * 1000),
+                            nome: f.nome,
+                            valor: f.valor,
+                            vencimento: f.vencimento,
+                            categoria: f.categoria,
+                            obs: f.obs || '',
+                            pago: false
+                        });
+                    });
+                    salvarDadosDoMesAtual();
+                    calcularEAtualizarVisual();
+                    mostrarToast('Contas fixas copiadas com sucesso!', 'success');
                 }
                 document.getElementById('loadingDiv').style.display = 'none';
             }).catch(err => {
-                mostrarToast('Erro ao copiar as contas fixas: ' + err.message, 'error', 6000);
+                mostrarToast('Erro ao copiar as contas fixas. Verifique sua conexão.', 'error', 6000);
                 document.getElementById('loadingDiv').style.display = 'none';
             });
         }

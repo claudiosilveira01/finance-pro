@@ -1,0 +1,21 @@
+# O deploy no Vercel serve só o conteúdo estático de public/. Tudo abaixo é
+# infraestrutura de repo / migração e não deve subir (evita npm install à toa
+# e mantém o deploy enxuto).
+node_modules
+scripts
+supabase
+docs
+*.md
+package.json
+package-lock.json
+.github
+.claude
+.wrangler
+out
+# credenciais/exports da migração (também gitignored — redundância proposital)
+firebase-service.json
+firebase-hash-config.json
+firebase-users.json
+firebase-users-map.json
+firestore-export.json
+diarios-backup.json

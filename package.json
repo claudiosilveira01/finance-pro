@@ -1,0 +1,13 @@
+{
+  "name": "finance-pro-migration-scripts",
+  "private": true,
+  "type": "module",
+  "description": "Scripts one-off da migração Firebase -> Supabase (pasta scripts/). O app em si (public/) não tem build nem dependências.",
+  "scripts": {
+    "export-firebase": "node scripts/export-firebase.mjs"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.6.0",
+    "pg": "^8.23.0"
+  }
+}
