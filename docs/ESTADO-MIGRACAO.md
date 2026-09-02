@@ -2,20 +2,26 @@
 
 Atualizar ao fim de cada passo. Este arquivo é a fonte de verdade do progresso.
 
+## Alvo (revisto 02/09/2026): GitHub → **Vercel** → Supabase
+
+Cloudflare Workers foi **descartado** (não quer domínio próprio nem o subdomínio
+`pcp-estaleiro`). O app continua no Vercel; a migração só troca Firebase por Supabase.
+`wrangler.jsonc` e o workflow de deploy do Cloudflare foram removidos do repo.
+
 ## IDs de referência
 
-- Repo GitHub: `claudiosilveira01/finance-pro`
-- Firebase (origem, não apagar): projeto `finance-pro-v1`, `messagingSenderId 866672231232`
-- Vercel (origem, não apagar): projeto `finance-pro` (`prj_JVA0S1wTLbrsuH845K2UVOewD3JC`),
-  time `claudio26` (`team_qxrfEAM9eH7M36zIwjJVCYPr`)
+- Repo GitHub: `claudiosilveira01/finance-pro` (Vercel deploya `main` → produção)
+- Firebase (origem, manter dormente ~2 semanas): projeto `finance-pro-v1`
+- Vercel (hospedagem): projeto `finance-pro` (`prj_JVA0S1wTLbrsuH845K2UVOewD3JC`),
+  time `claudio26` (`team_qxrfEAM9eH7M36zIwjJVCYPr`), produção `finance-pro-cyan.vercel.app`.
+  Serve `public/` automaticamente (sem build). Vercel Authentication ligada só em previews.
 - Supabase (destino): projeto `finance-pro`, ref `jasrlsyfsbagnkkhifxq`,
   URL `https://jasrlsyfsbagnkkhifxq.supabase.co`, região `sa-east-1`, custo R$0/mês
-- Cloudflare (destino): conta com subdomínio `pcp-estaleiro`; Worker novo `finance-pro`
-  (Worker `solda` existente — não mexer)
 
 ## Passo atual
 
-**Passo 2 — Supabase** (concluído em 01/09/2026) → seguindo para o **Passo 3**
+**Corte para produção** — Passos 2, 3 e 4 concluídos e testados. Falta só mesclar a branch
+na `main` (Vercel publica automaticamente) e validar em produção.
 
 ## Concluído
 
@@ -140,20 +146,29 @@ de teste oficial do GoTrue (login OK). Scripts próprios (não a ferramenta): `s
 validado com vetor de teste; falta o teste com senha real). Firestore/Firebase **não** é
 apagado — rede de segurança até o corte.
 
-## Pendências do usuário
+## Corte para produção (Vercel)
 
-- Confirmar contagem de docs/coleções no console do Firebase (opcional, não bloqueia).
-- Passo 3: nenhuma — a `publishable key` do Supabase é pública e já vai no código.
-- Passo 3 (recomendado): no painel Supabase → Authentication, desligar *Allow new users to
-  sign up* (cadastro já está escondido no app) e configurar as *Redirect URLs* pro link de
-  recuperação de senha.
-- Passo 4: ~~gerar a chave do Admin SDK~~ FEITO. ~~copiar os Password hash parameters~~ FEITO.
-  ~~rodar o export/import~~ FEITO.
-- Passo 4 (falta): **testar login com a senha real de um usuário** (ex.: claudio no
-  `wrangler dev`). Se falhar, reconferir a `signer_key`.
-- Passo 4 (decisão): quer os 374 lançamentos antigos de `diarios` de volta? (hoje: backup, não importados)
-- Passo 4 antigo — rodar `firestoreusers2json.js` + `import_users.js` (migra as senhas) e depois o
-  export/import dos dados do Firestore.
-- Passo 5: criar API Token no Cloudflare (Edit Cloudflare Workers) e cadastrar como secret
-  `CLOUDFLARE_API_TOKEN` no GitHub.
-- Passo 5b: adquirir o domínio próprio quando decidir.
+1. Limpar dados de teste do Supabase — **FEITO** (banco com só os 4 usuários reais:
+   26 meses, 90 fixas, 1156 extrato).
+2. Remover artefatos do Cloudflare (`wrangler.jsonc`, workflow), adicionar `vercel.json` +
+   `.vercelignore` — **FEITO**.
+3. **Mesclar a branch `claude/finance-pro-migration-plan-9ov2gb` na `main`** (PR #53). O Vercel
+   publica `main` em produção automaticamente (`finance-pro-cyan.vercel.app`).
+4. Validar em `finance-pro-cyan.vercel.app`: login com senha real, ciclo de mês, 0 erro no console.
+5. Firebase (`finance-pro-v1`) fica **dormente** (Spark/grátis) como rede de segurança ~2
+   semanas. Depois: apagar projeto Firebase + cartão/faturamento no Google Cloud.
+
+## Pendências / decisões do usuário
+
+- **Testar login com a senha real** (ex.: claudio). O formato `$fbscrypt$` foi validado com o
+  vetor de teste oficial do GoTrue; falta só um usuário real confirmar. Se falhar, reconferir
+  a `signer_key`.
+- **Autorizar o merge da PR #53 na `main`** (é o corte — produção passa a usar Supabase).
+- (Recomendado) Supabase → Authentication: desligar *Allow new users to sign up* e configurar
+  as *Redirect URLs* (`https://finance-pro-cyan.vercel.app` + o domínio de produção que os
+  usuários usam) pro link de "Esqueci minha senha".
+- (Decisão) Quer os 374 lançamentos antigos de `diarios` de volta? Hoje: `diarios-backup.json`,
+  não importados.
+- Passo 8: apagar do disco `firebase-service.json`, `firebase-hash-config.json`,
+  `firebase-users.json`, `firestore-export.json`, `firebase-users-map.json`, `node_modules/`
+  (pasta sob Google Drive).

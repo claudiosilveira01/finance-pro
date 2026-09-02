@@ -1,16 +1,22 @@
-# PRD — Migração Finance PRO: Firebase + Vercel → Supabase + Cloudflare
+# PRD — Migração Finance PRO: Firebase → Supabase (hospedagem no Vercel)
 
-Ver plano completo aprovado em `docs/ESTADO-MIGRACAO.md` (estado vivo) e `docs/AUDITORIA.md`
-(varredura original + status do endurecimento). Este arquivo referencia a decisão de
-arquitetura tomada:
+Ver estado vivo em `docs/ESTADO-MIGRACAO.md` e `docs/AUDITORIA.md`.
 
-- Unificação em GitHub → Cloudflare Workers → Supabase.
-- App vanilla JS servido como assets estáticos (`public/`), sem build step.
-- Auth real (Supabase Auth) substituindo Firebase Auth. As contas são **migradas com o hash
-  de senha preservado** (Firebase usa `SCRYPT`, que o Supabase Auth verifica nativamente) —
-  ninguém precisa redefinir a senha. Ferramenta: `supabase-community/firebase-to-supabase`
-  (pasta `/auth`). Cadastro público fica desativado.
-- Dados por usuário via RLS (`auth.uid()`), acesso por RPCs que espelham o `.set()` de
-  documento inteiro do modelo Firestore atual.
-- Sem Realtime, sem fila de sync — o app não usa nenhum dos dois hoje.
-- Push (FCM) removido nesta rodada.
+## Decisão de arquitetura
+
+- **Alvo: GitHub → Vercel → Supabase.** O app já roda no Vercel (projeto `finance-pro`,
+  time `claudio26`); a migração só troca o backend Firebase por Supabase e o Vercel continua
+  sendo a hospedagem.
+- **Cloudflare Workers foi descartado** (02/09/2026): exigia domínio próprio ou o subdomínio
+  `pcp-estaleiro.workers.dev`, que o usuário não quer. Cloudflare fica reservado para outro
+  projeto. Artefatos removidos: `wrangler.jsonc`, `.github/workflows/deploy-finance-pro.yml`.
+- App vanilla JS servido como estático de `public/` — o Vercel detecta `public/` como raiz
+  automaticamente (sem build). `vercel.json` só define `Cache-Control` do `sw.js`/`manifest.json`.
+- Auth real (Supabase Auth) substituindo Firebase Auth. Contas **migradas com o hash de senha
+  SCRYPT preservado** (GoTrue verifica nativamente via `$fbscrypt$`) — ninguém redefine senha.
+  Cadastro público desativado.
+- Dados por usuário via RLS (`auth.uid()`), acesso pelas RPCs que espelham o `.set()` de
+  documento inteiro do modelo Firestore.
+- Sem Realtime, sem fila de sync. Push (FCM) removido.
+- Firebase (`finance-pro-v1`) fica **dormente** como rede de segurança por ~2 semanas depois
+  do corte; só então apagar projeto + cartão do Google Cloud.

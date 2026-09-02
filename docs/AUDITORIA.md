@@ -13,9 +13,9 @@
 | Auth | Firebase Auth e-mail/senha: login, cadastro, reset, logout |
 | Push | Firebase Cloud Messaging, tokens em `config/geral.pushTokens` |
 | Firebase | Projeto `finance-pro-v1`. Firestore + Auth + Messaging ativos. Regras: só o próprio usuário |
-| Vercel | Projeto `finance-pro` (`prj_JVA0S1wTLbrsuH845K2UVOewD3JC`), time `claudio26`, plano hobby |
-| Supabase | Nenhum projeto Finance PRO — criado no Passo 2 |
-| Cloudflare | Subdomínio da conta `pcp-estaleiro` (Worker `solda` existente, intocável) |
+| Vercel | Hospedagem definitiva. Projeto `finance-pro` (`prj_JVA0S1wTLbrsuH845K2UVOewD3JC`), time `claudio26`, plano hobby. Serve `public/` (sem build) |
+| Supabase | Projeto `finance-pro` (`jasrlsyfsbagnkkhifxq`), `sa-east-1`, grátis — backend definitivo |
+| Cloudflare | **Descartado** (02/09) — não quer domínio próprio. Reservado p/ outro projeto |
 | Google Drive | `dev-projects` sob sync do Drive Desktop — cuidado com credenciais no disco |
 
 ### Automação Nubank
@@ -72,7 +72,8 @@ mês fixa) — schema final não guarda essa lista, só os `ano_mes` distintos d
 
 - Colisão histórica de IDs gerados via `Date.now()` na importação — não recuperável
   retroativamente se ocorrer; nenhuma colisão identificada até o momento desta auditoria.
-- Janela com dois sistemas vivos (Vercel+Firestore e Workers+Supabase) durante a validação.
+- Janela com dois backends vivos (Firestore antigo e Supabase novo) — o Vercel é o mesmo
+  antes e depois; o corte é o merge da PR #53 na `main`. Rollback = reverter o merge.
 - `serviceAccountKey.json` / `firebase-service.json` / `supabase-service.json` gerados no
   Passo 4 devem ser apagados do disco assim que o import terminar (pasta sob sync do Google
   Drive Desktop) — todos já estão no `.gitignore` mas o Drive sincroniza mesmo assim.
