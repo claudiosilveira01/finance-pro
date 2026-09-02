@@ -20,8 +20,12 @@ Cloudflare Workers foi **descartado** (não quer domínio próprio nem o subdom�
 
 ## Passo atual
 
-**Corte para produção** — Passos 2, 3 e 4 concluídos e testados. Falta só mesclar a branch
-na `main` (Vercel publica automaticamente) e validar em produção.
+**CORTE FEITO (02/09/2026) — produção rodando no Supabase.**
+PR #53 mesclada na `main` (merge `ad75aeb`). Vercel publicou em `finance-pro-cyan.vercel.app`.
+Hotfix `78f197b`: adiar o pós-login pra fora do callback do `onAuthStateChange` (a 1ª RPC
+saía como anon → 401 + toast de erro no login). Produção validada: login limpo, RPCs 200,
+0 erro no console.
+Firebase (`finance-pro-v1`) intacto como rede de segurança.
 
 ## Concluído
 
@@ -146,17 +150,22 @@ de teste oficial do GoTrue (login OK). Scripts próprios (não a ferramenta): `s
 validado com vetor de teste; falta o teste com senha real). Firestore/Firebase **não** é
 apagado — rede de segurança até o corte.
 
-## Corte para produção (Vercel)
+## Corte para produção (Vercel) — CONCLUÍDO
 
-1. Limpar dados de teste do Supabase — **FEITO** (banco com só os 4 usuários reais:
-   26 meses, 90 fixas, 1156 extrato).
-2. Remover artefatos do Cloudflare (`wrangler.jsonc`, workflow), adicionar `vercel.json` +
-   `.vercelignore` — **FEITO**.
-3. **Mesclar a branch `claude/finance-pro-migration-plan-9ov2gb` na `main`** (PR #53). O Vercel
-   publica `main` em produção automaticamente (`finance-pro-cyan.vercel.app`).
-4. Validar em `finance-pro-cyan.vercel.app`: login com senha real, ciclo de mês, 0 erro no console.
-5. Firebase (`finance-pro-v1`) fica **dormente** (Spark/grátis) como rede de segurança ~2
-   semanas. Depois: apagar projeto Firebase + cartão/faturamento no Google Cloud.
+1. ✅ Limpar dados de teste do Supabase (só os 4 usuários reais: 26 meses, 90 fixas, 1156 extrato).
+2. ✅ Remover Cloudflare (`wrangler.jsonc`, workflow), adicionar `vercel.json` + `.vercelignore`.
+3. ✅ Mesclar a PR #53 na `main` (merge `ad75aeb`). Vercel publicou.
+4. ✅ Hotfix do 401 no login (`78f197b`) — validado em produção, 0 erro.
+5. ⏳ Firebase (`finance-pro-v1`) fica **dormente** (Spark/grátis) ~2 semanas. Depois: apagar
+   projeto Firebase + faturamento/cartão no Google Cloud.
+
+### Integração Supabase↔Vercel (o usuário instalou em 02/09)
+
+Adicionou 12 env vars no projeto Vercel (`POSTGRES_URL`, `SUPABASE_SECRET_KEY`, `SUPABASE_URL`,
+`NEXT_PUBLIC_SUPABASE_*` etc.). **O app não usa nenhuma** — é estático, sem build; a URL e a
+publishable key estão hardcoded em `public/js/config.js` (padrão correto pra SPA). As env vars
+ficam dormentes. Único ponto de atenção: `SUPABASE_SECRET_KEY` fica guardada no Vercel sem uso
+— sem exposição (nenhum código lê), mas é superfície extra. Manter ou desinstalar, tanto faz.
 
 ## Pendências / decisões do usuário
 
