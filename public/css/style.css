@@ -370,7 +370,11 @@
 
         #loginScreen { max-width: 400px; width: 100%; margin: 80px auto; padding: clamp(24px, 5vw, 36px) clamp(20px, 5vw, 30px); background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); text-align: center; transition: 0.3s; }
         #mainApp { display: none; }
-        .loading-overlay { position: fixed; top:0; left:0; right:0; bottom:0; background: rgba(18, 14, 34, 0.7); backdrop-filter: blur(2px); display: none; justify-content: center; align-items: center; z-index: 999; font-weight: 700; color: white;}
+        /* Indicador de sincronização: um chip pequeno e discreto no topo, não bloqueia a tela.
+           O JS liga/desliga via style.display = 'flex' / 'none'. */
+        .loading-overlay { position: fixed; top: 14px; left: 50%; transform: translateX(-50%); display: none; align-items: center; gap: 7px; background: var(--purple-main); color: #fff; padding: 7px 15px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; box-shadow: var(--shadow-lg); z-index: 9999; pointer-events: none; animation: sync-in 0.22s ease; }
+        .loading-overlay i { font-size: 0.95rem; }
+        @keyframes sync-in { from { opacity: 0; transform: translate(-50%, -10px); } to { opacity: 1; transform: translate(-50%, 0); } }
 
         /* === CALENDÁRIO === */
         .calendario-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 15px; }
