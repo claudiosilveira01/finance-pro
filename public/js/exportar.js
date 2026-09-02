@@ -269,7 +269,9 @@
                 doc.autoTable(_pdfEstiloTabela({
                     head: [['Data do Pagamento', 'Registrado em', 'Tipo', 'Item', 'Valor (R$)', 'Ação']],
                     body: [...registroPagamentos]
-                        .sort((a, b) => a.registradoEm.localeCompare(b.registradoEm))
+                        // Date.parse, não localeCompare: o cliente grava "...Z" e o Postgres
+                        // devolve "...+00:00" no roundtrip — comparar como string embaralha os dois.
+                        .sort((a, b) => (Date.parse(a.registradoEm) || 0) - (Date.parse(b.registradoEm) || 0))
                         .map(r => {
                             const ehAssinatura = r.tipo === 'assinatura';
                             // Data escolhida no popup ("Foi hoje" ou uma data específica) — pode

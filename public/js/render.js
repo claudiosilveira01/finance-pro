@@ -17,7 +17,7 @@
             // por categoria e o cálculo de Sobra/Falta sempre somam TODAS as contas fixas do mês,
             // nunca só o subconjunto filtrado — senão um filtro ativo mudaria silenciosamente
             // números que aparecem em outros cards do painel.
-            const fixasParaRender = temFiltrosAtivos && temFiltrosAtivos() ? obterFixasFiltradas() : window.activeFixas;
+            const fixasParaRender = temFiltrosAtivos() ? obterFixasFiltradas() : window.activeFixas;
             let fixasOrdenadas = aplicarOrdenacao(fixasParaRender, ordFixas);
 
             (window.activeFixas || []).forEach(c => {
@@ -51,8 +51,8 @@
                     <tr>
                         <td class="td-check"><input type="checkbox" class="row-check" ${marcado ? 'checked' : ''} onchange="toggleSelecaoFixa(${c.id})"></td>
                         <td data-label="Item">
-                            <button class="item-link" onclick="editarContaFixa(${c.id})">${c.nome}</button>
-                            <div class="fixa-sub">${c.categoria}${c.obs ? ' · ' + c.obs : ''}</div>
+                            <button class="item-link" onclick="editarContaFixa(${c.id})">${_esc(c.nome)}</button>
+                            <div class="fixa-sub">${_esc(c.categoria)}${c.obs ? ' · ' + _esc(c.obs) : ''}</div>
                         </td>
                         <td data-label="Venc."><span class="vencimento-tag${classeAnimBadge}" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span></td>
                         <td data-label="Valor"><strong class="fixa-valor">R$ ${c.valor.toFixed(2)}</strong></td>
@@ -74,7 +74,7 @@
                 tbodyFat.innerHTML += `
                     <tr>
                         <td data-label="Data" style="color:var(--text-muted); font-size:0.85rem">${formatarData(f.data)}</td>
-                        <td data-label="Origem"><button class="item-link" onclick="editarFaturamento(${f.id})">${f.nome}</button></td>
+                        <td data-label="Origem"><button class="item-link" onclick="editarFaturamento(${f.id})">${_esc(f.nome)}</button></td>
                         <td data-label="Valor" style="color:var(--green-success); font-weight:700;">+ R$ ${f.valor.toFixed(2)}</td>
                         <td data-label="" style="text-align:right; white-space:nowrap;">
                             <button class="btn-action ${f.noCaixa ? 'btn-no-caixa-ativo' : ''}" onclick="toggleReceitaNoCaixa(${f.id})" title="${f.noCaixa ? 'Já somada ao Caixa Atual — clique pra remover' : 'Somar ao Caixa Atual'}"><i class="ph ${f.noCaixa ? 'ph-check-circle' : 'ph-plus-circle'}"></i></button>
@@ -106,7 +106,7 @@
                     divAcumulados.innerHTML += `
                         <div class="acumulado-item${classeAnim}" style="animation-delay:${catIdx * 0.04}s">
                             <span style="display:flex; align-items:center; gap:8px;">
-                                <i class="ph ph-${icone}" style="font-size:18px; color:var(--text-muted);"></i> ${cat}
+                                <i class="ph ph-${icone}" style="font-size:18px; color:var(--text-muted);"></i> ${_esc(cat)}
                             </span>
                             <span style="color:var(--text-highlight); font-weight:700">R$ ${valor.toFixed(2)}</span>
                         </div>`;
@@ -116,7 +116,7 @@
 
             renderizarAssinaturas();
             renderizarExtrato();
-            if (typeof renderizarCartoesDashboard === 'function') renderizarCartoesDashboard();
+            renderizarCartoesDashboard();
 
             let chartDataArray = categoriasAtuais.map(c => totalPorCategoria[c]);
             window.__ultimoChartDataArray = chartDataArray;
@@ -146,7 +146,7 @@
                 { value: 'total', label: 'Todas as Receitas' },
                 ...(window.activeFaturamentos || []).map(f => ({ value: `fat-${f.id}`, label: `${f.nome} — R$ ${f.valor.toFixed(2)}` }))
             ];
-            selectReceita.innerHTML = opcoesReceita.map(o => `<option value="${o.value}">${o.label}</option>`).join('');
+            selectReceita.innerHTML = opcoesReceita.map(o => `<option value="${_esc(o.value)}">${_esc(o.label)}</option>`).join('');
             selectReceita.value = opcoesReceita.some(o => o.value === receitaSelecionadaAntes) ? receitaSelecionadaAntes : 'total';
 
             let receitas = 0;
@@ -174,7 +174,7 @@
             document.getElementById('sobraFaltaResultadoLabel').innerText = z >= 0 ? 'Sobra estimada' : 'Falta estimada';
             document.getElementById('sobraFaltaResultadoBox').className = 'sobra-falta-resultado ' + (z >= 0 ? 'positivo' : 'negativo');
 
-            if (typeof atualizarChartSobraFalta === 'function') atualizarChartSobraFalta(disponivel, orcamento, z >= 0);
+            atualizarChartSobraFalta(disponivel, orcamento, z >= 0);
         }
 
         // Limpa tudo do card Sobra/Falta: os dois seletores voltam pra "Nenhuma" E o Caixa Atual

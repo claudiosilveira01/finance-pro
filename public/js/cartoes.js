@@ -13,7 +13,7 @@
                 <div class="cartao-item">
                     <div class="cartao-item-icon"><i class="ph ph-credit-card"></i></div>
                     <div class="cartao-item-main">
-                        <button class="item-link cartao-item-nome" onclick="abrirModalCartao(${c.id})">${c.nome}</button>
+                        <button class="item-link cartao-item-nome" onclick="abrirModalCartao(${c.id})">${_esc(c.nome)}</button>
                         <div class="cartao-item-tags">
                             <span class="vencimento-tag" style="color:var(--text-highlight-alt); background-color:var(--bg-blue-light);">Fecha dia ${c.diaFechamento}</span>
                             <span class="vencimento-tag" style="color:var(--blue-accent); background-color:var(--bg-blue-light);">Vence dia ${c.diaVencimento}</span>
@@ -35,7 +35,7 @@
                 mostrarToast('Preencha o nome e os dois dias (entre 1 e 31).', 'warning');
                 return;
             }
-            cartoesConfig.push({ id: Date.now(), nome, diaFechamento: fechamento, diaVencimento: vencimento });
+            cartoesConfig.push({ id: Date.now() + Math.floor(Math.random() * 1000), nome, diaFechamento: fechamento, diaVencimento: vencimento });
             salvarConfigGlobal();
             renderizarCartoesConfig();
             renderizarCartoesDashboard();
@@ -52,7 +52,7 @@
                 <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">
                     <i class="ph ph-${editando ? 'pencil-simple' : 'plus-circle'}"></i> ${editando ? 'Editar Cartão' : 'Novo Cartão'}
                 </h3>
-                <input type="text" id="modalCartaoNomeInput" placeholder="Ex: Nubank" style="width:100%; margin-bottom:12px;" value="${cartao ? cartao.nome : ''}">
+                <input type="text" id="modalCartaoNomeInput" placeholder="Ex: Nubank" style="width:100%; margin-bottom:12px;" value="${cartao ? _esc(cartao.nome) : ''}">
                 <div class="input-inline" style="margin-bottom: 20px;">
                     <input type="number" inputmode="numeric" id="modalCartaoFechamentoInput" placeholder="Dia do Fechamento" min="1" max="31" style="flex:1;" value="${cartao ? cartao.diaFechamento : ''}">
                     <input type="number" inputmode="numeric" id="modalCartaoVencimentoInput" placeholder="Dia do Vencimento" min="1" max="31" style="flex:1;" value="${cartao ? cartao.diaVencimento : ''}">
@@ -78,7 +78,7 @@
                     cartao.diaFechamento = fechamento;
                     cartao.diaVencimento = vencimento;
                 } else {
-                    cartoesConfig.push({ id: Date.now(), nome, diaFechamento: fechamento, diaVencimento: vencimento });
+                    cartoesConfig.push({ id: Date.now() + Math.floor(Math.random() * 1000), nome, diaFechamento: fechamento, diaVencimento: vencimento });
                 }
                 salvarConfigGlobal();
                 renderizarCartoesConfig();

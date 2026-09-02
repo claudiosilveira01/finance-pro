@@ -54,7 +54,7 @@
                     </div>
                     <select id="modalAssinCategoriaSel" style="flex:1;">${opcoesCategoria}</select>
                 </div>
-                <input type="text" id="modalAssinNomeInput" placeholder="Ex: Netflix" style="width:100%; margin-bottom:12px;" value="${sub ? sub.nome : ''}">
+                <input type="text" id="modalAssinNomeInput" placeholder="Ex: Netflix" style="width:100%; margin-bottom:12px;" value="${sub ? _esc(sub.nome) : ''}">
                 <div class="input-inline" style="margin-bottom: 20px;">
                     <input type="text" inputmode="decimal" data-dinheiro id="modalAssinValorInput" placeholder="Valor (R$)" style="flex:1;" value="${sub ? _formatarDinheiroInput(sub.valor) : ''}">
                     <input type="number" inputmode="numeric" id="modalAssinVencInput" placeholder="Dia Venc." min="1" max="31" style="flex:1;" value="${sub ? sub.vencimento : ''}">
@@ -89,7 +89,7 @@
                     sub.categoria = categoria;
                     salvarConfigGlobal();
                 } else {
-                    assinaturasConfig.push({ id: Date.now(), nome, valor: isNaN(valor) ? 0 : valor, vencimento: venc, categoria });
+                    assinaturasConfig.push({ id: Date.now() + Math.floor(Math.random() * 1000), nome, valor: isNaN(valor) ? 0 : valor, vencimento: venc, categoria });
                     salvarConfigGlobal();
                 }
                 calcularEAtualizarVisual();
@@ -131,7 +131,7 @@
                     <div class="assinatura-item-icon"><i class="ph ph-${icone}"></i></div>
                     <div class="assinatura-item-main">
                         <div class="assinatura-item-top">
-                            <button class="item-link assinatura-item-nome" onclick="abrirModalAssinatura(${s.id})">${s.nome}</button>
+                            <button class="item-link assinatura-item-nome" onclick="abrirModalAssinatura(${s.id})">${_esc(s.nome)}</button>
                             <span class="assinatura-item-valor">${valorFormatado}</span>
                         </div>
                         <div class="assinatura-item-tags">
@@ -216,12 +216,12 @@
             const sub = assinaturasConfig.find(s => s.id === id);
             if(!sub) return;
 
-            const opcoesCategoria = categoriasAtuais.map(c => `<option value="${c}">${c}</option>`).join('');
+            const opcoesCategoria = categoriasAtuais.map(c => `<option value="${_esc(c)}">${_esc(c)}</option>`).join('');
             const html = `
                 <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">Adicionar às Contas Fixas</h3>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Confirme os dados da conta fixa a criar no mês atual, baseada em "${sub.nome}":</p>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 15px;">Confirme os dados da conta fixa a criar no mês atual, baseada em "${_esc(sub.nome)}":</p>
                 <div class="input-inline" style="margin-bottom: 10px;">
-                    <input type="text" id="modalAssinNome" style="flex:2;" value="${sub.nome}" placeholder="Item">
+                    <input type="text" id="modalAssinNome" style="flex:2;" value="${_esc(sub.nome)}" placeholder="Item">
                     <input type="text" inputmode="decimal" data-dinheiro id="modalAssinValor" style="flex:1;" value="${_formatarDinheiroInput(sub.valor)}" placeholder="R$">
                 </div>
                 <div class="input-inline" style="margin-bottom: 20px;">
@@ -245,7 +245,7 @@
                     return;
                 }
                 _fecharModalGenerico();
-                window.activeFixas.push({ id: Date.now(), nome, valor, vencimento: venc, categoria, obs: '', pago: false });
+                window.activeFixas.push({ id: Date.now() + Math.floor(Math.random() * 1000), nome, valor, vencimento: venc, categoria, obs: '', pago: false });
                 salvarDadosDoMesAtual();
                 calcularEAtualizarVisual();
                 mostrarToast(`"${nome}" adicionada às contas fixas de ${mesAtualKey}.`, 'success');

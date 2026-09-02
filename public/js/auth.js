@@ -8,6 +8,9 @@
         function _iniciarAuth() {
         sb.auth.onAuthStateChange((event, session) => {
             const user = session ? session.user : null;
+            // Token guardado pra gravação keepalive no fechamento da aba (ver _flushKeepAlive
+            // em undo.js) — lá não dá pra await sb.auth.getSession().
+            window._sbToken = session ? session.access_token : null;
 
             // IMPORTANTE: não chamar outras funções do supabase-js (ex.: sb.rpc) direto aqui
             // dentro — o callback roda segurando um lock interno do cliente, e a primeira RPC

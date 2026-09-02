@@ -1,13 +1,16 @@
 // Gráficos de gasto por categoria (Chart.js)
         function initChart() {
-            const ctxPizza = document.getElementById('chartCategorias').getContext('2d');
+            const elPizza = document.getElementById('chartCategorias');
+            const elBar = document.getElementById('barChartCategorias');
+            if (!elPizza || !elBar) return;
+            const ctxPizza = elPizza.getContext('2d');
             meuGraficoPizza = new Chart(ctxPizza, {
                 type: 'doughnut',
                 data: { labels: categoriasAtuais, datasets: [{ data: Array(categoriasAtuais.length).fill(0), backgroundColor: coresCategorias, borderWidth: 0 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, animation: { duration: 1700, easing: 'easeOutQuart' } }
             });
 
-            const ctxBar = document.getElementById('barChartCategorias').getContext('2d');
+            const ctxBar = elBar.getContext('2d');
             meuGraficoBarra = new Chart(ctxBar, {
                 type: 'bar',
                 data: { labels: categoriasAtuais, datasets: [{ label: 'Gasto', data: Array(categoriasAtuais.length).fill(0), backgroundColor: coresCategorias, borderRadius: 6 }] },

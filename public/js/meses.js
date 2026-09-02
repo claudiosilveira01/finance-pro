@@ -45,11 +45,14 @@
                 renderizarMeses();
                 _seletoresDeMes().forEach(seletor => { seletor.value = mesAtualKey; });
             }
+            // _saveEmVoo: se a aba fechar com um save ainda pendente, o pagehide dispara uma
+            // gravação keepalive (undo.js) pra não perder a alteração.
+            window._saveEmVoo = (window._saveEmVoo || 0) + 1;
             return rpc('salvar_mes', { p_ano_mes: mesAtualKey, p_dados: dados }).catch(err => {
                 mostrarToast('Erro ao salvar os dados do mês. Verifique sua conexão.', 'error', 6000, {
                     acao: { texto: 'Tentar de novo', callback: salvarDadosDoMesAtual }
                 });
-            });
+            }).finally(() => { window._saveEmVoo = Math.max(0, (window._saveEmVoo || 1) - 1); });
         }
 
         // Seletor de mês duplicado (desktop no card "Planner Financeiro" + mobile em cima de
@@ -160,7 +163,14 @@
             });
         }
 
-        function salvarSaldoDoMes() {
+        function salvarSaldoDoMes(el) {
+            // Se o valor não mudou desde que o campo ganhou foco, não regrava — o blur do Caixa
+            // Atual disparava um salvar_mes redundante logo depois de ajustarCaixaAtual já ter
+            // gravado (marcar conta como paga, somar receita ao caixa, etc.). B8 da auditoria.
+            if (el && el.dataset.saldoAoFocar === el.value) {
+                calcularEAtualizarVisual();
+                return;
+            }
             salvarDadosDoMesAtual();
             calcularEAtualizarVisual();
         }

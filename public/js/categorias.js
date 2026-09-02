@@ -24,12 +24,15 @@
 
             selFixas.innerHTML = ''; boxConfig.innerHTML = '';
             categoriasAtuais.forEach(cat => {
-                selFixas.innerHTML += `<option value="${cat}">${cat}</option>`;
+                selFixas.innerHTML += `<option value="${_esc(cat)}">${_esc(cat)}</option>`;
+                // Nome da categoria via data-cat (lido pelo handler) em vez de interpolado dentro
+                // do onclick="...('${cat}')" — uma categoria com aspas quebrava a chamada (e era
+                // um vetor de injeção).
                 boxConfig.innerHTML += `
-                    <span style="display:flex; align-items:center; gap:2px; background:var(--border-color); color:var(--text-main); padding:4px 4px 4px 12px; border-radius:999px; font-size:0.8rem; font-weight:600;">
-                        <i class="ph ph-${obterIconeCategoria(cat)}" style="font-size:14px; margin-right:5px;"></i>${cat}
-                        <button class="btn-action" style="padding:3px;" onclick="iniciarEdicaoCategoria('${cat}')" title="Editar"><i class="ph ph-pencil-simple" style="font-size:14px;"></i></button>
-                        <button class="btn-action btn-delete" style="padding:3px;" onclick="excluirCategoriaGlobal('${cat}')" title="Excluir"><i class="ph ph-trash" style="font-size:14px;"></i></button>
+                    <span data-cat="${_esc(cat)}" style="display:flex; align-items:center; gap:2px; background:var(--border-color); color:var(--text-main); padding:4px 4px 4px 12px; border-radius:999px; font-size:0.8rem; font-weight:600;">
+                        <i class="ph ph-${obterIconeCategoria(cat)}" style="font-size:14px; margin-right:5px;"></i>${_esc(cat)}
+                        <button class="btn-action" style="padding:3px;" onclick="iniciarEdicaoCategoria(this.closest('[data-cat]').dataset.cat)" title="Editar"><i class="ph ph-pencil-simple" style="font-size:14px;"></i></button>
+                        <button class="btn-action btn-delete" style="padding:3px;" onclick="excluirCategoriaGlobal(this.closest('[data-cat]').dataset.cat)" title="Excluir"><i class="ph ph-trash" style="font-size:14px;"></i></button>
                     </span>
                 `;
             });

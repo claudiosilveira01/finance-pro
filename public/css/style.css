@@ -495,4 +495,9 @@
         @media (prefers-reduced-motion: reduce) {
             .reveal-init { opacity: 1; transform: none; }
             .reveal-in, .item-anim, .anim-pop { animation: none; }
+            /* Zera também as animações de entrada de modais, toasts, chip de sync e o "girando".
+               O odômetro (JS) checa a mesma media query em anim.js e vai direto pro valor final. */
+            .modal-overlay, .modal-content, .toast, .loading-overlay { animation: none !important; }
+            .girando { animation: none; }
+            * { scroll-behavior: auto !important; }
         }

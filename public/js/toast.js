@@ -22,10 +22,12 @@
             toast.className = 'toast';
             toast.style.borderLeftColor = cor;
 
+            // msg e o texto da ação são escapados: vários callers interpolam nome de conta /
+            // categoria / assinatura ("Netflix adicionada.") direto na mensagem.
             toast.innerHTML = `
                 <i class="ph ph-${icone} toast-icon" style="color:${cor};"></i>
-                <span class="toast-msg">${msg}</span>
-                ${opcoes.acao ? `<button class="toast-acao" style="color:${cor};">${opcoes.acao.texto}</button>` : ''}
+                <span class="toast-msg">${_esc(msg)}</span>
+                ${opcoes.acao ? `<button class="toast-acao" style="color:${cor};">${_esc(opcoes.acao.texto)}</button>` : ''}
                 <button class="toast-close"><i class="ph ph-x"></i></button>
             `;
 

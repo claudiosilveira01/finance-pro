@@ -3,6 +3,11 @@
             const overlay = document.getElementById('modalGenerico');
             overlay.querySelector('.modal-content').innerHTML = html;
             overlay.style.display = 'flex';
+            if (typeof _rotularInputsSemLabel === 'function') _rotularInputsSemLabel(overlay);
+            // Foco inicial dentro do modal (o focus-trap em ui.js mantém depois). Prompt/edição
+            // sobrescreve pra focar o campo de texto certo.
+            const primeiro = overlay.querySelector('input:not([disabled]), select, textarea, button');
+            if (primeiro) primeiro.focus();
             return overlay;
         }
 
@@ -20,7 +25,7 @@
             menu.className = 'kebab-menu';
             menu.id = 'kebabMenuAtivo';
             menu.innerHTML = itens.map((it, i) =>
-                `<div class="kebab-menu-item${it.perigo ? ' danger' : ''}" data-idx="${i}"><i class="ph ph-${it.icone}"></i> ${it.label}</div>`
+                `<div class="kebab-menu-item${it.perigo ? ' danger' : ''}" data-idx="${i}"><i class="ph ph-${it.icone}"></i> ${_esc(it.label)}</div>`
             ).join('');
             document.body.appendChild(menu);
 
@@ -65,12 +70,14 @@
             onConfirmar,
             onCancelar
         }) {
+            // titulo/mensagem quase sempre trazem um nome do usuário ("Quando você pagou X?"),
+            // então são escapados aqui em vez de em cada call site.
             const html = `
-                <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">${titulo}</h3>
-                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; white-space: pre-line;">${mensagem}</p>
+                <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">${_esc(titulo)}</h3>
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 20px; white-space: pre-line;">${_esc(mensagem)}</p>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">${textoCancelar}</button>
-                    <button class="btn-flat" id="modalBtnConfirmar" style="flex: 1; background: ${corConfirmar};">${textoConfirmar}</button>
+                    <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">${_esc(textoCancelar)}</button>
+                    <button class="btn-flat" id="modalBtnConfirmar" style="flex: 1; background: ${corConfirmar};">${_esc(textoConfirmar)}</button>
                 </div>
             `;
             const overlay = _renderModalGenerico(html);
@@ -92,24 +99,25 @@
             placeholder = '',
             textoConfirmar = 'Salvar',
             textoCancelar = 'Cancelar',
+            dinheiro = false,   // aplica a máscara data-dinheiro e devolve número (não string) no onConfirmar
             onConfirmar
         }) {
             const html = `
-                <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">${titulo}</h3>
-                ${mensagem ? `<p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">${mensagem}</p>` : ''}
-                <input type="text" id="modalPromptInput" placeholder="${placeholder}" style="width: 100%; margin-bottom: 20px;">
+                <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">${_esc(titulo)}</h3>
+                ${mensagem ? `<p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">${_esc(mensagem)}</p>` : ''}
+                <input type="text" id="modalPromptInput" ${dinheiro ? 'inputmode="decimal" data-dinheiro' : ''} placeholder="${_esc(placeholder)}" style="width: 100%; margin-bottom: 20px;">
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">${textoCancelar}</button>
-                    <button class="btn-flat" id="modalBtnConfirmar" style="flex: 1; background: var(--blue-accent);">${textoConfirmar}</button>
+                    <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">${_esc(textoCancelar)}</button>
+                    <button class="btn-flat" id="modalBtnConfirmar" style="flex: 1; background: var(--blue-accent);">${_esc(textoConfirmar)}</button>
                 </div>
             `;
             const overlay = _renderModalGenerico(html);
             const input = overlay.querySelector('#modalPromptInput');
-            input.value = valorInicial;
+            input.value = dinheiro ? _formatarDinheiroInput(valorInicial) : valorInicial;
             input.focus();
 
             const confirmar = () => {
-                const valor = input.value.trim();
+                const valor = dinheiro ? _parseDinheiro(input.value) : input.value.trim();
                 _fecharModalGenerico();
                 if (onConfirmar) onConfirmar(valor);
             };
@@ -129,8 +137,8 @@
         }) {
             const hojeStr = new Date().toISOString().split('T')[0];
             const html = `
-                <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">${titulo}</h3>
-                ${mensagem ? `<p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">${mensagem}</p>` : ''}
+                <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">${_esc(titulo)}</h3>
+                ${mensagem ? `<p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px;">${_esc(mensagem)}</p>` : ''}
                 <button class="btn-flat" id="modalBtnHoje" style="width: 100%; margin-bottom: 14px;"><i class="ph ph-calendar-check"></i> Foi hoje</button>
                 <p style="text-align:center; color:var(--text-muted); font-size:0.8rem; margin: 0 0 8px;">ou escolha outra data</p>
                 <input type="date" id="modalDataInput" value="${hojeStr}" max="${hojeStr}" style="width: 100%; margin-bottom: 20px;">
@@ -162,14 +170,14 @@
             textoCancelar = 'Cancelar',
             onConfirmar
         }) {
-            const opcoesHtml = opcoes.map(o => `<option value="${o}" ${o === valorInicial ? 'selected' : ''}>${o}</option>`).join('');
+            const opcoesHtml = opcoes.map(o => `<option value="${_esc(o)}" ${o === valorInicial ? 'selected' : ''}>${_esc(o)}</option>`).join('');
             const html = `
-                <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">${titulo}</h3>
-                ${mensagem ? `<p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px; white-space: pre-line;">${mensagem}</p>` : ''}
+                <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">${_esc(titulo)}</h3>
+                ${mensagem ? `<p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 15px; white-space: pre-line;">${_esc(mensagem)}</p>` : ''}
                 <select id="modalSelecaoInput" style="width: 100%; margin-bottom: 20px;">${opcoesHtml}</select>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">${textoCancelar}</button>
-                    <button class="btn-flat" id="modalBtnConfirmar" style="flex: 1; background: var(--blue-accent);">${textoConfirmar}</button>
+                    <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">${_esc(textoCancelar)}</button>
+                    <button class="btn-flat" id="modalBtnConfirmar" style="flex: 1; background: var(--blue-accent);">${_esc(textoConfirmar)}</button>
                 </div>
             `;
             const overlay = _renderModalGenerico(html);

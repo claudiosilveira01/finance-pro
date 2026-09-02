@@ -1,15 +1,21 @@
 {
+  "id": "/",
   "name": "Planner Financeiro",
   "short_name": "Planner",
   "description": "Controle financeiro pessoal — contas fixas, receitas, extrato e assinaturas.",
-  "start_url": "/index.html",
+  "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "background_color": "#0F0B1F",
   "theme_color": "#5B3FD6",
   "orientation": "portrait-primary",
+  "shortcuts": [
+    { "name": "Calendário de vencimentos", "url": "/?atalho=calendario", "description": "Abre direto no calendário do mês" }
+  ],
   "icons": [
     { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" }
   ]
 }

@@ -100,8 +100,8 @@
                 <div class="cal-evento-item${classeAnim}" style="animation-delay:${atrasoItem}s">
                     <i class="ph ph-${obterIconeCategoria(f.categoria)}" style="color:var(--text-muted);"></i>
                     <span class="cal-evento-texto">
-                        ${f.nome} <strong style="color:var(--text-highlight-alt)">- R$ ${f.valor.toFixed(2)}</strong>
-                        ${f.obs ? `<div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">${f.obs}</div>` : ''}
+                        ${_esc(f.nome)} <strong style="color:var(--text-highlight-alt)">- R$ ${f.valor.toFixed(2)}</strong>
+                        ${f.obs ? `<div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">${_esc(f.obs)}</div>` : ''}
                     </span>
                     <span class="vencimento-tag${classeAnimBadge}" style="color:white; background-color:${f.pago ? 'var(--green-success)' : 'var(--red-danger)'}">Dia ${f.vencimento} ${f.pago ? '✓' : ''}</span>
                 </div>`;
@@ -113,7 +113,7 @@
                 <div class="cal-evento-item${classeAnim}" style="animation-delay:${atrasoItem}s">
                     <i class="ph ph-${obterIconeAssinatura(s.categoria)}" style="color:var(--sub-color);"></i>
                     <span class="cal-evento-texto">
-                        ${s.nome} <strong style="color:var(--sub-color)">- R$ ${(s.valor||0).toFixed(2)}</strong>
+                        ${_esc(s.nome)} <strong style="color:var(--sub-color)">- R$ ${(s.valor||0).toFixed(2)}</strong>
                     </span>
                     <span class="vencimento-tag${classeAnimBadge}" style="color:white; background-color:var(--sub-color)">Dia ${s.vencimento}</span>
                 </div>`;

@@ -158,3 +158,37 @@ de ordem no PDF. Cosmético (só o relatório). **Correção:** ordenar por `Dat
 2. **🟡 Aguardando sua aprovação, item a item:** A1, A2, M1, M2, M3, M4, B5, B8, B10, B11, B12,
    e as decisões de UX (U4 fila offline, U5 zoom, U6–U9 acessibilidade).
 3. Depois: Fases 1 (verificar cartão), 2 (extrato e-mail), 3 (Web Push).
+
+---
+
+## Status das correções (02/09/2026 — "resolver tudo exceto o zoom")
+
+| Item | Feito | Como |
+|---|---|---|
+| **A1** exclusão perdida ao fechar aba | ✅ | `pagehide`/`beforeunload` disparam uma gravação **keepalive** direta nas RPCs (`_flushKeepAlive` em `undo.js`) quando há exclusão pendente ou save em voo — o fetch keepalive sobrevive ao fechamento. Token guardado em `window._sbToken` (`auth.js`). Sem mexer na matemática do Caixa Atual. |
+| **A2** PK global → colisão silenciosa | ✅ | Migração `0006_pk_por_escopo.sql` (PK composta por escopo). `get_advisors` sem WARN novo. |
+| **M1** injeção de HTML | ✅ | Helper `_esc()` em `mascaraDinheiro.js`, aplicado em `render.js`, `cartaoFatura.js`, `cartaoImportar.js`, `calendario.js`, `assinaturas.js`, `categorias.js`, `cartoes.js`, `calculadora.js`, `extrato.js`. `toast.js` e `modal.js` escapam central (msg/título/opções). Categorias no `onclick` → migradas pra `data-cat` + `dataset`. Testado com payloads `<img onerror>` / `<script>` — não executam. |
+| **M2** `_faturaDoCartao` muta no render | ✅ | Novo `_faturaDoCartaoLeitura()` (leitura pura) usado no render e nas consultas; `_faturaDoCartao()` (materializa) só em caminho de escrita. Testado: abrir/cancelar não cria fatura-fantasma. |
+| **M3** Esc pula o handler de fechamento | ✅ | Esc dispara o `#modalBtnCancelar` / `.modal-close-x` do modal aberto (roda o `fechar…()` certo). `fecharModalNovaFixa` agora zera `idEditandoFixa`. |
+| **M4** ordenação do PDF com formato misto | ✅ | `exportar.js` ordena o Registro de Pagamentos por `Date.parse()`. |
+| **B3** `id: Date.now()` inconsistente | ✅ | Todos os `push` novos usam `Date.now() + random`. (A colisão em si já resolvida pela A2.) |
+| **B4** comentários "Firestore" | ✅ (parcial) | `config.js` ajustado. `pwa.js` fica pra Fase 3 (arquivo será reescrito). |
+| **B5** receita sem feedback em campo vazio | ✅ | `addFaturamento` / `salvarEdicaoFaturamento` mostram toast. |
+| **B6** `initChart` sem guarda `!ctx` | ✅ | Guarda adicionada. |
+| **B7 / B13** guardas mortas em `render.js` | ✅ | Removidas. |
+| **B8** save duplicado do Caixa Atual | ✅ | `salvarSaldoDoMes(el)` só regrava se o valor mudou desde o foco (`data-saldo-ao-focar`). |
+| **B9** Esc sem `preventDefault`/`e.repeat` | ✅ | Ambos no novo handler. |
+| **B10** manifest (maskable, `start_url`, `id`) | ✅ | `id`/`start_url` = `/`, `shortcuts`, e **novos PNGs maskable** (`icon-maskable-192/512.png`, fundo full-bleed) gerados e referenciados. |
+| **B11** `Function()` na calculadora | ✅ | Substituído por `_calcAvaliar()` — parser próprio (+ − × ÷ %), sem `eval`. Testado: precedência, div/0, entrada inválida. |
+| **B12** estimativa de cartão sem máscara | ✅ | `abrirModalPrompt({ dinheiro: true })` — aplica `data-dinheiro` e devolve número. |
+| **U6** focus-trap | ✅ | Handler global de Tab em `ui.js` prende o foco no modal aberto; `_renderModalGenerico` foca o 1º campo. |
+| **U7** `prefers-reduced-motion` | ✅ | Bloco CSS ampliado (modais, toasts, chip, "girando"); odômetro (`anim.js`) checa a media query e vai direto pro valor final. |
+| **U8** `<label>` só via placeholder | ✅ (a11y) | `_rotularInputsSemLabel()` copia o placeholder pra `aria-label` nos campos sem rótulo (login, filtros, todos os modais). Sem mudança visual. |
+| **U9** PWA (atalho, ícone maskable) | ✅ (parcial) | `shortcuts` no manifest + wiring `?atalho=` em `ui.js`; ícones maskable. `apple-touch-startup-image` (splash iOS) fica de fora — exige um jogo de PNGs por resolução de tela. |
+| **U4** fila de escrita offline | ⚠️ parcial | O `_flushKeepAlive` no fechamento + o toast "Tentar de novo" por ação cobrem os casos comuns. Uma fila de mutações completa (retry automático ao reconectar) continua fora de escopo — é um projeto à parte. |
+| **U5** zoom de pinça | ⛔ mantido | Decisão do usuário: `travarZoom.js` fica como está. |
+
+Verificação: cada caminho alterado testado no navegador com estado mockado (render de fixas/
+receitas/extrato/assinaturas/cartão, abertura de modais, Esc, focus-trap, calculadora, toasts,
+odômetro com reduced-motion, categorias com aspas/HTML). Sem erro de console novo; XSS não
+executa em nenhum campo.

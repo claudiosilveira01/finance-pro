@@ -11,10 +11,19 @@
             return cartoesConfig.find(c => c.id === cartaoSelecionadoId);
         }
 
+        // Versão que MATERIALIZA a fatura no estado — usar só em caminho de escrita (logo antes de
+        // um salvarDadosDoMesAtual). Chamar no render criava linha `cartao_faturas` vazia (fatura-
+        // fantasma) pra todo mês já aberto desde que um cartão foi cadastrado — ver M2 da auditoria.
         function _faturaDoCartao(cartaoId) {
             if (!window.activeCartoesFaturas) window.activeCartoesFaturas = {};
             if (!window.activeCartoesFaturas[cartaoId]) window.activeCartoesFaturas[cartaoId] = { transacoes: [] };
             return window.activeCartoesFaturas[cartaoId];
+        }
+
+        // Leitura pura (não muta o estado) — usar em render e em qualquer consulta que não vá gravar.
+        function _faturaDoCartaoLeitura(cartaoId) {
+            const f = window.activeCartoesFaturas && window.activeCartoesFaturas[cartaoId];
+            return f || { transacoes: [] };
         }
 
         // Valor total da fatura, em ordem de prioridade:
@@ -98,10 +107,10 @@
 
             seletorEl.style.display = cartoesConfig.length > 1 ? 'flex' : 'none';
             seletorEl.innerHTML = cartoesConfig.map(c =>
-                `<button class="cartao-pill ${c.id === cartao.id ? 'ativo' : ''}" onclick="selecionarCartao(${c.id})">${c.nome}</button>`
+                `<button class="cartao-pill ${c.id === cartao.id ? 'ativo' : ''}" onclick="selecionarCartao(${c.id})">${_esc(c.nome)}</button>`
             ).join('');
 
-            const fatura = _faturaDoCartao(cartao.id);
+            const fatura = _faturaDoCartaoLeitura(cartao.id);
             const transacoesOrdenadas = [...fatura.transacoes].sort((a, b) => b.data.localeCompare(a.data));
             const total = _totalFatura(fatura);
 
@@ -117,7 +126,7 @@
                 listaCategoriaEl.innerHTML = entradasCategoria.map(([cat, valor]) => `
                     <div class="acumulado-item">
                         <span style="display:flex; align-items:center; gap:8px;">
-                            <i class="ph ph-${obterIconeCategoria(cat)}" style="font-size:18px; color:var(--text-muted);"></i> ${cat}
+                            <i class="ph ph-${obterIconeCategoria(cat)}" style="font-size:18px; color:var(--text-muted);"></i> ${_esc(cat)}
                         </span>
                         <span style="color:var(--text-highlight); font-weight:700">R$ ${valor.toFixed(2)}</span>
                     </div>
@@ -134,10 +143,10 @@
                         <div class="cartao-transacao-item${classeAnim}" style="animation-delay:${Math.min(i * 0.03, 0.4)}s">
                             <div class="cartao-transacao-icon"><i class="ph ph-${obterIconeCategoria(t.categoria)}"></i></div>
                             <div class="cartao-transacao-main">
-                                <button class="item-link cartao-transacao-desc" onclick="abrirModalCartaoTransacao(${cartao.id}, ${t.id})">${t.descricao}</button>
+                                <button class="item-link cartao-transacao-desc" onclick="abrirModalCartaoTransacao(${cartao.id}, ${t.id})">${_esc(t.descricao)}</button>
                                 <div class="cartao-transacao-tags">
                                     <span class="vencimento-tag" style="color:var(--text-muted); background-color:var(--bg-light);">${formatarData(t.data)}</span>
-                                    <span class="vencimento-tag" style="color:var(--text-highlight-alt); background-color:var(--bg-blue-light);">${t.categoria}</span>
+                                    <span class="vencimento-tag" style="color:var(--text-highlight-alt); background-color:var(--bg-blue-light);">${_esc(t.categoria)}</span>
                                 </div>
                             </div>
                             <strong class="cartao-transacao-valor">R$ ${t.valor.toFixed(2)}</strong>
@@ -171,15 +180,16 @@
         function abrirModalEstimativaCartao() {
             const cartao = _cartaoAtivo();
             if (!cartao) return;
-            const fatura = _faturaDoCartao(cartao.id);
+            const faturaLeitura = _faturaDoCartaoLeitura(cartao.id);
             abrirModalPrompt({
                 titulo: 'Valor Estimado da Fatura',
                 mensagem: `Só pra planejamento — reflete em Contas Fixas até você lançar ou importar compras de verdade em "${cartao.nome}". A partir daí, some sozinho.`,
-                placeholder: 'Ex: 500',
-                valorInicial: fatura.valorEstimado != null ? String(fatura.valorEstimado) : '',
+                placeholder: 'Ex: 500,00',
+                dinheiro: true,
+                valorInicial: faturaLeitura.valorEstimado != null ? faturaLeitura.valorEstimado : '',
                 textoConfirmar: 'Salvar',
-                onConfirmar: (valorStr) => {
-                    const valor = parseFloat(String(valorStr).replace(',', '.'));
+                onConfirmar: (valor) => {
+                    const fatura = _faturaDoCartao(cartao.id);
                     fatura.valorEstimado = (isNaN(valor) || valor <= 0) ? null : valor;
                     _sincronizarContaFixaDoCartao(cartao);
                     calcularEAtualizarVisual();
@@ -191,22 +201,21 @@
 
         // Popup único de criar/editar uma compra da fatura. transacaoId=null cria uma nova.
         function abrirModalCartaoTransacao(cartaoId, transacaoId) {
-            const fatura = _faturaDoCartao(cartaoId);
             const editando = transacaoId != null;
-            const t = editando ? fatura.transacoes.find(x => x.id === transacaoId) : null;
+            const t = editando ? _faturaDoCartaoLeitura(cartaoId).transacoes.find(x => x.id === transacaoId) : null;
             if (editando && !t) return;
 
             const hojeStr = new Date().toISOString().split('T')[0];
             const opcoesCategoria = categoriasAtuais
                 .filter(c => c !== 'Cartão de Crédito')
-                .map(c => `<option value="${c}" ${t && c === t.categoria ? 'selected' : ''}>${c}</option>`)
+                .map(c => `<option value="${_esc(c)}" ${t && c === t.categoria ? 'selected' : ''}>${_esc(c)}</option>`)
                 .join('');
 
             const html = `
                 <h3 style="margin-bottom: 15px; color: var(--text-highlight); font-size: 1.1rem;">
                     <i class="ph ph-${editando ? 'pencil-simple' : 'plus-circle'}"></i> ${editando ? 'Editar Compra' : 'Nova Compra'}
                 </h3>
-                <input type="text" id="modalCartaoTransDescInput" placeholder="Ex: Supermercado" style="width:100%; margin-bottom:12px;" value="${t ? t.descricao : ''}">
+                <input type="text" id="modalCartaoTransDescInput" placeholder="Ex: Supermercado" style="width:100%; margin-bottom:12px;" value="${t ? _esc(t.descricao) : ''}">
                 <div class="input-inline" style="margin-bottom: 12px;">
                     <input type="text" inputmode="decimal" data-dinheiro id="modalCartaoTransValorInput" placeholder="Valor (R$)" style="flex:1;" value="${t ? _formatarDinheiroInput(t.valor) : ''}">
                     <input type="date" id="modalCartaoTransDataInput" style="flex:1;" value="${t ? t.data : hojeStr}">
@@ -230,10 +239,12 @@
                     return;
                 }
                 _fecharModalGenerico();
+                const fatura = _faturaDoCartao(cartaoId);
                 if (editando) {
-                    t.descricao = descricao; t.valor = valor; t.data = data; t.categoria = categoria;
+                    const alvo = fatura.transacoes.find(x => x.id === transacaoId) || t;
+                    alvo.descricao = descricao; alvo.valor = valor; alvo.data = data; alvo.categoria = categoria;
                 } else {
-                    fatura.transacoes.push({ id: Date.now(), descricao, valor, data, categoria });
+                    fatura.transacoes.push({ id: Date.now() + Math.floor(Math.random() * 1000), descricao, valor, data, categoria });
                 }
                 // Lançamento manual: o total volta a ser a soma das compras lançadas (não fica
                 // preso a um valor confirmado de uma importação anterior nem a uma estimativa).
@@ -299,7 +310,7 @@
         function confirmarLimparFaturaCartao() {
             const cartao = _cartaoAtivo();
             if (!cartao) { mostrarToast('Nenhum cartão selecionado.', 'warning'); return; }
-            const fatura = _faturaDoCartao(cartao.id);
+            const fatura = _faturaDoCartaoLeitura(cartao.id);
             if (fatura.transacoes.length === 0 && fatura.valorConfirmado == null && fatura.valorEstimado == null) {
                 mostrarToast(`Não há dados lançados na fatura de "${cartao.nome}" ainda.`, 'warning');
                 return;
@@ -314,7 +325,9 @@
         }
 
         function _limparFaturaCartao(cartao) {
-            const fatura = _faturaDoCartao(cartao.id);
+            // Só chega aqui se a fatura já tem dados (confirmarLimparFaturaCartao barra o resto),
+            // então ela existe no estado — não precisa materializar.
+            const fatura = _faturaDoCartaoLeitura(cartao.id);
             fatura.transacoes = [];
             fatura.valorConfirmado = null;
             fatura.valorEstimado = null;

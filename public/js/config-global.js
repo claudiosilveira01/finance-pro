@@ -48,6 +48,7 @@
 
         function salvarConfigGlobal() {
             if(!currentUser) return;
+            window._saveEmVoo = (window._saveEmVoo || 0) + 1;
             rpc('salvar_config', { p: {
                 categorias: categoriasAtuais,
                 assinaturas: assinaturasConfig,
@@ -58,5 +59,5 @@
                 mostrarToast('Erro ao salvar as configurações. Verifique sua conexão.', 'error', 6000, {
                     acao: { texto: 'Tentar de novo', callback: salvarConfigGlobal }
                 });
-            });
+            }).finally(() => { window._saveEmVoo = Math.max(0, (window._saveEmVoo || 1) - 1); });
         }

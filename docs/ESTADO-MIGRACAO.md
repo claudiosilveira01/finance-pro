@@ -179,6 +179,22 @@ publishable key estão hardcoded em `public/js/config.js` (padrão correto pra S
 ficam dormentes. Único ponto de atenção: `SUPABASE_SECRET_KEY` fica guardada no Vercel sem uso
 — sem exposição (nenhum código lê), mas é superfície extra. Manter ou desinstalar, tanto faz.
 
+## Auditoria de código (02/09/2026) — CONCLUÍDA
+
+Varredura completa em `docs/AUDITORIA-CODIGO.md`. Aplicadas **todas** as correções (bug,
+código morto, XSS, inconsistência, schema, acessibilidade) **exceto o zoom de pinça** (`travarZoom.js`
+fica como está, por decisão do usuário). Destaques:
+
+- **A2 (schema):** migração `0006_pk_por_escopo.sql` — PK composta por escopo, fim da colisão
+  silenciosa de `id`.
+- **A1 (dado perdido ao fechar aba):** gravação keepalive direta nas RPCs no `pagehide`.
+- **M1 (XSS):** helper `_esc()` em toda renderização de string do usuário.
+- **M2/M3/M4, B3–B13, U6–U9:** ver tabela de status no relatório.
+- **U4** (fila offline completa) e **U9 iOS splash** ficam fora de escopo — anotados.
+
+Único item de schema pendente pra Fase 2: `extrato.origem_import_id` (dedup de reimportação
+por e-mail).
+
 ## Pendências / decisões do usuário
 
 - **Testar login com a senha real** (ex.: claudio). O formato `$fbscrypt$` foi validado com o

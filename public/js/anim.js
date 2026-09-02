@@ -61,10 +61,18 @@
     // todos os outros números "piscarem" de novo por causa de uma ação que não tem nada a ver com eles.
     const contadoresAtivos = {};
     const valoresAnteriores = {};
+    const _semMovimento = () => window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function animarNumero(elId, valorFinal, duracao = 1800) {
         const el = document.getElementById(elId);
         if (!el) return;
         if (contadoresAtivos[elId]) cancelAnimationFrame(contadoresAtivos[elId]);
+
+        // Acessibilidade: quem pediu menos movimento vê o número final direto, sem contagem.
+        if (_semMovimento()) {
+            valoresAnteriores[elId] = valorFinal;
+            el.innerText = `R$ ${valorFinal.toFixed(2)}`;
+            return;
+        }
 
         const valorAnterior = valoresAnteriores[elId];
         const primeiraVez = valorAnterior === undefined;

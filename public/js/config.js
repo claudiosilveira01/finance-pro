@@ -14,8 +14,8 @@
             return data;
         }
 
-        // "YYYY-MM" -> "Setembro / 2026". A lista de meses não é mais persistida (era o array
-        // config.meses no Firestore): o banco guarda só os ano_mes distintos e o label é derivado aqui.
+        // "YYYY-MM" -> "Setembro / 2026". A lista de meses não é persistida: o banco guarda só os
+        // ano_mes distintos (get_meses_disponiveis) e o label é derivado aqui, no cliente.
         const _NOMES_MES = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
         function _labelMes(key) {
             const [ano, mes] = key.split('-');

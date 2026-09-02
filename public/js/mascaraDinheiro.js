@@ -70,6 +70,31 @@ function _formatarDinheiroInput(valor) {
     return Number(valor).toFixed(2).replace('.', ',');
 }
 
+// Muitos campos (login, filtros, modais) só têm placeholder como rótulo — some ao digitar e o
+// leitor de tela não anuncia direito. Sem mexer no layout, copia o placeholder pra um aria-label
+// nos que não têm nenhum rótulo associado. Roda no load e a cada modal genérico aberto (U8).
+function _rotularInputsSemLabel(raiz) {
+    (raiz || document).querySelectorAll(
+        'input[placeholder]:not([aria-label]), textarea[placeholder]:not([aria-label]), select:not([aria-label])'
+    ).forEach(el => {
+        if ((!el.labels || el.labels.length === 0) && !el.getAttribute('aria-label')) {
+            const txt = el.placeholder || el.getAttribute('title') || (el.options && el.options[0] && el.options[0].text);
+            if (txt) el.setAttribute('aria-label', txt);
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', () => _rotularInputsSemLabel(document));
+
+// Escapa uma string livre do usuário (nome de conta/categoria/assinatura, obs, descrição de
+// compra, item de extrato) ANTES de jogar em innerHTML. Sem isso, uma categoria chamada
+// `<img src=x onerror=alert(1)>` roda script na hora de renderizar a lista (XSS). Cobre também
+// aspas, pra ser seguro dentro de value="..." e de title="...".
+function _esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => (
+        { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]
+    ));
+}
+
 // Arredonda pra 2 casas decimais (centavos) — usar em toda soma/subtração de dinheiro que vai ser
 // salva ou comparada, senão erros de ponto flutuante (0.1 + 0.2 = 0.30000000000000004) acumulam
 // ao longo de várias operações (ex.: Caixa Atual ajustado dezenas de vezes) e deixam um resto

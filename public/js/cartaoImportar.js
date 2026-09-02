@@ -185,7 +185,9 @@
         // === Tela de revisão: usuário confere categorias, desmarca o que não quer e confirma o valor real ===
         function _abrirRevisaoImportacaoCartao(cartaoId, itensBrutos) {
             const cartao = cartoesConfig.find(c => c.id === cartaoId);
-            const fatura = _faturaDoCartao(cartaoId);
+            // Leitura pura na montagem da tela — só materializa a fatura no confirmar (senão
+            // cancelar a revisão deixava uma fatura-fantasma no mês; M2 da auditoria).
+            const fatura = _faturaDoCartaoLeitura(cartaoId);
 
             const compras = itensBrutos.filter(i => i.valor > 0);
             const creditosBrutos = itensBrutos.filter(i => i.valor < 0);
@@ -215,7 +217,7 @@
 
             const html = `
                 <h3 style="margin-bottom: 8px; color: var(--text-highlight); font-size: 1.1rem;">
-                    <i class="ph ph-upload-simple"></i> Revisar Importação — ${cartao.nome}
+                    <i class="ph ph-upload-simple"></i> Revisar Importação — ${_esc(cartao.nome)}
                 </h3>
                 <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">
                     ${novos.length} compra${novos.length > 1 ? 's' : ''} nova${novos.length > 1 ? 's' : ''} encontrada${novos.length > 1 ? 's' : ''}${ignorados > 0 ? `, ${ignorados} já importada${ignorados > 1 ? 's' : ''} antes (ignorada${ignorados > 1 ? 's' : ''})` : ''}. Confira as categorias e desmarque o que não quiser importar.
@@ -247,6 +249,7 @@
                 const valorReal = _parseDinheiro(overlay.querySelector('#cartaoRevisaoValorReal').value);
                 _fecharModalGenerico();
 
+                const fatura = _faturaDoCartao(cartaoId);
                 incluidos.forEach(n => {
                     fatura.transacoes.push({
                         id: Date.now() + Math.floor(Math.random() * 100000),
@@ -279,11 +282,11 @@
                 <div class="cartao-revisao-item">
                     <input type="checkbox" class="row-check" ${n._incluir ? 'checked' : ''} onchange="_revisaoCartaoTogglar(${i})">
                     <div class="cartao-revisao-main">
-                        <input type="text" class="cartao-revisao-desc" value="${n.descricao.replace(/"/g, '&quot;')}" oninput="_revisaoCartaoCampo(${i},'descricao',this.value)">
+                        <input type="text" class="cartao-revisao-desc" value="${_esc(n.descricao)}" oninput="_revisaoCartaoCampo(${i},'descricao',this.value)">
                         <div class="cartao-revisao-linha2">
                             <span class="vencimento-tag" style="color:var(--text-muted); background-color:var(--card-bg);">${formatarData(n.data)}</span>
                             <select class="cartao-revisao-categoria" onchange="_revisaoCartaoCampo(${i},'categoria',this.value)">
-                                ${opcoesCategoria.map(c => `<option value="${c}" ${c === n.categoria ? 'selected' : ''}>${c}</option>`).join('')}
+                                ${opcoesCategoria.map(c => `<option value="${_esc(c)}" ${c === n.categoria ? 'selected' : ''}>${_esc(c)}</option>`).join('')}
                             </select>
                         </div>
                     </div>

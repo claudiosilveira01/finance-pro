@@ -15,11 +15,14 @@
             const nome = document.getElementById('fatNome').value.trim();
             const valor = _parseDinheiro(document.getElementById('fatValor').value);
             let data = document.getElementById('fatData').value;
-            if(!nome || isNaN(valor)) return;
+            if(!nome || isNaN(valor)) {
+                mostrarToast('Preencha a origem e o valor da receita.', 'warning');
+                return;
+            }
             if(!data) data = new Date().toISOString().split('T')[0];
             if(!window.activeFaturamentos) window.activeFaturamentos = [];
-            
-            window.activeFaturamentos.push({ id: Date.now(), nome, valor, data: data, noCaixa: false });
+
+            window.activeFaturamentos.push({ id: Date.now() + Math.floor(Math.random() * 1000), nome, valor, data: data, noCaixa: false });
             document.getElementById('fatNome').value = ''; document.getElementById('fatValor').value = '';
             salvarDadosDoMesAtual(); calcularEAtualizarVisual();
         }
@@ -57,7 +60,10 @@
             const nome = document.getElementById('editFatNome').value.trim();
             const valor = _parseDinheiro(document.getElementById('editFatValor').value);
             const data = document.getElementById('editFatData').value;
-            if (!nome || isNaN(valor) || !data) return;
+            if (!nome || isNaN(valor) || !data) {
+                mostrarToast('Preencha origem, valor e data da receita.', 'warning');
+                return;
+            }
 
             const original = window.activeFaturamentos.find(f => f.id === idEditandoFaturamento);
             window.activeFaturamentos = window.activeFaturamentos.map(f =>

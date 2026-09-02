@@ -68,7 +68,7 @@
                 );
                 idEditandoFixa = null;
             } else {
-                const novaConta = { id: Date.now(), nome, valor, vencimento: venc, categoria: cat, obs: obs, pago: false };
+                const novaConta = { id: Date.now() + Math.floor(Math.random() * 1000), nome, valor, vencimento: venc, categoria: cat, obs: obs, pago: false };
                 window.activeFixas.push(novaConta);
 
                 const recorrente = document.getElementById('fixaRecorrente').checked;
@@ -125,6 +125,10 @@
 
         function fecharModalNovaFixa() {
             document.getElementById('modalNovaFixa').style.display = 'none';
+            // Fechar pelo "X" (ou Esc) também descarta a edição em andamento — senão idEditandoFixa
+            // ficava setado e a próxima abertura de "Nova Conta" achava que era uma edição.
+            idEditandoFixa = null;
+            _resetarFormFixa();
         }
 
         function _resetarFormFixa() {

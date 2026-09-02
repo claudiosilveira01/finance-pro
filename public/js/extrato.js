@@ -327,7 +327,7 @@ function abrirModalExtratoPorTipo(tipo) {
         const cor = t.direcao === 'entrada' ? 'var(--green-success)' : 'var(--red-danger)';
         const sinal = t.direcao === 'entrada' ? '+' : '-';
         return `<div class="sub-item">
-            <span>${formatarData(t.data)} — ${t.item}</span>
+            <span>${formatarData(t.data)} — ${_esc(t.item)}</span>
             <strong style="color:${cor};">${sinal} R$ ${t.valor.toFixed(2)}</strong>
         </div>`;
     }).join('');
@@ -464,8 +464,8 @@ function renderizarExtrato() {
             <tr>
                 <td class="td-check"><input type="checkbox" class="row-check" ${extratoSelecionados.has(t.id) ? 'checked' : ''} onchange="toggleSelecaoExtrato(${t.id})"></td>
                 <td data-label="Data" style="color:var(--text-muted); font-size:0.85rem; white-space:nowrap;">${formatarData(t.data)}</td>
-                <td data-label="Item">${t.item}</td>
-                <td data-label="Tipo" style="color:var(--text-muted); font-size:0.82rem;">${t.tipo}</td>
+                <td data-label="Item">${_esc(t.item)}</td>
+                <td data-label="Tipo" style="color:var(--text-muted); font-size:0.82rem;">${_esc(t.tipo)}</td>
                 <td data-label="Entrada/Saída" style="color:${cor}; font-weight:700;">${t.direcao === 'entrada' ? 'Entrada' : 'Saída'}</td>
                 <td data-label="Valor" style="color:${cor}; font-weight:700; white-space:nowrap;">${sinal} R$ ${t.valor.toFixed(2)}</td>
                 <td style="text-align:right;"><button class="btn-action btn-delete" onclick="excluirTransacaoExtrato(${t.id})" title="Excluir"><i class="ph ph-trash"></i></button></td>

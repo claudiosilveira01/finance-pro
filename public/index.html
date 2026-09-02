@@ -498,7 +498,7 @@
                             <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">CAIXA ATUAL</span>
                             <div style="display: flex; align-items: center; gap: 6px; background:var(--card-bg); border:1.5px solid var(--border-color); border-radius:var(--radius-sm); padding:8px 12px;">
                                 <span style="font-weight: 700; color: var(--text-highlight-alt);">R$</span>
-                                <input type="text" inputmode="decimal" data-dinheiro id="saldoInput" onblur="salvarSaldoDoMes()" style="background: transparent; border: none; width: 100px; text-align: right; font-weight: 700; font-size: 1.1rem; padding: 0; color: var(--text-highlight-alt); outline: none;">
+                                <input type="text" inputmode="decimal" data-dinheiro id="saldoInput" onfocus="this.dataset.saldoAoFocar = this.value" onblur="salvarSaldoDoMes(this)" style="background: transparent; border: none; width: 100px; text-align: right; font-weight: 700; font-size: 1.1rem; padding: 0; color: var(--text-highlight-alt); outline: none;">
                             </div>
                         </div>
 

@@ -36,4 +36,54 @@
             }
         }
 
-        window.addEventListener('beforeunload', flushPendingDelete);
+        // Gravação keepalive direta nas RPCs — sobrevive ao fechamento da aba (o fetch normal do
+        // supabase-js, e qualquer .then, são cortados). Usada quando a aba some com uma exclusão
+        // pendente ou um save ainda em voo (A1 / U4 da auditoria). Best-effort, sem tratar retorno.
+        function _flushKeepAlive() {
+            if (!currentUser || !window._sbToken) return;
+            const headers = {
+                'Content-Type': 'application/json',
+                apikey: SUPABASE_KEY,
+                Authorization: `Bearer ${window._sbToken}`
+            };
+            const saldoEl = document.getElementById('saldoInput');
+            try {
+                fetch(`${SUPABASE_URL}/rest/v1/rpc/salvar_mes`, {
+                    method: 'POST', keepalive: true, headers,
+                    body: JSON.stringify({ p_ano_mes: mesAtualKey, p_dados: {
+                        fixas: window.activeFixas || [],
+                        faturamentos: window.activeFaturamentos || [],
+                        extrato: window.activeExtrato || [],
+                        registroPagamentos: window.activeRegistroPagamentos || [],
+                        cartoesFaturas: window.activeCartoesFaturas || {},
+                        saldo: _arred2(_parseDinheiro(saldoEl ? saldoEl.value : '') || 0)
+                    } })
+                });
+                fetch(`${SUPABASE_URL}/rest/v1/rpc/salvar_config`, {
+                    method: 'POST', keepalive: true, headers,
+                    body: JSON.stringify({ p: {
+                        categorias: categoriasAtuais,
+                        assinaturas: assinaturasConfig,
+                        cartoesConfig: cartoesConfig,
+                        ocultarCardAcumulado: ocultarCardAcumulado,
+                        ocultarCardCartoes: ocultarCardCartoes
+                    } })
+                });
+            } catch (e) { /* aba fechando — nada a fazer */ }
+        }
+
+        // beforeunload (desktop) + pagehide (mobile, aba "congelada"): se havia exclusão pendente
+        // ou save em voo, além do persistir normal (async, pode não completar) dispara a gravação
+        // keepalive. _saidaTratada evita rodar duas vezes quando os dois eventos disparam.
+        let _saidaTratada = false;
+        function _aoSairDaPagina() {
+            if (_saidaTratada) return;
+            _saidaTratada = true;
+            const tinhaAlgoPendente = !!_pendingDelete || !!window._saveEmVoo;
+            flushPendingDelete();
+            if (tinhaAlgoPendente) _flushKeepAlive();
+        }
+        window.addEventListener('beforeunload', _aoSairDaPagina);
+        window.addEventListener('pagehide', _aoSairDaPagina);
+        // Se a aba volta do bfcache, libera pra tratar a próxima saída.
+        window.addEventListener('pageshow', () => { _saidaTratada = false; });
