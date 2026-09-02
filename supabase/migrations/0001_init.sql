@@ -59,6 +59,7 @@ create table public.fixas (
   foreign key (user_id, ano_mes) references public.meses(user_id, ano_mes) on delete cascade
 );
 create index fixas_user_mes_idx on public.fixas (user_id, ano_mes);
+create index fixas_origem_cartao_id_idx on public.fixas (origem_cartao_id);
 
 create table public.faturamentos (
   id bigint primary key,
@@ -111,6 +112,7 @@ create table public.cartao_faturas (
   primary key (user_id, ano_mes, cartao_id),
   foreign key (user_id, ano_mes) references public.meses(user_id, ano_mes) on delete cascade
 );
+create index cartao_faturas_cartao_id_idx on public.cartao_faturas (cartao_id);
 
 create table public.cartao_transacoes (
   id bigint primary key,
@@ -129,10 +131,13 @@ create index cartao_transacoes_fatura_idx on public.cartao_transacoes (user_id, 
 -- ============================================================================
 -- TRIGGER atualizado_em (config e meses)
 -- ============================================================================
+-- Função de trigger: NÃO é security definer (não precisa — roda no contexto do UPDATE que
+-- disparou a trigger) e NÃO deve ser chamável via API. Com security definer + grant default
+-- pra PUBLIC, o linter do Supabase acusa "anon pode executar SECURITY DEFINER via /rpc/".
 create function public.set_atualizado_em()
 returns trigger
 language plpgsql
-security definer set search_path = ''
+security invoker set search_path = ''
 as $$
 begin
   new.atualizado_em = now();
@@ -148,9 +153,9 @@ create trigger meses_set_atualizado_em
   before update on public.meses
   for each row execute function public.set_atualizado_em();
 
--- Só a trigger deve chamar isso — nunca uma role via API.
-revoke execute on function public.set_atualizado_em() from anon;
-revoke execute on function public.set_atualizado_em() from authenticated;
+-- Só a trigger deve chamar isso — nunca uma role via API. Revogar de PUBLIC (o grant default
+-- de EXECUTE vem por PUBLIC; revogar só de anon/authenticated não tem efeito nenhum).
+revoke execute on function public.set_atualizado_em() from public;
 
 -- ============================================================================
 -- RLS — todas as tabelas, acesso só do próprio usuário
@@ -166,26 +171,28 @@ alter table public.registro_pagamentos enable row level security;
 alter table public.cartao_faturas enable row level security;
 alter table public.cartao_transacoes enable row level security;
 
+-- (select auth.uid()) em vez de auth.uid() direto: o planner avalia uma vez por query
+-- em vez de uma vez por linha (advisor auth_rls_initplan).
 create policy "own" on public.config for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own" on public.assinaturas for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own" on public.cartoes for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own" on public.meses for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own" on public.fixas for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own" on public.faturamentos for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own" on public.extrato for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own" on public.registro_pagamentos for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own" on public.cartao_faturas for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 create policy "own" on public.cartao_transacoes for all
-  using (user_id = auth.uid()) with check (user_id = auth.uid());
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
 
 -- ============================================================================
 -- RPCs — espelham o padrão atual de "1 doc inteiro por get/set" do Firestore

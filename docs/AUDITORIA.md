@@ -46,13 +46,26 @@ removidas por não terem uso. `mesesDisponiveis` (`{key, label}`) também foi co
 totalmente derivável (`label` é gerado a partir do `key` "YYYY-MM" com uma tabela de nomes de
 mês fixa) — schema final não guarda essa lista, só os `ano_mes` distintos de `meses`.
 
+## Advisors do Supabase — estado após o Passo 2 (01/09/2026)
+
+- **Security:** 5 WARN, um por RPC (`get_config`, `salvar_config`, `get_mes`, `salvar_mes`,
+  `get_meses_disponiveis`) — `authenticated_security_definer_function_executable`.
+  **Aceito e intencional:** as RPCs são `SECURITY DEFINER` de propósito (fazem
+  `delete`+`insert` da "linha inteira" do mês/config escopando por `auth.uid()` por dentro) e
+  o usuário logado precisa poder chamá-las. `anon` **não** pode (revogado). Nenhum outro WARN.
+- **Performance:** só INFO `unused_index` (9) — os índices ainda não foram usados porque o
+  banco está vazio; deixam de aparecer quando o app começar a consultar. Sem WARN.
+- Grants de tabela: `anon`/`authenticated` têm `GRANT ALL` (padrão Supabase); o RLS `own`
+  (`user_id = (select auth.uid())`) é a barreira. Tirar `DELETE`/`INSERT`/`UPDATE` diretos do
+  cliente (deixar só via RPC) fica no Passo 7.
+
 ## Status do endurecimento (Passo 7)
 
 - [ ] Soft delete (`deletado_em`) nas tabelas `fixas`, `faturamentos`, `extrato`.
 - [ ] RPCs de exclusão viram `update ... set deletado_em = now()`.
 - [ ] Leituras filtram `deletado_em is null`.
-- [ ] `get_advisors` revisado sem WARN inesperado (WARN de SECURITY DEFINER nas RPCs é
-      esperado/intencional).
+- [x] `get_advisors` revisado sem WARN inesperado (só o WARN de SECURITY DEFINER nas RPCs,
+      esperado/intencional — ver seção "Advisors do Supabase" acima).
 - [ ] Confirmado que o cliente não tem `grant delete` direto nas tabelas (só via RPC).
 
 ## Riscos conhecidos
