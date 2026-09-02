@@ -21,11 +21,23 @@ Cloudflare Workers foi **descartado** (não quer domínio próprio nem o subdom�
 ## Passo atual
 
 **CORTE FEITO (02/09/2026) — produção rodando no Supabase.**
-PR #53 mesclada na `main` (merge `ad75aeb`). Vercel publicou em `finance-pro-cyan.vercel.app`.
-Hotfix `78f197b`: adiar o pós-login pra fora do callback do `onAuthStateChange` (a 1ª RPC
-saía como anon → 401 + toast de erro no login). Produção validada: login limpo, RPCs 200,
-0 erro no console.
-Firebase (`finance-pro-v1`) intacto como rede de segurança.
+PR #53 mesclada na `main` (merge `ad75aeb`). Vercel publica `main` em `finance-pro-cyan.vercel.app`.
+
+Depois do corte (tudo commitado direto na `main`):
+- `78f197b` — hotfix: adiar o pós-login pra fora do callback do `onAuthStateChange` (a 1ª RPC
+  saía como anon → 401 + toast de erro no login). Validado em produção.
+- Supabase Auth → URL Configuration: Site URL = `https://finance-pro-cyan.vercel.app`,
+  redirect URLs `finance-pro-cyan.vercel.app/**` adicionada. "Esqueci minha senha" agora
+  volta pra URL certa. (A integração Supabase↔Vercel já tinha posto `finance-pro-claudio26`.)
+- Campo obsoleto `diarios` **apagado do Firestore** (`scripts/delete-diarios.mjs`, 374 itens,
+  5 docs do claudio). Backup `diarios-backup.json` também apagado. Decisão do usuário.
+- **Arquivos sensíveis apagados do disco** (Passo 8 antecipado): `firebase-service.json`,
+  `firebase-hash-config.json`, `firebase-users.json`, `firestore-export.json`,
+  `firebase-users-map.json`, `diarios-backup.json`, `out/`, `node_modules/`, `.wrangler/`.
+  Restam só `scripts/*.mjs` (sem segredos, só referenciam nomes de campo) e `package.json`.
+- `6788d6f` — UX: overlay "Sincronizando" full-screen virou um chip pequeno no topo.
+
+Firebase (`finance-pro-v1`) intacto como rede de segurança (só o campo `diarios` foi removido).
 
 ## Concluído
 
