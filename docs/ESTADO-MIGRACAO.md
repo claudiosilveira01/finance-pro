@@ -100,16 +100,45 @@ Atualizar ao fim de cada passo. Este arquivo é a fonte de verdade do progresso.
 - Conta de teste no Supabase Auth: `teste@financepro.local` / `Teste12345` — **apagar antes
   do corte** (Passo 6).
 
-## Decisão revista — Auth (01/09/2026)
+### Passo 4 — Auth + histórico do Firestore (02/09/2026) — QUASE CONCLUÍDO
 
-Antes: "recriar contas do zero, reset de senha no 1º acesso". **Agora: migrar as senhas.**
-O Firebase guarda as senhas com `SCRYPT` e o Supabase Auth verifica esse formato nativamente,
-então as 3 pessoas que usam o app **continuam com a mesma senha, sem reset**. Ferramenta:
-`supabase-community/firebase-to-supabase` (pasta `/auth`) — `firestoreusers2json.js` exporta
-os usuários (com hash + salt), `import_users.js` insere em `auth.users` já no formato certo.
-Precisa dos *Password hash parameters* do projeto Firebase (Console → Authentication → Users →
-menu ⋮ → Password hash parameters: `base64_signer_key`, `base64_salt_separator`, `rounds`,
-`mem_cost`). Sai o risco "reset de senha no 1º acesso".
+**Auth (senhas preservadas, sem reset):** a ferramenta oficial `firebase-to-supabase` só faz
+password via middleware WIP — NÃO serve. Mas o GoTrue (Supabase Auth) **verifica hash
+Firebase SCRYPT nativamente** (`internal/crypto/password.go`, prefixo `$fbscrypt$`). Formato:
+`$fbscrypt$v=1,n=<mem_cost>,r=<rounds>,p=1,ss=<salt_sep_b64>,sk=<signer_key_b64>$<salt_b64>$<hash_b64>`
+— salt/hash do Firebase vêm em base64url, convertidos pra base64 padrão. Validado com o vetor
+de teste oficial do GoTrue (login OK). Scripts próprios (não a ferramenta): `scripts/export-firebase.mjs`,
+`scripts/build-import.mjs`, `scripts/run-import.mjs`.
+
+- **4 contas** migradas pro Supabase Auth com senha preservada + `auth.identities` (provider
+  email): `carlaalinny36@gmail.com`, `familia@email.com`, `patricia@email.com`,
+  `claudio@financas.com`. UID Supabase = uuid v4 determinístico do firebase uid (mapa em
+  `firebase-users-map.json`).
+- **Dados importados** via as RPCs `salvar_config`/`salvar_mes` (impersonando cada usuário) —
+  reaproveita todo o transform testado. Conferência **campo a campo bateu 100%**:
+  | usuário | meses | fixas | fat | extrato | reg | Σ extrato | Σ fixas |
+  |---|--:|--:|--:|--:|--:|--:|--:|
+  | carlaalinny36 | 5 | 30 | 6 | 0 | 8 | 0 | 5192,21 |
+  | familia | 2 | 7 | 5 | 0 | 0 | 0 | 7388,95 |
+  | patricia | 1 | 1 | 0 | 0 | 0 | 0 | 1808,11 |
+  | claudio | 18 | 52 | 4 | 1156 | 40 | 115270,43 | 14899,98 |
+  Somas conferem ao centavo com o `firestore-export.json`. `get_meses_disponiveis` e `get_mes`
+  devolvem tudo certo (spot-check em 2026-08/09/11 do claudio).
+- **`criado_em`** das linhas de `meses` = 1º dia do `ano_mes` (`finalize.sql`).
+- **8 colisões de `id` em extrato** (mesmo id em transações idênticas) → ids de extrato
+  regerados no import (`9_000_000_000_000+`; nada referencia `extrato.id`).
+- **`diarios`** (feature legada, 374 lançamentos, só claudio, jan–mai) → `diarios-backup.json`,
+  **não importado**. Aguardando decisão do usuário.
+- **`extrato.idOrigem`** (chave de dedupe da importação de extrato por e-mail) → descartado
+  (não está no schema; já era perdido no roundtrip do `salvar_mes` na arquitetura nova).
+- Usuário órfão no Firestore `oXZZiFvPFKNE8Q5ApvIMLfiqt8B3` (config, 0 meses, sem conta Auth)
+  → ignorado.
+- `get_advisors` security: os 7 WARN esperados + `auth_leaked_password_protection`
+  (feature Pro, projeto é free — aceito).
+
+**Falta no Passo 4:** confirmar que um usuário real consegue logar com a senha dele (formato
+validado com vetor de teste; falta o teste com senha real). Firestore/Firebase **não** é
+apagado — rede de segurança até o corte.
 
 ## Pendências do usuário
 
@@ -118,10 +147,12 @@ menu ⋮ → Password hash parameters: `base64_signer_key`, `base64_salt_separat
 - Passo 3 (recomendado): no painel Supabase → Authentication, desligar *Allow new users to
   sign up* (cadastro já está escondido no app) e configurar as *Redirect URLs* pro link de
   recuperação de senha.
-- Passo 4: gerar a chave do Admin SDK do Firebase (Console → Configurações → Contas de
-  serviço → Firebase Admin SDK → Gerar nova chave privada).
-- Passo 4: copiar os *Password hash parameters* do Firebase Auth (menu ⋮ na lista de usuários).
-- Passo 4: rodar `firestoreusers2json.js` + `import_users.js` (migra as senhas) e depois o
+- Passo 4: ~~gerar a chave do Admin SDK~~ FEITO. ~~copiar os Password hash parameters~~ FEITO.
+  ~~rodar o export/import~~ FEITO.
+- Passo 4 (falta): **testar login com a senha real de um usuário** (ex.: claudio no
+  `wrangler dev`). Se falhar, reconferir a `signer_key`.
+- Passo 4 (decisão): quer os 374 lançamentos antigos de `diarios` de volta? (hoje: backup, não importados)
+- Passo 4 antigo — rodar `firestoreusers2json.js` + `import_users.js` (migra as senhas) e depois o
   export/import dos dados do Firestore.
 - Passo 5: criar API Token no Cloudflare (Edit Cloudflare Workers) e cadastrar como secret
   `CLOUDFLARE_API_TOKEN` no GitHub.

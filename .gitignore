@@ -2,9 +2,12 @@ node_modules/
 serviceAccountKey.json
 firestore-export.json
 # Passo 4 — credenciais da migração de Auth/dados (firebase-to-supabase)
+firebase-hash-config.json
 firebase-service.json
 supabase-service.json
-users.json
+firebase-users.json
 firebase-users-map.json
 .wrangler/
 .dev.vars
+out/
+diarios-backup.json
