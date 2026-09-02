@@ -22,6 +22,30 @@
 `automacao-email-nubank/Code.gs` (Apps Script) escrevia direto no Firestore via service
 account. Usuário confirmou que não usa mais — arquivado em `docs/arquivo/`, não migrado.
 
+### Correção à varredura original — funcionalidades não previstas no PRD
+
+A leitura completa de `js/` durante o Passo 2 encontrou duas áreas de dados reais que a
+varredura inicial não tinha mapeado (o PRD original as ignorava). O schema final passou a
+cobrir as duas:
+
+1. **Cartões de crédito** (`js/cartoes.js`, `js/cartaoFatura.js`, `js/cartaoImportar.js`,
+   `cartoesConfig` em `config-global.js`). Config por usuário: `cartoesConfig` (lista de
+   `{id, nome, diaFechamento, diaVencimento}`). Por mês: `cartoesFaturas` — objeto
+   `{[cartaoId]: {transacoes: [{id, descricao, valor, data, categoria, origemImportId?}],
+   valorConfirmado?, valorEstimado?, _creditosImportados?}}`. Uma fatura de cartão sincroniza
+   automaticamente uma conta fixa vinculada (`fixas.origemCartaoId`).
+2. **Registro de pagamentos** (`window.activeRegistroPagamentos`, gravado em `js/fixas.js` e
+   `js/assinaturas.js`, lido em `js/exportar.js`) — log por mês de toggles de "pago":
+   `{id, contaId, nome, valor, marcadoComoPago, tipo ('fixa'|'assinatura'), dataPagamento,
+   registradoEm}`.
+
+Também confirmado nesta leitura: **nenhum campo `ordem` existe de fato** nos itens de
+`fixas`/`faturamentos`/`extrato` (a ordenação na tela usa os campos `ordFixas`/`ordExtrato`
+em memória, não persistidos) — as colunas `ordem int` do desenho inicial do schema foram
+removidas por não terem uso. `mesesDisponiveis` (`{key, label}`) também foi confirmado como
+totalmente derivável (`label` é gerado a partir do `key` "YYYY-MM" com uma tabela de nomes de
+mês fixa) — schema final não guarda essa lista, só os `ano_mes` distintos de `meses`.
+
 ## Status do endurecimento (Passo 7)
 
 - [ ] Soft delete (`deletado_em`) nas tabelas `fixas`, `faturamentos`, `extrato`.
