@@ -32,16 +32,20 @@
         }
 
         // === Leitura do arquivo ===
-        function importarFaturaCartao() {
-            const cartao = _cartaoAtivo();
-            if (!cartao) { mostrarToast('Cadastre um cartão em Configurações antes de importar.', 'warning'); return; }
+        function _abrirSeletorArquivoFaturaCartao(cartaoId) {
             const input = document.createElement('input');
             input.type = 'file';
             input.accept = '.ofx,.csv,text/csv,application/x-ofx,text/plain';
             input.onchange = () => {
-                if (input.files && input.files[0]) _lerArquivoFaturaCartao(cartao.id, input.files[0]);
+                if (input.files && input.files[0]) _lerArquivoFaturaCartao(cartaoId, input.files[0]);
             };
             input.click();
+        }
+
+        function importarFaturaCartao() {
+            const cartao = _cartaoAtivo();
+            if (!cartao) { mostrarToast('Cadastre um cartão em Configurações antes de importar.', 'warning'); return; }
+            _abrirSeletorArquivoFaturaCartao(cartao.id);
         }
 
         function _lerArquivoFaturaCartao(cartaoId, file) {
@@ -87,7 +91,11 @@
                 <button class="btn-flat" id="btnColarAreaTransferencia" style="width:100%; justify-content:center; margin-bottom:10px;">
                     <i class="ph ph-clipboard"></i> Colar da área de transferência
                 </button>
-                <textarea id="cartaoColarTexto" rows="8" placeholder="Cole aqui o conteúdo do .ofx ou .csv..." style="width:100%; resize:vertical; font-family:monospace; font-size:0.75rem; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:var(--bg-light); color:var(--text-main); margin-bottom:18px;"></textarea>
+                <textarea id="cartaoColarTexto" rows="8" placeholder="Cole aqui o conteúdo do .ofx ou .csv..." style="width:100%; resize:vertical; font-family:monospace; font-size:0.75rem; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:var(--bg-light); color:var(--text-main); margin-bottom:8px;"></textarea>
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-bottom:18px;">
+                    Copiou o arquivo (não o texto) pelo menu de compartilhar? Isso não funciona aqui —
+                    <a href="#" id="btnColarSelecionarArquivo" style="color:var(--blue-accent); text-decoration:underline;">selecione o arquivo direto</a> em vez disso.
+                </p>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">Cancelar</button>
                     <button class="btn-flat" id="modalBtnConfirmar" style="flex: 1;">Processar</button>
@@ -101,11 +109,17 @@
                 try {
                     const texto = await navigator.clipboard.readText();
                     if (texto) { textarea.value = texto; textarea.focus(); }
-                    else mostrarToast('Área de transferência vazia.', 'warning');
+                    else mostrarToast('Área de transferência vazia — se você copiou o arquivo (não o texto) pelo menu de compartilhar, use o link "selecione o arquivo direto" abaixo.', 'warning', 7000);
                 } catch (err) {
                     mostrarToast('Não consegui acessar a área de transferência automaticamente — toque e segure no campo abaixo e escolha "Colar".', 'warning', 6000);
                     textarea.focus();
                 }
+            };
+
+            overlay.querySelector('#btnColarSelecionarArquivo').onclick = (e) => {
+                e.preventDefault();
+                _fecharModalGenerico();
+                _abrirSeletorArquivoFaturaCartao(cartao.id);
             };
 
             overlay.querySelector('#modalBtnConfirmar').onclick = () => {
