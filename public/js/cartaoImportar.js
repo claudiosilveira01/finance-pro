@@ -1,8 +1,10 @@
 // Cartões de Crédito (Fase 3): importar a fatura de um arquivo .ofx ou .csv exportado do banco.
 // OFX é preferido (formato estruturado, com id único por transação — mais confiável do que CSV
 // ou PDF, que já causaram divergência de centavos em tentativas anteriores). CSV também é aceito.
-// Créditos/pagamentos do arquivo (ex.: "Pagamento recebido") não viram compras — só abatem do
-// valor sugerido da fatura, que o usuário sempre confirma manualmente antes de salvar.
+// Créditos do arquivo nunca viram compras. Só abatem do valor sugerido da fatura quando são
+// estorno de uma compra do próprio arquivo (mesma chave) — "Pagamento recebido" genérico (o
+// usuário pagando a fatura) é ignorado no cálculo, pois pode ser pagamento de um mês anterior.
+// De qualquer forma o usuário sempre confirma o valor manualmente antes de salvar.
 
         // === Sugestão de categoria por palavra-chave na descrição ===
         const _CARTAO_PALAVRAS_CATEGORIA = [
@@ -259,7 +261,14 @@
             const fatura = _faturaDoCartaoLeitura(cartaoId);
 
             const compras = itensBrutos.filter(i => i.valor > 0);
-            const creditosBrutos = itensBrutos.filter(i => i.valor < 0);
+            // Só conta como crédito/desconto da fatura um estorno de VERDADE — uma compra que
+            // volta com a mesma chave (mesmo FITID no OFX; mesma data+descrição+valor no CSV).
+            // "Pagamento recebido" (o usuário pagando a fatura por PIX/boleto) também aparece
+            // como crédito no extrato, mas pode ser pagamento de uma fatura ANTERIOR, não desta
+            // — descontar isso do valor sugerido zerava a fatura errado (caso real: R$46 em vez
+            // de ~R$773, porque um pagamento de fatura de mês passado entrou na conta).
+            const chavesCompras = new Set(compras.map(c => c.chave));
+            const creditosBrutos = itensBrutos.filter(i => i.valor < 0 && chavesCompras.has(i.chave));
             const creditos = _dedupCreditosCartao(fatura, creditosBrutos);
             const { novos, ignorados } = _dedupImportacaoCartao(fatura, compras);
 
