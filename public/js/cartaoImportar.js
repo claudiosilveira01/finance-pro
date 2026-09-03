@@ -262,13 +262,16 @@
 
             const compras = itensBrutos.filter(i => i.valor > 0);
             // Só conta como crédito/desconto da fatura um estorno de VERDADE — uma compra que
-            // volta com a mesma chave (mesmo FITID no OFX; mesma data+descrição+valor no CSV).
-            // "Pagamento recebido" (o usuário pagando a fatura por PIX/boleto) também aparece
-            // como crédito no extrato, mas pode ser pagamento de uma fatura ANTERIOR, não desta
-            // — descontar isso do valor sugerido zerava a fatura errado (caso real: R$46 em vez
-            // de ~R$773, porque um pagamento de fatura de mês passado entrou na conta).
-            const chavesCompras = new Set(compras.map(c => c.chave));
-            const creditosBrutos = itensBrutos.filter(i => i.valor < 0 && chavesCompras.has(i.chave));
+            // volta com a mesma data+descrição (valor em módulo, ignorando o sinal: no CSV a
+            // "chave" de uma compra e a do estorno dela diferem só no sinal do valor, então não
+            // dá pra comparar a chave direto). "Pagamento recebido" (o usuário pagando a fatura
+            // por PIX/boleto) também aparece como crédito no extrato, mas pode ser pagamento de
+            // uma fatura ANTERIOR, não desta — descontar isso do valor sugerido zerava a fatura
+            // errado (caso real: R$46 em vez de ~R$773, porque um pagamento de fatura de mês
+            // passado entrou na conta).
+            const _chaveEstorno = (i) => `${i.data}|${_normalizarTexto(i.descricao)}|${Math.abs(i.valor).toFixed(2)}`;
+            const chavesCompras = new Set(compras.map(_chaveEstorno));
+            const creditosBrutos = itensBrutos.filter(i => i.valor < 0 && chavesCompras.has(_chaveEstorno(i)));
             const creditos = _dedupCreditosCartao(fatura, creditosBrutos);
             const { novos, ignorados } = _dedupImportacaoCartao(fatura, compras);
 
