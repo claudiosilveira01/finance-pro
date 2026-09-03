@@ -46,6 +46,7 @@
                     });
                 } else {
                     currentUser = null;
+                    loading.style.display = 'none';
                     document.getElementById('loginScreen').style.display = 'block';
                     document.getElementById('mainApp').style.display = 'none';
                 }

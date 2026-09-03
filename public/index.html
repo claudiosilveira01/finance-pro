@@ -36,7 +36,7 @@
 </head>
 <body>
 
-    <div id="loginScreen">
+    <div id="loginScreen" style="display:none;">
         <h2 style="color: var(--text-highlight); margin-bottom: 20px; font-weight: 800; font-size: 1.4rem;"><i class="ph ph-chart-line-up" style="vertical-align: -3px; font-size: 1.3rem;"></i> Planner Financeiro</h2>
         <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Acesse para sincronizar os seus dados</p>
 
@@ -52,7 +52,7 @@
         <p id="authErro" style="color: var(--red-danger); font-size: 0.85rem; margin-top: 15px; display: none;"></p>
     </div>
 
-    <div class="loading-overlay" id="loadingDiv"><i class="ph ph-circle-notch girando"></i> Sincronizando…</div>
+    <div class="loading-overlay" id="loadingDiv" style="display:flex;"><i class="ph ph-circle-notch girando"></i> Carregando…</div>
 
     <!-- Container de notificações toast -->
     <div class="toast-container" id="toastContainer"></div>
