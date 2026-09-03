@@ -253,25 +253,46 @@
             return novos;
         }
 
+        // "YYYY-MM" do mês anterior a anoMesKey.
+        function _anoMesAnterior(anoMesKey) {
+            const [ano, mes] = anoMesKey.split('-').map(Number);
+            const d = new Date(Date.UTC(ano, mes - 2, 1)); // mes é 1-based; -2 pra voltar 1 mês em base 0
+            return `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}`;
+        }
+
+        // Saldo que "transporta" do mês anterior pro cálculo da fatura atual — igual uma fatura de
+        // cartão de verdade: o que ficou em aberto no fechamento passado continua contando agora.
+        // Se a conta fixa vinculada à fatura do mês anterior já foi marcada como paga, considera
+        // quitada (saldo 0); senão, carrega o valor total que aquela fatura tinha fechado.
+        async function _saldoAnteriorCartao(cartaoId) {
+            try {
+                const anoMesAnt = _anoMesAnterior(mesAtualKey);
+                const data = await rpc('get_mes', { p_ano_mes: anoMesAnt });
+                if (!data) return 0;
+                const faturaAnt = (data.cartoesFaturas || {})[cartaoId];
+                if (!faturaAnt) return 0;
+                const fixaAnt = (data.fixas || []).find(f => f.origemCartaoId === cartaoId);
+                if (fixaAnt && fixaAnt.pago) return 0;
+                return _totalFatura(faturaAnt);
+            } catch (err) {
+                return 0; // sem dado do mês anterior (cartão novo, por ex.) não trava a importação
+            }
+        }
+
         // === Tela de revisão: usuário confere categorias, desmarca o que não quer e confirma o valor real ===
-        function _abrirRevisaoImportacaoCartao(cartaoId, itensBrutos) {
+        async function _abrirRevisaoImportacaoCartao(cartaoId, itensBrutos) {
             const cartao = cartoesConfig.find(c => c.id === cartaoId);
             // Leitura pura na montagem da tela — só materializa a fatura no confirmar (senão
             // cancelar a revisão deixava uma fatura-fantasma no mês; M2 da auditoria).
             const fatura = _faturaDoCartaoLeitura(cartaoId);
 
             const compras = itensBrutos.filter(i => i.valor > 0);
-            // Só conta como crédito/desconto da fatura um estorno de VERDADE — uma compra que
-            // volta com a mesma data+descrição (valor em módulo, ignorando o sinal: no CSV a
-            // "chave" de uma compra e a do estorno dela diferem só no sinal do valor, então não
-            // dá pra comparar a chave direto). "Pagamento recebido" (o usuário pagando a fatura
-            // por PIX/boleto) também aparece como crédito no extrato, mas pode ser pagamento de
-            // uma fatura ANTERIOR, não desta — descontar isso do valor sugerido zerava a fatura
-            // errado (caso real: R$46 em vez de ~R$773, porque um pagamento de fatura de mês
-            // passado entrou na conta).
-            const _chaveEstorno = (i) => `${i.data}|${_normalizarTexto(i.descricao)}|${Math.abs(i.valor).toFixed(2)}`;
-            const chavesCompras = new Set(compras.map(_chaveEstorno));
-            const creditosBrutos = itensBrutos.filter(i => i.valor < 0 && chavesCompras.has(_chaveEstorno(i)));
+            // Todo crédito do arquivo (estorno de compra OU "Pagamento recebido") abate o valor
+            // sugerido — igual uma fatura de cartão de verdade funciona: é um saldo corrente, não
+            // um cálculo isolado por mês. Por isso também somamos o saldo transportado do mês
+            // anterior abaixo — sem ele, sobrava só "quanto você gastou" (não bate com "quanto
+            // falta pagar", que também depende do que já foi pago antes).
+            const creditosBrutos = itensBrutos.filter(i => i.valor < 0);
             const creditos = _dedupCreditosCartao(fatura, creditosBrutos);
             const { novos, ignorados } = _dedupImportacaoCartao(fatura, compras);
 
@@ -289,10 +310,11 @@
             // o valor correto dos pagamentos/estornos do total de compras.
             const somaCreditos = creditos.reduce((s, i) => s + i.valor, 0);
             const totalJaExistente = fatura.transacoes.reduce((s, t) => s + t.valor, 0);
+            const saldoAnterior = await _saldoAnteriorCartao(cartaoId);
             // Guardados pra recalcular a sugestão se o usuário desmarcar algum item na revisão.
-            window._cartaoRevisaoBase = totalJaExistente + somaCreditos;
+            window._cartaoRevisaoBase = saldoAnterior + totalJaExistente + somaCreditos;
             const somaNovos = novos.reduce((s, n) => s + n.valor, 0);
-            const sugestaoTotal = Math.max(0, totalJaExistente + somaNovos + somaCreditos);
+            const sugestaoTotal = Math.max(0, saldoAnterior + totalJaExistente + somaNovos + somaCreditos);
 
             const opcoesCategoria = categoriasAtuais.filter(c => c !== 'Cartão de Crédito');
 
@@ -311,7 +333,7 @@
                         <input type="text" inputmode="decimal" data-dinheiro id="cartaoRevisaoValorReal" value="${_formatarDinheiroInput(sugestaoTotal)}" style="width:100px; text-align:right; border:none; background:transparent; font-weight:800; font-size:1.05rem; color:var(--text-highlight-alt);">
                     </div>
                 </div>
-                <p style="font-size:0.7rem; color:var(--text-muted); margin-bottom:18px;">Pré-preenchido com a soma das compras menos os pagamentos encontrados no arquivo. Ajuste aqui se o valor mostrado no app do banco for diferente.</p>
+                <p style="font-size:0.7rem; color:var(--text-muted); margin-bottom:18px;">Pré-preenchido com o saldo da fatura anterior (se ainda não marcada como paga) + compras deste arquivo − pagamentos/estornos encontrados. Ajuste aqui se o valor mostrado no app do banco for diferente.</p>
                 <div style="display: flex; gap: 10px;">
                     <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">Cancelar</button>
                     <button class="btn-flat" id="modalBtnConfirmar" style="flex: 1;">Confirmar Importação</button>
