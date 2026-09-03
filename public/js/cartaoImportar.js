@@ -35,7 +35,11 @@
         function _abrirSeletorArquivoFaturaCartao(cartaoId) {
             const input = document.createElement('input');
             input.type = 'file';
-            input.accept = '.ofx,.csv,text/csv,application/x-ofx,text/plain';
+            // Inclui "*/*" além das extensões: no iOS o seletor de arquivos às vezes não
+            // reconhece .ofx (não tem um tipo/UTI padrão) e mostra o arquivo acinzentado,
+            // impossível de selecionar, mesmo estando na pasta certa. O conteúdo é validado
+            // de qualquer forma depois de escolhido (_processarTextoFaturaCartao).
+            input.accept = '.ofx,.csv,.txt,text/csv,application/x-ofx,text/plain,*/*';
             input.onchange = () => {
                 if (input.files && input.files[0]) _lerArquivoFaturaCartao(cartaoId, input.files[0]);
             };
