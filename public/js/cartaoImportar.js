@@ -47,23 +47,74 @@
         function _lerArquivoFaturaCartao(cartaoId, file) {
             const reader = new FileReader();
             reader.onload = (e) => {
-                const texto = String(e.target.result || '');
                 const nomeArq = (file.name || '').toLowerCase();
-                const ehOfx = nomeArq.endsWith('.ofx') || texto.includes('<OFX>');
-                const itens = ehOfx ? _parseCartaoOfx(texto) : _parseCartaoCsv(texto);
-
-                if (itens === null) {
-                    mostrarToast('Não reconheci o formato desse arquivo. Exporte a fatura como .ofx ou .csv direto do app do banco.', 'error', 6000);
-                    return;
-                }
-                if (itens.length === 0) {
-                    mostrarToast('Não encontrei nenhuma transação nesse arquivo.', 'warning', 6000);
-                    return;
-                }
-                _abrirRevisaoImportacaoCartao(cartaoId, itens);
+                _processarTextoFaturaCartao(cartaoId, String(e.target.result || ''), nomeArq);
             };
             reader.onerror = () => mostrarToast('Não consegui ler esse arquivo.', 'error');
             reader.readAsText(file);
+        }
+
+        // Ponto único de processamento de texto de fatura (.ofx/.csv) — usado tanto pelo import
+        // de arquivo quanto pelo "colar" (o usuário copia o conteúdo no app do banco e cola direto,
+        // sem precisar salvar o arquivo no aparelho primeiro).
+        function _processarTextoFaturaCartao(cartaoId, texto, nomeArq) {
+            const ehOfx = (nomeArq || '').endsWith('.ofx') || texto.includes('<OFX>');
+            const itens = ehOfx ? _parseCartaoOfx(texto) : _parseCartaoCsv(texto);
+
+            if (itens === null) {
+                mostrarToast('Não reconheci o formato desse conteúdo. Exporte/copie a fatura como .ofx ou .csv direto do app do banco.', 'error', 6000);
+                return;
+            }
+            if (itens.length === 0) {
+                mostrarToast('Não encontrei nenhuma transação nesse conteúdo.', 'warning', 6000);
+                return;
+            }
+            _abrirRevisaoImportacaoCartao(cartaoId, itens);
+        }
+
+        // === Colar o conteúdo do arquivo (sem precisar salvá-lo no aparelho antes) ===
+        function importarFaturaCartaoColar() {
+            const cartao = _cartaoAtivo();
+            if (!cartao) { mostrarToast('Cadastre um cartão em Configurações antes de importar.', 'warning'); return; }
+
+            const html = `
+                <h3 style="margin-bottom: 8px; color: var(--text-highlight); font-size: 1.1rem;">
+                    <i class="ph ph-clipboard-text"></i> Colar Fatura — ${_esc(cartao.nome)}
+                </h3>
+                <p style="font-size:0.8rem; color:var(--text-muted); margin-bottom:14px;">
+                    Copie o conteúdo do arquivo .ofx ou .csv exportado do app do seu banco e cole aqui — não precisa salvar o arquivo no aparelho.
+                </p>
+                <button class="btn-flat" id="btnColarAreaTransferencia" style="width:100%; justify-content:center; margin-bottom:10px;">
+                    <i class="ph ph-clipboard"></i> Colar da área de transferência
+                </button>
+                <textarea id="cartaoColarTexto" rows="8" placeholder="Cole aqui o conteúdo do .ofx ou .csv..." style="width:100%; resize:vertical; font-family:monospace; font-size:0.75rem; padding:10px; border-radius:var(--radius-sm); border:1px solid var(--border-color); background:var(--bg-light); color:var(--text-main); margin-bottom:18px;"></textarea>
+                <div style="display: flex; gap: 10px;">
+                    <button class="btn-flat" id="modalBtnCancelar" style="flex: 1; background: var(--text-muted);">Cancelar</button>
+                    <button class="btn-flat" id="modalBtnConfirmar" style="flex: 1;">Processar</button>
+                </div>
+            `;
+            const overlay = _renderModalGenerico(html);
+            const textarea = overlay.querySelector('#cartaoColarTexto');
+            textarea.focus();
+
+            overlay.querySelector('#btnColarAreaTransferencia').onclick = async () => {
+                try {
+                    const texto = await navigator.clipboard.readText();
+                    if (texto) { textarea.value = texto; textarea.focus(); }
+                    else mostrarToast('Área de transferência vazia.', 'warning');
+                } catch (err) {
+                    mostrarToast('Não consegui acessar a área de transferência automaticamente — toque e segure no campo abaixo e escolha "Colar".', 'warning', 6000);
+                    textarea.focus();
+                }
+            };
+
+            overlay.querySelector('#modalBtnConfirmar').onclick = () => {
+                const texto = textarea.value.trim();
+                if (!texto) { mostrarToast('Cole o conteúdo da fatura antes de processar.', 'warning'); return; }
+                _fecharModalGenerico();
+                _processarTextoFaturaCartao(cartao.id, texto, '');
+            };
+            overlay.querySelector('#modalBtnCancelar').onclick = _fecharModalGenerico;
         }
 
         // === Parser OFX — extrai cada bloco <STMTTRN>...</STMTTRN> por regex ===
