@@ -368,7 +368,7 @@
         .charts-wrapper { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
         .chart-container { position: relative; margin: auto; height: 180px; flex: 1; min-width: 150px; max-width: 250px; }
 
-        #loginScreen { max-width: 400px; width: 100%; margin: 80px auto; padding: clamp(24px, 5vw, 36px) clamp(20px, 5vw, 30px); background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); text-align: center; transition: 0.3s; }
+        #loginScreen { max-width: 400px; width: 100%; margin: clamp(24px, 10vh, 80px) auto; padding: clamp(20px, 5vw, 36px) clamp(20px, 5vw, 30px); background: var(--card-bg); border-radius: var(--radius-lg); box-shadow: var(--shadow-lg); text-align: center; transition: 0.3s; }
         #mainApp { display: none; }
         /* Indicador de sincronização: um chip pequeno e discreto no topo, não bloqueia a tela.
            O JS liga/desliga via style.display = 'flex' / 'none'. */
