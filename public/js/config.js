@@ -8,9 +8,20 @@
         // Único ponto de acesso ao banco: toda leitura/escrita passa por uma RPC do Postgres
         // (get_config/salvar_config, get_mes/salvar_mes, get_meses_disponiveis, renomear_categoria,
         // repetir_fixa). Erro vira exceção — os módulos já tratam com toast + "Tentar de novo".
-        async function rpc(nome, args) {
-            const { data, error } = await sb.rpc(nome, args || {});
-            if (error) throw error;
+        async function rpc(nome, args, _retry) {
+            const { data, error, status } = await sb.rpc(nome, args || {});
+            if (error) {
+                // 401 logo após abrir o PWA no iPhone: o Safari acorda a aba, o supabase-js
+                // dispara um refresh de token e, se alguma RPC sai em paralelo nesse instante
+                // (ex.: os dois Promise.all de carregarConfigGlobal), pode pegar o token antigo
+                // por uma corrida interna do cliente — não é sessão realmente expirada. Espera a
+                // sessão assentar e tenta de novo, uma única vez, antes de propagar o erro.
+                if (!_retry && status === 401) {
+                    const { data: { session } } = await sb.auth.getSession();
+                    if (session) return rpc(nome, args, true);
+                }
+                throw error;
+            }
             return data;
         }
 
