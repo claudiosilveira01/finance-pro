@@ -10,7 +10,7 @@ if ('serviceWorker' in navigator) {
 
 // Chave pública VAPID — é PÚBLICA, pode ficar no código do cliente. O par privado fica só no
 // secret da Edge Function. Precisa ser exatamente a mesma dos dois lados.
-const VAPID_PUBLIC_KEY = 'BEfBKjRCJuagF6uQjzE5UnK1Cha30uenNJrz0jWlq292VOLIILYWfBEa1hrUAJWOdB7Gmmzz_WJOpumN6wOXp0Q';
+const VAPID_PUBLIC_KEY = 'BB_dRACXra9RgGEXOrWDBkYwseXmE6vRnWMQNgssa4jI_DAkgjNldgsu2WJJ2UR_ZMbSGGIIo3mSv_IP42kbbEk';
 
 function _urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
