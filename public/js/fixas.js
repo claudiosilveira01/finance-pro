@@ -1,18 +1,11 @@
 // CRUD de contas fixas e cálculo de alerta de vencimento
-        //
-        // mesesAFrente: contas vindas de um cartão de crédito (origemCartaoId) são lançadas no mês
-        // em que a fatura foi trabalhada — que normalmente é o mês em que as compras aconteceram,
-        // não o mês em que a fatura de fato fecha/vence (o cartão fecha perto do fim do mês e vence
-        // uns dias depois, já no mês seguinte). Por isso, pra essas contas, o dia de vencimento é
-        // lido como sendo do mês SEGUINTE ao mês atual — senão "Dia 8" seria lido como já vencido
-        // em vez do dia 8 do mês que realmente vem depois.
-        function calcularAlertaVencimento(diaVenc, pago, mesesAFrente = 0) {
+        function calcularAlertaVencimento(diaVenc, pago) {
             if (pago) return { texto: `Dia ${diaVenc}`, cor: 'var(--badge-paid-text)', bg: 'var(--badge-paid-bg)' };
 
             const [ano, mes] = mesAtualKey.split('-').map(Number);
             const hoje = new Date(); hoje.setHours(0,0,0,0);
 
-            const dataVenc = new Date(ano, mes - 1 + mesesAFrente, diaVenc);
+            const dataVenc = new Date(ano, mes - 1, diaVenc);
             dataVenc.setHours(0,0,0,0);
             
             const diffTime = dataVenc - hoje;
@@ -137,7 +130,6 @@
             document.getElementById('fixaVenc').value = '';
             document.getElementById('fixaObs').value = '';
             document.getElementById('fixaValor').disabled = false;
-            document.getElementById('fixaOrigemCartaoAviso').style.display = 'none';
             ['fixaNome', 'fixaValor', 'fixaVenc'].forEach(id => document.getElementById(id).classList.remove('campo-invalido'));
             document.getElementById('fixaRecorrente').checked = false;
             document.getElementById('fixaRecorrenteAte').value = '';
@@ -157,12 +149,6 @@
             document.getElementById('fixaVenc').value = conta.vencimento;
             document.getElementById('fixaCategoria').value = conta.categoria;
             document.getElementById('fixaObs').value = conta.obs || '';
-
-            // Conta vinda do card "Cartões de Crédito": o valor é sincronizado automaticamente
-            // por lá, então trava aqui pra nunca ficar dessincronizado do cartão.
-            const vemDeCartao = !!conta.origemCartaoId;
-            document.getElementById('fixaValor').disabled = vemDeCartao;
-            document.getElementById('fixaOrigemCartaoAviso').style.display = vemDeCartao ? 'block' : 'none';
 
             idEditandoFixa = id;
             document.getElementById('fixaRecorrenteSection').style.display = 'none';

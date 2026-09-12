@@ -22,28 +22,63 @@ document.addEventListener('focus', (e) => {
     el.dataset.dinheiroDigitos = el.value.replace(/\D/g, '');
 }, true);
 
-// Fase de captura (não borbulhamento): roda ANTES de qualquer oninput=".." do próprio campo
-// (ex.: filtroFixaValorMin dispara aplicarFiltrosFixas() no input) — senão esses handlers leriam
-// o valor de um instante antes da máscara, sempre atrasado em um dígito.
+// Fase de captura (não borbulhamento), em 'beforeinput': roda ANTES do navegador aplicar a
+// edição, então selectionStart/End aqui ainda são os de ANTES do texto mudar — é a única forma
+// de saber com certeza se havia um trecho selecionado quando o usuário digitou.
 //
-// Os dígitos "reais" digitados ficam num dataset à parte, NUNCA derivados do texto já formatado
-// na tela — pois esse texto sempre tem no mínimo 3 dígitos (o padStart do 0,00), então apagar uma
-// casa e reformatar a partir dele reconstituiria os mesmos 3 dígitos pra sempre, travando em
-// "0,00" sem nunca conseguir esvaziar o campo de verdade.
+// Por que isso importa: selecionar o valor inteiro (ex.: clicar 3x ou Ctrl+A) e digitar um novo
+// número devia SOBRESCREVER o campo — mas como os dígitos "reais" vivem num dataset à parte (não
+// no texto da tela, ver comentário abaixo), a lógica antiga sempre ACRESCENTAVA o dígito novo ao
+// fim do buffer, ignorando que uma seleção pedia pra apagar o que estava selecionado primeiro.
+// Essa correção remove do buffer exatamente os dígitos que estavam dentro da seleção (mapeando a
+// posição do texto formatado — só a vírgula não conta como dígito — pra um índice no buffer) antes
+// de acrescentar o que foi digitado. Sem seleção (cursor só piscando), o comportamento "caixa
+// registradora" de sempre continua idêntico: Backspace sempre tira o dígito mais à direita e o
+// dígito novo sempre entra no fim, não importa onde o cursor esteja.
+document.addEventListener('beforeinput', (e) => {
+    const el = e.target;
+    if (!el.matches || !el.matches('[data-dinheiro]')) return;
+
+    const atual = el.dataset.dinheiroDigitos != null ? el.dataset.dinheiroDigitos : el.value.replace(/\D/g, '');
+    const temSelecao = el.selectionStart !== el.selectionEnd;
+
+    let novosDigitos;
+    if (!temSelecao) {
+        if (e.inputType && e.inputType.startsWith('delete')) {
+            novosDigitos = atual.slice(0, -1);
+        } else if (e.data != null) {
+            novosDigitos = atual + e.data.replace(/\D/g, '');
+        } else {
+            // Sem dado confiável aqui (colar em navegador antigo, autofill) — deixa pro
+            // fallback do listener de 'input' abaixo, que lê o texto já modificado pelo navegador.
+            return;
+        }
+    } else {
+        const digitIndexAt = (pos) => (el.value.slice(0, pos).match(/\d/g) || []).length;
+        const digitStart = digitIndexAt(el.selectionStart);
+        const digitEnd = digitIndexAt(el.selectionEnd);
+        novosDigitos = atual.slice(0, digitStart) + atual.slice(digitEnd);
+        if (e.data != null) novosDigitos += e.data.replace(/\D/g, '');
+    }
+
+    el.dataset.dinheiroDigitos = novosDigitos;
+    el.dataset.dinheiroPreCalculado = '1';
+}, true);
+
 document.addEventListener('input', (e) => {
     const el = e.target;
     if (!el.matches || !el.matches('[data-dinheiro]')) return;
 
-    let digitos = el.dataset.dinheiroDigitos != null ? el.dataset.dinheiroDigitos : el.value.replace(/\D/g, '');
-    if (e.inputType && e.inputType.startsWith('delete')) {
-        digitos = digitos.slice(0, -1);
-    } else if (e.data != null) {
-        digitos += e.data.replace(/\D/g, '');
+    let digitos;
+    if (el.dataset.dinheiroPreCalculado) {
+        digitos = el.dataset.dinheiroDigitos;
+        delete el.dataset.dinheiroPreCalculado;
     } else {
-        // Sem inputType confiável (colar, autofill) — melhor esforço a partir do texto atual.
+        // O 'beforeinput' não calculou nada (colar em navegador antigo, autofill) — melhor
+        // esforço a partir do texto já modificado pelo navegador.
         digitos = el.value.replace(/\D/g, '');
+        el.dataset.dinheiroDigitos = digitos;
     }
-    el.dataset.dinheiroDigitos = digitos;
 
     el.value = _formatarDigitosDinheiro(digitos);
     // Sempre deixa o cursor no fim — o dígito seguinte precisa entrar depois da vírgula, nunca

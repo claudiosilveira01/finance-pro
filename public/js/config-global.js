@@ -1,4 +1,4 @@
-// Configuração global do usuário no Supabase (categorias, assinaturas, cartões, visibilidade de cards)
+// Configuração global do usuário no Supabase (categorias, assinaturas, visibilidade de cards)
         async function carregarConfigGlobal(callback) {
             try {
                 const [c, meses] = await Promise.all([
@@ -9,15 +9,14 @@
                 if (c) {
                     if (Array.isArray(c.categorias) && c.categorias.length) categoriasAtuais = c.categorias;
                     assinaturasConfig = c.assinaturas || [];
-                    cartoesConfig = c.cartoesConfig || [];
                     ocultarCardAcumulado = c.ocultarCardAcumulado || false;
-                    ocultarCardCartoes = c.ocultarCardCartoes || false;
+                    ocultarCardExtrato = c.ocultarCardExtrato || false;
                 }
 
                 mesesDisponiveis = _montarMesesDisponiveis(meses);
 
                 aplicarVisibilidadeAcumulado();
-                aplicarVisibilidadeCartoes();
+                aplicarVisibilidadeExtrato();
 
                 const dataHoje = new Date();
                 const mesString = String(dataHoje.getMonth() + 1).padStart(2, '0');
@@ -34,13 +33,8 @@
 
                 renderizarMeses();
                 renderizarListasDeCategorias();
-                renderizarCartoesConfig();
 
                 _seletoresDeMes().forEach(seletor => { seletor.value = mesAtualKey; });
-
-                // Se as notificações já foram ativadas antes neste aparelho, renova a inscrição
-                // em silêncio (o endpoint do push pode ter mudado).
-                if (typeof verificarNotificacoesAtivas === 'function') verificarNotificacoesAtivas();
 
                 carregarMes(mesAtualKey, callback);
             } catch (err) {
@@ -57,9 +51,8 @@
             rpc('salvar_config', { p: {
                 categorias: categoriasAtuais,
                 assinaturas: assinaturasConfig,
-                cartoesConfig: cartoesConfig,
                 ocultarCardAcumulado: ocultarCardAcumulado,
-                ocultarCardCartoes: ocultarCardCartoes
+                ocultarCardExtrato: ocultarCardExtrato
             } }).catch(() => {
                 mostrarToast('Erro ao salvar as configurações. Verifique sua conexão.', 'error', 6000, {
                     acao: { texto: 'Tentar de novo', callback: salvarConfigGlobal }

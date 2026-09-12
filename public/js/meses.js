@@ -9,7 +9,6 @@
                 window.activeFaturamentos = data.faturamentos || [];
                 window.activeExtrato = data.extrato || [];
                 window.activeRegistroPagamentos = data.registroPagamentos || [];
-                window.activeCartoesFaturas = data.cartoesFaturas || {};
                 const saldoArred = _arred2(data.saldo || 0);
                 document.getElementById('saldoInput').value = saldoArred ? _formatarDinheiroInput(saldoArred) : '';
 
@@ -35,7 +34,6 @@
                 faturamentos: window.activeFaturamentos || [],
                 extrato: window.activeExtrato || [],
                 registroPagamentos: window.activeRegistroPagamentos || [],
-                cartoesFaturas: window.activeCartoesFaturas || {},
                 saldo: _arred2(_parseDinheiro(document.getElementById('saldoInput').value) || 0)
             };
             // Mês novo passa a aparecer no seletor assim que tem algo salvo.
@@ -79,7 +77,7 @@
 
             // Cria a linha vazia do mês no banco pra ele "grudar" mesmo sem nenhum item ainda.
             rpc('salvar_mes', { p_ano_mes: inputVal, p_dados: {
-                fixas: [], faturamentos: [], extrato: [], registroPagamentos: [], cartoesFaturas: {}, saldo: 0
+                fixas: [], faturamentos: [], extrato: [], registroPagamentos: [], saldo: 0
             } }).catch(() => {
                 mostrarToast('Erro ao criar o mês. Verifique sua conexão.', 'error', 6000);
             });

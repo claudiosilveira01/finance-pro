@@ -24,8 +24,13 @@ function temFiltrosAtivos() {
            filtrosFixas.vencimento !== '' || filtrosFixas.pago !== '';
 }
 
-// Modal de filtros
+// Modal de filtros — os campos refletem o filtro atual (que pode ter vindo de uma sessão
+// anterior, restaurado do localStorage) em vez de sempre abrir em branco.
 function abrirModalFiltrosFixas() {
+    document.getElementById('filtroFixaValorMin').value = filtrosFixas.valorMin != null ? _formatarDinheiroInput(filtrosFixas.valorMin) : '';
+    document.getElementById('filtroFixaValorMax').value = filtrosFixas.valorMax != null ? _formatarDinheiroInput(filtrosFixas.valorMax) : '';
+    document.getElementById('filtroFixaVencimento').value = filtrosFixas.vencimento || '';
+    document.getElementById('filtroFixaPago').value = filtrosFixas.pago || '';
     document.getElementById('modalFiltrosFixas').style.display = 'flex';
 }
 
@@ -46,6 +51,7 @@ function aplicarFiltrosFixas() {
     const pago = pagoInput || '';
 
     filtrosFixas = { valorMin, valorMax, vencimento, pago };
+    _salvarEstadoUI('filtrosFixas', filtrosFixas);
 
     calcularEAtualizarVisual();
 }
@@ -57,6 +63,7 @@ function limparFiltrosFixas() {
     document.getElementById('filtroFixaPago').value = '';
 
     filtrosFixas = { valorMin: null, valorMax: null, vencimento: '', pago: '' };
+    _salvarEstadoUI('filtrosFixas', filtrosFixas);
 
     calcularEAtualizarVisual();
     mostrarToast('Filtros limpos.', 'success');

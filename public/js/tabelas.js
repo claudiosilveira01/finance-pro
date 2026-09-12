@@ -2,13 +2,16 @@
         function ordenarTabela(tabela, coluna) {
             if(tabela === 'fixas') {
                 atualizarOrdenacaoCascata(ordFixas, coluna);
+                _salvarEstadoUI('ordFixas', ordFixas);
                 calcularEAtualizarVisual();
             } else if(tabela === 'faturamentos') {
                 atualizarOrdenacaoCascata(ordFaturamentos, coluna);
+                _salvarEstadoUI('ordFaturamentos', ordFaturamentos);
                 calcularEAtualizarVisual();
             } else if(tabela === 'extrato') {
                 ordExtrato.asc = (ordExtrato.col === coluna) ? !ordExtrato.asc : true;
                 ordExtrato.col = coluna;
+                _salvarEstadoUI('ordExtrato', ordExtrato);
                 renderizarExtrato();
             }
         }

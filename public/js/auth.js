@@ -36,7 +36,6 @@
                     if (!_graficosIniciados) {
                         initChart();
                         initChartSobraFalta();
-                        initChartCartaoCategoria();
                         _graficosIniciados = true;
                     }
                     atualizarBotaoTema();

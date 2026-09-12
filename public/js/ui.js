@@ -33,12 +33,26 @@
             window.addEventListener('DOMContentLoaded', tentar);
         })();
 
+        // Ao abrir, o visor já fica pronto pra receber dígito — sem precisar clicar nele antes
+        // (como uma calculadora física/app "de verdade": abriu, já dá pra digitar). O foco só
+        // funciona depois que o modal está de fato visível (display:flex aplicado), por isso o
+        // requestAnimationFrame — focar um elemento ainda com display:none é ignorado pelo navegador.
         function abrirModalCalculadora() {
             document.getElementById('modalCalculadora').style.display = 'flex';
+            const visor = document.getElementById('calcVisor');
+            requestAnimationFrame(() => {
+                visor.focus();
+                visor.select();
+            });
         }
         function fecharModalCalculadora() {
             document.getElementById('modalCalculadora').style.display = 'none';
         }
+        // Enter no visor equivale a apertar "=" — comportamento esperado de qualquer calculadora
+        // "de verdade", sem precisar tirar a mão do teclado pra clicar no botão.
+        document.getElementById('calcVisor') && document.getElementById('calcVisor').addEventListener('keydown', e => {
+            if (e.key === 'Enter') { e.preventDefault(); calcInput('='); }
+        });
 
         function abrirModalConfig() {
             document.getElementById('modalConfig').style.display = 'flex';
@@ -50,7 +64,7 @@
 
         // Esc fecha qualquer modal ou menu de contexto aberto no sistema. Em vez de zerar o
         // display na marra (o que pulava a limpeza de estado de cada modal — idEditandoFixa,
-        // window._cartaoRevisaoItens, etc.), dispara o botão "Cancelar"/"X" do modal, que roda
+        // idEditandoFaturamento, etc.), dispara o botão "Cancelar"/"X" do modal, que roda
         // o handler de fechamento certo. e.repeat evita disparo repetido ao segurar a tecla.
         document.addEventListener('keydown', e => {
             if (e.key !== 'Escape' || e.repeat) return;
@@ -102,18 +116,16 @@
             if (toggle) toggle.checked = ocultarCardAcumulado;
         }
 
-        // Card/aba "Cartões de Crédito": visibilidade controlada em Configurações, igual o
-        // "Acumulado por Categoria" — mas aqui também esconde o botão da barra inferior no mobile.
-        function alternarVisibilidadeCartoes(ocultar) {
-            ocultarCardCartoes = ocultar;
-            aplicarVisibilidadeCartoes();
+        // Card "Extrato Bancário": visibilidade controlada em Configurações, igual o
+        // "Acumulado por Categoria".
+        function alternarVisibilidadeExtrato(ocultar) {
+            ocultarCardExtrato = ocultar;
+            aplicarVisibilidadeExtrato();
             salvarConfigGlobal();
         }
-        function aplicarVisibilidadeCartoes() {
-            const card = document.getElementById('tab-cartoes');
-            if (card) card.style.display = ocultarCardCartoes ? 'none' : '';
-            const navBtn = document.getElementById('navBtnCartoes');
-            if (navBtn) navBtn.style.display = ocultarCardCartoes ? 'none' : '';
-            const toggle = document.getElementById('toggleOcultarCartoes');
-            if (toggle) toggle.checked = ocultarCardCartoes;
+        function aplicarVisibilidadeExtrato() {
+            const card = document.getElementById('cardExtrato');
+            if (card) card.style.display = ocultarCardExtrato ? 'none' : '';
+            const toggle = document.getElementById('toggleOcultarExtrato');
+            if (toggle) toggle.checked = ocultarCardExtrato;
         }

@@ -55,7 +55,6 @@
                         faturamentos: window.activeFaturamentos || [],
                         extrato: window.activeExtrato || [],
                         registroPagamentos: window.activeRegistroPagamentos || [],
-                        cartoesFaturas: window.activeCartoesFaturas || {},
                         saldo: _arred2(_parseDinheiro(saldoEl ? saldoEl.value : '') || 0)
                     } })
                 });
@@ -64,9 +63,8 @@
                     body: JSON.stringify({ p: {
                         categorias: categoriasAtuais,
                         assinaturas: assinaturasConfig,
-                        cartoesConfig: cartoesConfig,
                         ocultarCardAcumulado: ocultarCardAcumulado,
-                        ocultarCardCartoes: ocultarCardCartoes
+                        ocultarCardExtrato: ocultarCardExtrato
                     } })
                 });
             } catch (e) { /* aba fechando — nada a fazer */ }

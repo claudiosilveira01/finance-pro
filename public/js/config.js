@@ -37,20 +37,32 @@
             return (anoMesArray || []).map(key => ({ key, label: _labelMes(key) }));
         }
 
+        // Estado de UI (filtros, ordenação de tabela, escolha do Sobra/Falta) persistido no
+        // localStorage — por aparelho/navegador, não sincronizado entre dispositivos (não passa
+        // pelo Supabase). Sobrevive a fechar a aba e trocar de mês, então o usuário não perde uma
+        // ordenação/filtro que já tinha montado.
+        function _salvarEstadoUI(chave, valor) {
+            try { localStorage.setItem('estadoUI:' + chave, JSON.stringify(valor)); } catch (e) {}
+        }
+        function _lerEstadoUI(chave, padrao) {
+            try {
+                const bruto = localStorage.getItem('estadoUI:' + chave);
+                return bruto != null ? JSON.parse(bruto) : padrao;
+            } catch (e) { return padrao; }
+        }
+
         let currentUser = null;
         let categoriasAtuais = ["Alimentação", "Transporte", "Lazer", "Educação", "Assinaturas", "Saúde", "Comunicação", "Tributos", "PIX Terceiros", "Outros"];
         let assinaturasConfig = [];
-        let cartoesConfig = [];
         let mesesDisponiveis = [];
 
         let mesAtualKey = "";
-        let ordFixas = { levels: [] };
-        let ordFaturamentos = { levels: [] };
-        let ordExtrato = { col: 'data', asc: false };
+        let ordFixas = _lerEstadoUI('ordFixas', { levels: [] });
+        let ordFaturamentos = _lerEstadoUI('ordFaturamentos', { levels: [] });
+        let ordExtrato = _lerEstadoUI('ordExtrato', { col: 'data', asc: false });
         let meuGraficoPizza;
         let meuGraficoBarra;
         let chartSobraFalta;
-        let chartCartaoCategoria;
         let idEditandoFixa = null;
         let idEditandoFaturamento = null;
         let diaCalendarioSelecionado = null;
@@ -58,11 +70,14 @@
         let extratoSelecionados = new Set();
         let extratoOrdemTipo = 'alfabetica'; // 'alfabetica' | 'valor' — classificação do resumo por tipo no card Extrato
         let ocultarCardAcumulado = false;
-        let ocultarCardCartoes = false;
-        let cartaoSelecionadoId = null;
+        let ocultarCardExtrato = false;
+
+        // Card "Sobra / Falta Estimada": qual botão de Orçamento/Receitas está ativo.
+        let sobraFaltaOrcamentoEscolha = _lerEstadoUI('sobraFaltaOrcamento', 'fixo');
+        let sobraFaltaReceitaEscolha = _lerEstadoUI('sobraFaltaReceita', 'nenhuma');
 
         // Filtros em cascata para contas fixas
-        let filtrosFixas = { valorMin: null, valorMax: null, vencimento: '', pago: '' };
+        let filtrosFixas = _lerEstadoUI('filtrosFixas', { valorMin: null, valorMax: null, vencimento: '', pago: '' });
 
         // Controla quando as animações de entrada (badges, listas, odômetro lento) tocam:
         // só na carga inicial, troca de mês ou troca de aba no mobile — nunca ao selecionar/marcar itens.

@@ -68,11 +68,6 @@
             if(window.activeFixas) {
                 window.activeFixas.forEach(f => { if(f.categoria === antigo) f.categoria = novo; });
             }
-            if(window.activeCartoesFaturas) {
-                Object.values(window.activeCartoesFaturas).forEach(fatura => {
-                    (fatura.transacoes || []).forEach(t => { if(t.categoria === antigo) t.categoria = novo; });
-                });
-            }
 
             renderizarListasDeCategorias();
             calcularEAtualizarVisual();
@@ -81,7 +76,7 @@
 
         function _persistirRenomeioCategoria(antigo, novo) {
             // Array de categorias (config) + mês atual pelo caminho normal; renomear_categoria
-            // propaga o novo nome pras fixas e transações de cartão de TODOS os meses de uma vez.
+            // propaga o novo nome pras fixas de TODOS os meses de uma vez.
             salvarConfigGlobal();
             salvarDadosDoMesAtual();
 
@@ -96,9 +91,7 @@
 
         function excluirCategoriaGlobal(nome) {
             const outras = categoriasAtuais.filter(c => c !== nome);
-            const emUsoEmFixas = (window.activeFixas || []).some(f => f.categoria === nome);
-            const emUsoEmCartoes = Object.values(window.activeCartoesFaturas || {}).some(fatura => (fatura.transacoes || []).some(t => t.categoria === nome));
-            const emUsoNoMesAtual = emUsoEmFixas || emUsoEmCartoes;
+            const emUsoNoMesAtual = (window.activeFixas || []).some(f => f.categoria === nome);
 
             if(emUsoNoMesAtual) {
                 if(outras.length === 0) {
