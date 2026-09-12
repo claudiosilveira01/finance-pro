@@ -200,6 +200,7 @@
             if (!box) return;
             const opcoes = [
                 { valor: 'nenhuma', label: 'Nenhuma', icone: 'prohibit' },
+                { valor: 'total', label: 'Somar Todas', icone: 'currency-dollar' },
                 ...receitas.map(f => ({ valor: `fat-${f.id}`, label: f.nome, icone: 'currency-dollar' }))
             ];
             box.innerHTML = opcoes.map(o => `
