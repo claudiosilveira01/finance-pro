@@ -15,46 +15,82 @@
 
         // direcao: -1 (veio da esquerda / aba anterior), 0 (sem animação — atalho do manifest,
         // clique não vindo do bottom-nav), 1 (veio da direita / próxima aba).
+        // Trava uma troca de aba já em andamento — sem isso, um segundo swipe/toque disparado
+        // antes da animação anterior terminar (100-240ms) sobrepunha as duas transições e piscava.
+        let _trocandoDeAba = false;
+
         function _irParaAba(tabId, direcao) {
+            if (_trocandoDeAba) return;
             const atual = document.querySelector('.tab-content.active');
             const alvo = document.getElementById(tabId);
             if (!alvo || atual === alvo) return;
             const mobile = window.innerWidth < 900;
+            if (mobile && direcao !== 0) _trocandoDeAba = true;
 
             const concluirTroca = () => {
                 if (atual) atual.classList.remove('active');
                 alvo.classList.add('active');
+                // Cards da aba que nunca tinha sido aberta (ex.: "Mês" logo após o login) dependiam
+                // só do IntersectionObserver de anim.js pra sair do reveal-init (opacity:0) — no
+                // Safari/iOS esse observer às vezes não refaz o cálculo quando o elemento sai de
+                // display:none, e o card ficava invisível pra sempre ("nem aparecem"). Trocar de
+                // aba agora revela na marra, sem depender do observer.
+                _revelarCardsDaAba(alvo);
+                // Mesmo problema do IntersectionObserver dos cards, só que pro gráfico "Acumulado
+                // por Categoria" — sem isso ele podia nunca desenhar no mobile (ver anim.js).
+                if (tabId === 'tab-dashboard' && typeof forcarRevelarGraficoCategoria === 'function') {
+                    forcarRevelarGraficoCategoria();
+                }
                 if (mobile && direcao !== 0) {
                     const classeEntrada = direcao > 0 ? 'slide-in-right' : 'slide-in-left';
                     alvo.classList.add(classeEntrada);
-                    setTimeout(() => alvo.classList.remove(classeEntrada), 320);
+                    setTimeout(() => alvo.classList.remove(classeEntrada), 240);
                 }
 
                 document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
                 const navBtn = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
                 if (navBtn) { navBtn.classList.add('active'); moverIndicadorNav(navBtn); }
 
-                // No mobile, trocar de aba reanima os detalhes (badges, listas, odômetro) — deixa o
-                // app "vivo". calcularEAtualizarVisual() já cuida de redesenhar o calendário também.
-                if (tabId === 'tab-calendario' && !mobile) {
-                    renderizarCalendario();
-                } else {
-                    animarNaCarga = true;
-                    calcularEAtualizarVisual();
-                }
+                // O recálculo pesado (tabelas, gráficos, calendário) só roda DEPOIS que o navegador
+                // já pintou o primeiro frame da animação de entrada — rodando tudo síncrono no meio
+                // da troca de classes, o JS travava a pintura da transição inteira até terminar (a
+                // "piscada"/atraso relatado: a tela ficava parada e só then a animação tocava de
+                // uma vez, comprimida). No frame seguinte a aba já está com display:block, então os
+                // gráficos (Chart.js) já enxergam o canvas com o tamanho certo pra desenhar.
+                requestAnimationFrame(() => {
+                    // No mobile, trocar de aba reanima os detalhes (badges, listas, odômetro) —
+                    // deixa o app "vivo". calcularEAtualizarVisual() já redesenha o calendário também.
+                    if (tabId === 'tab-calendario' && !mobile) {
+                        renderizarCalendario();
+                    } else {
+                        animarNaCarga = true;
+                        calcularEAtualizarVisual();
+                    }
+                    _trocandoDeAba = false;
+                });
             };
 
             // A aba que sai desliza+esmaece primeiro (rápido), só depois a próxima entra — evitar
             // sobrepor as duas ao mesmo tempo, já que tab-fixas/tab-calendario e tab-dashboard
             // vivem em colunas HTML diferentes (não dá pra fazer as duas deslizarem juntas sem
-            // reestruturar o layout inteiro em colunas físicas).
+            // reestruturar o layout inteiro em colunas físicas). Duração curta de propósito — rápida
+            // o bastante pra não parecer um "buraco" entre uma aba e outra.
             if (mobile && direcao !== 0 && atual) {
                 const classeSaida = direcao > 0 ? 'slide-out-left' : 'slide-out-right';
                 atual.classList.add(classeSaida);
-                setTimeout(() => { atual.classList.remove(classeSaida); concluirTroca(); }, 160);
+                setTimeout(() => { atual.classList.remove(classeSaida); concluirTroca(); }, 100);
             } else {
                 concluirTroca();
             }
+        }
+
+        // Força a revelação (classe reveal-in) de qualquer card ainda com reveal-init dentro da
+        // aba que acabou de virar visível — não espera o IntersectionObserver de anim.js, que só
+        // roda de verdade pro scroll normal do desktop.
+        function _revelarCardsDaAba(aba) {
+            if (!aba) return;
+            const cards = aba.classList.contains('card') ? [aba] : [...aba.querySelectorAll('.card')];
+            cards.forEach(c => c.classList.add('reveal-in'));
         }
 
         // Move a "pílula" do bottom-nav até ficar atrás do botão indicado, com transição suave (CSS).

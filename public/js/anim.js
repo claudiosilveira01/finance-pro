@@ -52,6 +52,18 @@
         chartObserver.observe(cardGrafico);
     }
     window.chartFoiRevelado = () => chartRevelado;
+    // Mesmo problema do reveal-in dos cards: no mobile, o card do gráfico às vezes está dentro de
+    // uma aba ainda display:none quando observarGraficoCategoria() registra o IntersectionObserver
+    // — se o Safari/iOS não refizer o cálculo ao trocar de aba, o gráfico nunca ganha os dados
+    // (fica em branco pra sempre). Troca de aba chama isto direto, sem depender do observer.
+    window.forcarRevelarGraficoCategoria = function () {
+        if (chartRevelado) return;
+        chartRevelado = true;
+        if (chartObserver) chartObserver.disconnect();
+        if (window.__ultimoChartDataArray && typeof updateChart === 'function') {
+            updateChart(window.__ultimoChartDataArray);
+        }
+    };
 
     // Efeito de contagem do Painel de Controle. Só conta "do zero" (efeito de entrada completo)
     // na carga inicial, troca de mês ou troca de aba — via a flag global animarNaCarga, lida no
