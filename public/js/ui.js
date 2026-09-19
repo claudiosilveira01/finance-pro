@@ -1,19 +1,135 @@
 // Navegação entre abas e modais de Calculadora/Configurações
+
+        // Ordem visual das abas no bottom-nav — usada tanto pra saber se um swipe deve ir "pra
+        // frente" ou "pra trás" quanto pra animar a pílula do indicador na direção certa.
+        const ORDEM_ABAS_MOBILE = ['tab-fixas', 'tab-calendario', 'tab-dashboard'];
+
         function switchTab(event, tabId) {
             if(window.innerWidth >= 900 && event) return;
-            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            if(event) event.currentTarget.classList.add('active');
+            const abaAtual = document.querySelector('.tab-content.active');
+            const indiceAtual = abaAtual ? ORDEM_ABAS_MOBILE.indexOf(abaAtual.id) : -1;
+            const indiceAlvo = ORDEM_ABAS_MOBILE.indexOf(tabId);
+            const direcao = (event && indiceAtual !== -1 && indiceAlvo !== -1) ? Math.sign(indiceAlvo - indiceAtual) : 0;
+            _irParaAba(tabId, direcao);
+        }
 
-            // No mobile, trocar de aba reanima os detalhes (badges, listas, odômetro) — deixa o app "vivo".
-            // calcularEAtualizarVisual() já cuida de redesenhar o calendário também.
-            if (event) {
-                animarNaCarga = true;
-                calcularEAtualizarVisual();
-            } else if (tabId === 'tab-calendario') {
-                renderizarCalendario();
+        // direcao: -1 (veio da esquerda / aba anterior), 0 (sem animação — atalho do manifest,
+        // clique não vindo do bottom-nav), 1 (veio da direita / próxima aba).
+        function _irParaAba(tabId, direcao) {
+            const atual = document.querySelector('.tab-content.active');
+            const alvo = document.getElementById(tabId);
+            if (!alvo || atual === alvo) return;
+            const mobile = window.innerWidth < 900;
+
+            const concluirTroca = () => {
+                if (atual) atual.classList.remove('active');
+                alvo.classList.add('active');
+                if (mobile && direcao !== 0) {
+                    const classeEntrada = direcao > 0 ? 'slide-in-right' : 'slide-in-left';
+                    alvo.classList.add(classeEntrada);
+                    setTimeout(() => alvo.classList.remove(classeEntrada), 320);
+                }
+
+                document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+                const navBtn = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+                if (navBtn) { navBtn.classList.add('active'); moverIndicadorNav(navBtn); }
+
+                // No mobile, trocar de aba reanima os detalhes (badges, listas, odômetro) — deixa o
+                // app "vivo". calcularEAtualizarVisual() já cuida de redesenhar o calendário também.
+                if (tabId === 'tab-calendario' && !mobile) {
+                    renderizarCalendario();
+                } else {
+                    animarNaCarga = true;
+                    calcularEAtualizarVisual();
+                }
+            };
+
+            // A aba que sai desliza+esmaece primeiro (rápido), só depois a próxima entra — evitar
+            // sobrepor as duas ao mesmo tempo, já que tab-fixas/tab-calendario e tab-dashboard
+            // vivem em colunas HTML diferentes (não dá pra fazer as duas deslizarem juntas sem
+            // reestruturar o layout inteiro em colunas físicas).
+            if (mobile && direcao !== 0 && atual) {
+                const classeSaida = direcao > 0 ? 'slide-out-left' : 'slide-out-right';
+                atual.classList.add(classeSaida);
+                setTimeout(() => { atual.classList.remove(classeSaida); concluirTroca(); }, 160);
+            } else {
+                concluirTroca();
             }
+        }
+
+        // Move a "pílula" do bottom-nav até ficar atrás do botão indicado, com transição suave (CSS).
+        function moverIndicadorNav(btn) {
+            const indicador = document.getElementById('navIndicator');
+            const nav = document.querySelector('.bottom-nav');
+            if (!indicador || !nav || !btn) return;
+            const rectNav = nav.getBoundingClientRect();
+            const rectBtn = btn.getBoundingClientRect();
+            indicador.style.width = rectBtn.width + 'px';
+            indicador.style.transform = `translateX(${rectBtn.left - rectNav.left}px)`;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const ativo = document.querySelector('.nav-item.active');
+            if (ativo) moverIndicadorNav(ativo);
+        });
+        // Reposiciona a pílula ao girar a tela ou redimensionar — sem isso ela ficaria "presa" nas
+        // coordenadas antigas até a próxima troca de aba.
+        window.addEventListener('resize', () => {
+            const ativo = document.querySelector('.nav-item.active');
+            if (ativo) moverIndicadorNav(ativo);
+        });
+
+        // Deslizar (swipe) pra trocar de aba no mobile — mesma navegação do bottom-nav, só que
+        // arrastando o dedo pra esquerda/direita em qualquer lugar da tela. Ignorado com um modal
+        // aberto (senão atrapalharia gestos dentro dele) e com pouco deslocamento vertical (senão
+        // um scroll normal da página seria confundido com swipe de aba).
+        (function _configurarSwipeDeAbas() {
+            let inicioX = 0, inicioY = 0, tocando = false;
+            const LIMIAR_PX = 55;
+
+            document.addEventListener('touchstart', e => {
+                if (window.innerWidth >= 900 || e.touches.length !== 1) { tocando = false; return; }
+                const modalAberto = [...document.querySelectorAll('.modal-overlay')].some(o => getComputedStyle(o).display !== 'none');
+                if (modalAberto) { tocando = false; return; }
+                inicioX = e.touches[0].clientX;
+                inicioY = e.touches[0].clientY;
+                tocando = true;
+            }, { passive: true });
+
+            document.addEventListener('touchend', e => {
+                if (!tocando) return;
+                tocando = false;
+                const fimX = e.changedTouches[0].clientX;
+                const fimY = e.changedTouches[0].clientY;
+                const deltaX = fimX - inicioX;
+                const deltaY = fimY - inicioY;
+                if (Math.abs(deltaX) < LIMIAR_PX || Math.abs(deltaX) < Math.abs(deltaY) * 1.5) return;
+
+                const abaAtual = document.querySelector('.tab-content.active');
+                const indiceAtual = abaAtual ? ORDEM_ABAS_MOBILE.indexOf(abaAtual.id) : -1;
+                if (indiceAtual === -1) return;
+
+                // Arrastar pra esquerda avança pra próxima aba (deltaX negativo), pra direita volta.
+                const novoIndice = indiceAtual + (deltaX < 0 ? 1 : -1);
+                if (novoIndice < 0 || novoIndice >= ORDEM_ABAS_MOBILE.length) return;
+                _irParaAba(ORDEM_ABAS_MOBILE[novoIndice], deltaX < 0 ? 1 : -1);
+            }, { passive: true });
+        })();
+
+        // Botão "Selecionar Contas" (Contas Fixas): liga/desliga as bolinhas de seleção da tabela
+        // e a linha "SOMA SELECIONADA" logo abaixo — por padrão ficam ocultas.
+        function toggleMostrarSelecaoFixas() {
+            mostrarSelecaoFixas = !mostrarSelecaoFixas;
+            _salvarEstadoUI('mostrarSelecaoFixas', mostrarSelecaoFixas);
+            aplicarVisibilidadeSelecaoFixas();
+        }
+        function aplicarVisibilidadeSelecaoFixas() {
+            const tab = document.getElementById('tab-fixas');
+            const btn = document.getElementById('btnToggleSelecaoFixas');
+            const boxSoma = document.getElementById('somaSelecionadaFixasBox');
+            if (tab) tab.dataset.selecaoFixas = mostrarSelecaoFixas ? 'visivel' : 'oculta';
+            if (btn) btn.classList.toggle('ativo', mostrarSelecaoFixas);
+            if (boxSoma) boxSoma.style.display = mostrarSelecaoFixas ? 'flex' : 'none';
         }
 
         // Atalho do manifest (long-press no ícone do PWA → "Calendário de vencimentos"): abre o
