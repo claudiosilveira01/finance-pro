@@ -10,7 +10,7 @@
         observer = new IntersectionObserver((entradas) => {
             entradas.forEach(entrada => {
                 if (entrada.isIntersecting) {
-                    entrada.target.classList.add('reveal-in');
+                    _revelarCardUmaVez(entrada.target);
                     observer.unobserve(entrada.target);
                 }
             });
@@ -26,6 +26,22 @@
     }
 
     window.iniciarAnimacoesDeEntrada = iniciarAnimacoesDeEntrada;
+
+    // Toca a entrada (reveal-in) uma única vez de verdade por card, ao aparecer na rolagem da tela
+    // (uso real: desktop, onde todos os cards ficam visíveis ao mesmo tempo em duas colunas).
+    // Depois de tocar, as duas classes saem do card (reveal-init/reveal-in) — sem elas, não sobra
+    // nada que uma troca de aba no mobile pudesse "reiniciar do zero" depois (ver _revelarCardsDaAba
+    // em ui.js, que pula essa animação de propósito e só torna o card visível na hora). O tempo do
+    // setTimeout (em vez de um "animationend") é de propósito: se o card sair de tela ainda no meio
+    // da entrada, o `animationend` não dispara, mas o setTimeout garante a limpeza mesmo assim —
+    // timers de JS continuam rodando com o elemento escondido, diferente de animação CSS.
+    function _revelarCardUmaVez(card) {
+        if (!card || !card.classList.contains('reveal-init')) return; // já revelado antes — nada a fazer
+        card.classList.add('reveal-in');
+        const atraso = parseFloat(card.style.animationDelay || '0') * 1000;
+        setTimeout(() => card.classList.remove('reveal-init', 'reveal-in'), atraso + 1300);
+    }
+    window._revelarCardUmaVez = _revelarCardUmaVez;
 
     // O gráfico só recebe os dados reais (e portanto só "cresce") quando o card
     // dele realmente aparece na tela — senão a animação acontecia durante o
