@@ -34,7 +34,10 @@
                 // só do IntersectionObserver de anim.js pra sair do reveal-init (opacity:0) — no
                 // Safari/iOS esse observer às vezes não refaz o cálculo quando o elemento sai de
                 // display:none, e o card ficava invisível pra sempre ("nem aparecem"). Trocar de
-                // aba agora revela na marra, sem depender do observer.
+                // aba agora revela na marra, sem depender do observer — e só na primeira vez de
+                // cada card (ver _revelarCardUmaVez em anim.js): da segunda troca em diante o card
+                // já está "queimado" (sem reveal-init/reveal-in), então não reinicia a animação
+                // nem embaralha a ordem de entrada.
                 _revelarCardsDaAba(alvo);
                 // Mesmo problema do IntersectionObserver dos cards, só que pro gráfico "Acumulado
                 // por Categoria" — sem isso ele podia nunca desenhar no mobile (ver anim.js).
@@ -58,15 +61,22 @@
                 // uma vez, comprimida). No frame seguinte a aba já está com display:block, então os
                 // gráficos (Chart.js) já enxergam o canvas com o tamanho certo pra desenhar.
                 requestAnimationFrame(() => {
-                    // No mobile, trocar de aba reanima os detalhes (badges, listas, odômetro) —
-                    // deixa o app "vivo". calcularEAtualizarVisual() já redesenha o calendário também.
-                    if (tabId === 'tab-calendario' && !mobile) {
-                        renderizarCalendario();
-                    } else {
-                        animarNaCarga = true;
-                        calcularEAtualizarVisual();
+                    // try/finally: se calcularEAtualizarVisual() (ou renderizarCalendario())
+                    // lançar algum erro no meio do redesenho, a trava _trocandoDeAba precisa soltar
+                    // do mesmo jeito — sem isso, um erro deixava TODA troca de aba seguinte travada
+                    // pra sempre (o toque/swipe passava a não fazer nada, silenciosamente).
+                    try {
+                        // No mobile, trocar de aba reanima os detalhes (badges, listas, odômetro) —
+                        // deixa o app "vivo". calcularEAtualizarVisual() já redesenha o calendário também.
+                        if (tabId === 'tab-calendario' && !mobile) {
+                            renderizarCalendario();
+                        } else {
+                            animarNaCarga = true;
+                            calcularEAtualizarVisual();
+                        }
+                    } finally {
+                        _trocandoDeAba = false;
                     }
-                    _trocandoDeAba = false;
                 });
             };
 
@@ -84,13 +94,20 @@
             }
         }
 
-        // Força a revelação (classe reveal-in) de qualquer card ainda com reveal-init dentro da
-        // aba que acabou de virar visível — não espera o IntersectionObserver de anim.js, que só
-        // roda de verdade pro scroll normal do desktop.
+        // Torna visíveis na hora (sem tocar a animação de 1.1s) os cards ainda com reveal-init
+        // dentro da aba que acabou de virar visível. A animação lenta de "surgir aos poucos"
+        // (reveal-init/reveal-in, ver anim.js) foi pensada pra rolagem de tela no desktop — currying
+        // ela pra troca de aba no mobile é errado por dois motivos: (1) o usuário já pediu aquela
+        // tela, ela precisa aparecer na hora, não em ~1.5s; (2) por causa da forma como CSS trata
+        // display:none, ela reiniciava do ZERO toda vez que a aba voltava a ficar visível, e como o
+        // atraso escalonado de cada card foi calculado uma vez só (na ordem de todos os cards da
+        // página, no login), o resultado era uma ordem de entrada embaralhada a cada troca. Tirando
+        // as duas classes direto, o card só aparece — a animação de entrada de verdade continua
+        // intacta pra quem rola a tela no desktop (ver _revelarCardUmaVez em anim.js).
         function _revelarCardsDaAba(aba) {
             if (!aba) return;
             const cards = aba.classList.contains('card') ? [aba] : [...aba.querySelectorAll('.card')];
-            cards.forEach(c => c.classList.add('reveal-in'));
+            cards.forEach(c => c.classList.remove('reveal-init', 'reveal-in'));
         }
 
         // Move a "pílula" do bottom-nav até ficar atrás do botão indicado, com transição suave (CSS).
