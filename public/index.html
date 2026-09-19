@@ -346,7 +346,7 @@
                             <button class="fab-inline" onclick="abrirModalNovaFixa()" title="Nova Conta Fixa"><i class="ph ph-plus"></i></button>
                         </span>
                     </div>
-                    <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom: 8px;">
+                    <div style="display:flex; justify-content:flex-start; gap:8px; margin-bottom: 8px;">
                         <button class="btn-action" onclick="abrirModalFiltrosFixas()" title="Abrir filtros"><i class="ph ph-funnel"></i> Filtros</button>
                         <button class="btn-action" id="btnToggleSelecaoFixas" onclick="toggleMostrarSelecaoFixas()" title="Selecionar contas para somar"><i class="ph ph-check-circle"></i> Selecionar Contas</button>
                     </div>
@@ -406,17 +406,17 @@
                     <div class="card">
                         <div class="card-title"><span class="card-title-left"><i class="ph ph-gauge"></i> Painel de Controle</span></div>
                         <div class="stats-list">
-                            <div class="stat-row stat-hero item-anim" style="animation-delay:0.02s">
+                            <div class="stat-row stat-hero">
                                 <span class="stat-icon"><i class="ph ph-wallet"></i></span>
                                 <span class="stat-label">Orçamento Fixo</span>
                                 <span class="stat-value" id="mOrcamento">R$ 0,00</span>
                             </div>
-                            <div class="stat-row item-anim" style="animation-delay:0.08s">
+                            <div class="stat-row">
                                 <span class="stat-icon" style="color:var(--red-danger);"><i class="ph ph-hourglass-medium"></i></span>
                                 <span class="stat-label">Restante Contas</span>
                                 <span class="stat-value" id="mRestante" style="color: var(--red-danger);">R$ 0,00</span>
                             </div>
-                            <div class="stat-row item-anim" style="animation-delay:0.14s">
+                            <div class="stat-row">
                                 <span class="stat-icon" style="color:var(--green-success);"><i class="ph ph-check-circle"></i></span>
                                 <span class="stat-label">Pago</span>
                                 <span class="stat-value" id="mPago" style="color: var(--green-success);">R$ 0,00</span>
