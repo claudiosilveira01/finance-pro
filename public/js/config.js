@@ -72,6 +72,10 @@
         let ocultarCardAcumulado = false;
         let ocultarCardExtrato = false;
 
+        // Botão "Selecionar Contas" (ao lado de Filtros, em Contas Fixas): liga/desliga as bolinhas
+        // de seleção da tabela e a linha "SOMA SELECIONADA" — por padrão ficam ocultas.
+        let mostrarSelecaoFixas = _lerEstadoUI('mostrarSelecaoFixas', false);
+
         // Card "Sobra / Falta Estimada": qual botão de Orçamento/Receitas está ativo.
         let sobraFaltaOrcamentoEscolha = _lerEstadoUI('sobraFaltaOrcamento', 'fixo');
         let sobraFaltaReceitaEscolha = _lerEstadoUI('sobraFaltaReceita', 'nenhuma');

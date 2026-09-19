@@ -124,8 +124,8 @@
         .receitas-form { display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
         .receitas-origem { width: 100%; }
         .receitas-linha2 { display: flex; gap: 10px; align-items: center; }
-        .receitas-valor { flex: 1 1 auto; min-width: 0; }
-        .receitas-btn-add { flex: 1 1 auto; white-space: nowrap; }
+        .receitas-valor { flex: 2 1 auto; min-width: 0; font-weight: 700; font-size: 1rem; }
+        .receitas-btn-add { flex: 0 0 auto; }
         /* Botão de data: o <input type="date"> real fica invisível por cima do botão (mesmo
            tamanho, opacity:0), então o toque abre o seletor nativo do navegador diretamente —
            mais confiável entre navegadores do que chamar showPicker() via JS (no Safari/iOS,
@@ -136,6 +136,9 @@
         .data-picker-wrap:hover .btn-data-picker { border-color: var(--purple-light); }
         .btn-data-picker i { font-size: 18px; color: var(--text-highlight); }
         .input-data-overlay { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; min-width: 0; }
+        /* Botão de data só com ícone (Receitas): mesma mecânica do botão com texto, só que
+           quadrado e compacto — o popup nativo de data abre do mesmo jeito, por cima. */
+        .btn-data-picker-icon { padding: 11px; width: 44px; justify-content: center; }
 
         @media (min-width: 900px) {
             .receitas-form { flex-direction: row; flex-wrap: nowrap; align-items: center; }
@@ -166,12 +169,22 @@
         td.td-check { width: 30px; padding-right: 0; }
         th.th-check { width: 30px; }
 
+        /* Bolinhas de seleção da tabela Contas Fixas ficam ocultas por padrão — só aparecem
+           (e junto delas a linha "SOMA SELECIONADA") quando o usuário liga o botão "Selecionar
+           Contas" ao lado de Filtros. Vale igual em mobile e desktop. */
+        #tab-fixas[data-selecao-fixas="oculta"] .th-check,
+        #tab-fixas[data-selecao-fixas="oculta"] .td-check { display: none; }
+        #btnToggleSelecaoFixas.ativo { background: var(--gradient-btn); color: white; border-color: transparent; }
+
         /* Tabela compacta (usada em Receitas): linhas mais baixas que a tabela padrão */
         .tabela-compacta th, .tabela-compacta td { padding: 6px 6px; }
         .tabela-compacta .btn-action { padding: 4px; }
         .tabela-receitas { font-size: 1.08rem; }
         .tabela-receitas td { padding: 12px 6px; }
         .tabela-receitas .item-link { font-size: 1.08rem; }
+        /* Sem os botões de ação na linha (viraram um popup ao clicar na Receita), o valor ganha
+           o espaço de volta — fonte maior e sem quebrar linha mesmo com valores grandes. */
+        .receita-valor-cel { font-size: 1.2rem; font-weight: 800; white-space: nowrap; text-align: right; }
 
         /* Resumo compacto do card de Extrato Bancário — os detalhes ficam num modal à parte */
         .extrato-resumo-grid { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
@@ -229,6 +242,7 @@
             /* Tabela de Receitas fica com letra maior que as outras de propósito — ainda encolhe
                nesse ponto de corte, só que menos, pra continuar legível sem estourar a largura. */
             .tabela-receitas, .tabela-receitas .item-link { font-size: 0.92rem; }
+            .receita-valor-cel { font-size: 1rem; }
         }
         @container (max-width: 340px) {
             th, td { padding: 6px 1px; }
@@ -237,6 +251,7 @@
             .vencimento-tag { font-size: 0.5rem; padding: 1px 2px; }
             .item-link { font-size: 0.72rem; }
             .tabela-receitas, .tabela-receitas .item-link { font-size: 0.84rem; }
+            .receita-valor-cel { font-size: 0.9rem; }
         }
         .btn-action { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display:flex; align-items:center; padding: 6px; border-radius: 8px; transition: background 0.15s, color 0.15s; }
         .btn-action:hover { color: var(--blue-accent); background: var(--bg-blue-light); }
@@ -323,15 +338,38 @@
         .kebab-menu-item.danger { color: var(--red-danger); }
         .kebab-menu-item.danger .ph { color: var(--red-danger); }
 
-        /* === BOTTOM NAV (3 itens) === */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0)); z-index: 100; box-shadow: 0 -4px 20px rgba(31, 22, 79, 0.06); }
-        .nav-item { display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 0.68rem; color: var(--text-muted); background: none; border: none; cursor: pointer; font-weight: 600; flex: 1; padding: 8px 4px; border-radius: 999px; transition: color 0.2s, background 0.25s, transform 0.15s; margin: 0 3px; }
+        /* === BOTTOM NAV (3 itens) ===
+           translateZ(0)/backface-visibility promovem a barra pra sua própria camada de composição
+           — no Safari/iOS, position:fixed sem isso "se solta" e fica flutuando no meio do conteúdo
+           durante o rubber-band do scroll (bug relatado pelo usuário), porque o navegador recalcula
+           a barra junto com o scroll em vez de mantê-la colada ao viewport. */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; background: var(--card-bg); border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 10px 10px calc(10px + env(safe-area-inset-bottom, 0)); z-index: 100; box-shadow: 0 -4px 20px rgba(31, 22, 79, 0.06); -webkit-transform: translateZ(0); transform: translateZ(0); -webkit-backface-visibility: hidden; backface-visibility: hidden; will-change: transform; }
+        /* "Pílula" que desliza por baixo do botão ativo — dá a sensação de um shape andando de
+           uma aba pra outra, em vez do fundo roxo simplesmente "pipocar" no botão novo. Fica atrás
+           do texto/ícone (z-index) e o JS (moverIndicadorNav, em ui.js) recalcula a posição. */
+        .nav-indicator { position: absolute; top: 10px; bottom: calc(10px + env(safe-area-inset-bottom, 0)); left: 0; width: 0; background: var(--gradient-btn); border-radius: 999px; box-shadow: var(--shadow-md); transition: transform 0.32s cubic-bezier(0.34, 1.2, 0.4, 1), width 0.32s cubic-bezier(0.34, 1.2, 0.4, 1); z-index: 0; }
+        .nav-item { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; font-size: 0.68rem; color: var(--text-muted); background: none; border: none; cursor: pointer; font-weight: 600; flex: 1; padding: 8px 4px; border-radius: 999px; transition: color 0.2s, transform 0.15s; margin: 0 3px; }
         .nav-item .ph { font-size: 22px; transition: transform 0.2s; }
         .nav-item:active { transform: scale(0.94); }
-        .nav-item.active { background: var(--gradient-btn); color: white; font-weight: 800; box-shadow: var(--shadow-md); }
+        .nav-item.active { color: white; font-weight: 800; }
         .nav-item.active .ph { transform: translateY(-1px); }
 
         @media (max-width: 899px) { .tab-content { display: none; } .tab-content.active { display: block; } }
+
+        /* Troca de aba deslizando (só mobile, ver switchTab em ui.js): a aba que sai desliza+esmaece
+           pro lado de onde veio o gesto, some, e só então a próxima entra do lado oposto — sequencial
+           (não sobreposta) porque tab-fixas/tab-calendario e tab-dashboard vivem em colunas HTML
+           diferentes, então uma sobreposição de verdade exigiria reestruturar o layout inteiro. */
+        @media (max-width: 899px) {
+            .tab-content.slide-out-left { animation: tab-sai-esquerda 0.16s ease-in forwards; }
+            .tab-content.slide-out-right { animation: tab-sai-direita 0.16s ease-in forwards; }
+            .tab-content.slide-in-right { animation: tab-entra-direita 0.3s cubic-bezier(0.2, 0.8, 0.3, 1); }
+            .tab-content.slide-in-left { animation: tab-entra-esquerda 0.3s cubic-bezier(0.2, 0.8, 0.3, 1); }
+        }
+        @keyframes tab-sai-esquerda { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-24px); opacity: 0; } }
+        @keyframes tab-sai-direita { from { transform: translateX(0); opacity: 1; } to { transform: translateX(24px); opacity: 0; } }
+        @keyframes tab-entra-direita { from { transform: translateX(24px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+        @keyframes tab-entra-esquerda { from { transform: translateX(-24px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
         .charts-wrapper { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
         .chart-container { position: relative; margin: auto; height: 180px; flex: 1; min-width: 150px; max-width: 250px; }
@@ -486,4 +524,7 @@
             .modal-overlay, .modal-content, .toast, .loading-overlay { animation: none !important; }
             .girando { animation: none; }
             * { scroll-behavior: auto !important; }
+            .tab-content.slide-out-left, .tab-content.slide-out-right,
+            .tab-content.slide-in-right, .tab-content.slide-in-left { animation: none !important; }
+            .nav-indicator { transition: none !important; }
         }

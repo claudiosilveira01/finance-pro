@@ -162,6 +162,8 @@
             <div class="input-inline">
                 <input type="date" id="editFatData" style="flex:1;">
             </div>
+            <button class="btn-flat" id="btnToggleCaixaFatModal" onclick="toggleReceitaNoCaixaDoModal()" style="width:100%; margin-bottom:8px;"><i class="ph ph-plus-circle"></i> Somar ao Caixa Atual</button>
+            <button class="btn-flat" id="btnExcluirFatModal" onclick="excluirFaturamentoDoModal()" style="width:100%; background:transparent; box-shadow:none; border:1.5px solid var(--red-danger); color:var(--red-danger); margin-bottom:8px;"><i class="ph ph-trash"></i> Excluir Receita</button>
             <div style="display:flex; gap:10px; margin-top:8px;">
                 <button class="btn-flat" onclick="fecharModalEditarFaturamento()" style="flex:1; background: var(--bg-light); color: var(--text-main); box-shadow: none;"><i class="ph ph-x"></i> Cancelar</button>
                 <button class="btn-flat" onclick="salvarEdicaoFaturamento()" style="flex:1;"><i class="ph ph-check"></i> Salvar</button>
@@ -336,7 +338,7 @@
                 </div>
 
                 <!-- ABA: CONTAS FIXAS -->
-                <div id="tab-fixas" class="card tab-content active">
+                <div id="tab-fixas" class="card tab-content active" data-selecao-fixas="oculta">
                     <div class="card-title">
                         <span class="card-title-left"><i class="ph ph-clipboard-text"></i> Contas Fixas</span>
                         <span style="display:flex; gap:8px;">
@@ -344,8 +346,9 @@
                             <button class="fab-inline" onclick="abrirModalNovaFixa()" title="Nova Conta Fixa"><i class="ph ph-plus"></i></button>
                         </span>
                     </div>
-                    <div style="text-align: right; margin-bottom: 8px;">
+                    <div style="display:flex; justify-content:flex-end; gap:8px; margin-bottom: 8px;">
                         <button class="btn-action" onclick="abrirModalFiltrosFixas()" title="Abrir filtros"><i class="ph ph-funnel"></i> Filtros</button>
+                        <button class="btn-action" id="btnToggleSelecaoFixas" onclick="toggleMostrarSelecaoFixas()" title="Selecionar contas para somar"><i class="ph ph-check-circle"></i> Selecionar Contas</button>
                     </div>
                     <div class="table-responsive">
                         <table>
@@ -361,7 +364,7 @@
                             <tbody id="listaFixas"></tbody>
                         </table>
                     </div>
-                    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); flex-wrap:wrap; gap:10px; margin-top:12px;">
+                    <div id="somaSelecionadaFixasBox" style="display:none; justify-content:space-between; align-items:center; background:var(--bg-blue-light); padding:14px; border-radius:var(--radius-sm); flex-wrap:wrap; gap:10px; margin-top:12px;">
                         <span style="color:var(--text-highlight-alt); font-weight:700; font-size:0.9rem;">SOMA SELECIONADA</span>
                         <span id="mSomaSelecionadasCard" style="font-weight:800; font-size:1.1rem; color:var(--text-highlight-alt);">R$ 0,00</span>
                     </div>
@@ -471,13 +474,12 @@
                             <div class="receitas-linha2">
                                 <input type="text" inputmode="decimal" data-dinheiro id="fatValor" class="no-spin receitas-valor" placeholder="R$">
                                 <div class="data-picker-wrap">
-                                    <button type="button" class="btn-data-picker" id="fatDataBtn" tabindex="-1" title="Escolher data">
+                                    <button type="button" class="btn-data-picker btn-data-picker-icon" id="fatDataBtn" tabindex="-1" title="Escolher data">
                                         <i class="ph ph-calendar-blank"></i>
-                                        <span id="fatDataLabel">Hoje</span>
                                     </button>
-                                    <input type="date" id="fatData" class="input-data-overlay" onchange="atualizarLabelDataFat()">
+                                    <input type="date" id="fatData" class="input-data-overlay" title="Escolher data">
                                 </div>
-                                <button class="btn-flat btn-flat-sm receitas-btn-add" style="background:var(--gradient-green)" onclick="addFaturamento()"><i class="ph ph-plus"></i> Adicionar</button>
+                                <button class="fab-inline receitas-btn-add" style="background:var(--gradient-green)" onclick="addFaturamento()" title="Adicionar Receita"><i class="ph ph-plus"></i></button>
                             </div>
                         </div>
                         <div class="table-responsive" style="margin-bottom: 15px;">
@@ -486,8 +488,7 @@
                                     <tr>
                                         <th class="sortable" onclick="ordenarTabela('faturamentos', 'data')">Data <i class="ph ph-caret-up-down"></i></th>
                                         <th>Origem</th>
-                                        <th class="sortable" onclick="ordenarTabela('faturamentos', 'valor')">Valor <i class="ph ph-caret-up-down"></i></th>
-                                        <th style="width: 60px;"></th>
+                                        <th class="sortable" onclick="ordenarTabela('faturamentos', 'valor')" style="text-align:right;">Valor <i class="ph ph-caret-up-down"></i></th>
                                     </tr>
                                 </thead>
                                 <tbody id="listaFaturamentos"></tbody>
@@ -556,9 +557,10 @@
         </div>
 
         <nav class="bottom-nav">
-            <button class="nav-item active" onclick="switchTab(event, 'tab-fixas')"><i class="ph ph-clipboard-text"></i>Contas</button>
-            <button class="nav-item" onclick="switchTab(event, 'tab-calendario')"><i class="ph ph-calendar-blank"></i>Calendário</button>
-            <button class="nav-item" onclick="switchTab(event, 'tab-dashboard')"><i class="ph ph-chart-line-up"></i>Mês</button>
+            <div class="nav-indicator" id="navIndicator"></div>
+            <button class="nav-item active" data-tab="tab-fixas" onclick="switchTab(event, 'tab-fixas')"><i class="ph ph-clipboard-text"></i>Contas</button>
+            <button class="nav-item" data-tab="tab-calendario" onclick="switchTab(event, 'tab-calendario')"><i class="ph ph-calendar-blank"></i>Calendário</button>
+            <button class="nav-item" data-tab="tab-dashboard" onclick="switchTab(event, 'tab-dashboard')"><i class="ph ph-chart-line-up"></i>Mês</button>
         </nav>
     </div>
 

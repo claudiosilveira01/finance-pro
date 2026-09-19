@@ -30,7 +30,6 @@
                     loading.style.display = 'flex';
 
                     document.getElementById('fatData').value = new Date().toISOString().split('T')[0];
-                    atualizarLabelDataFat();
                     // Os gráficos ficam presos ao <canvas> — reinicializar (logout→login sem
                     // recarregar) faz o Chart.js estourar "Canvas already in use".
                     if (!_graficosIniciados) {

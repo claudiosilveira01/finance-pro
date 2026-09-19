@@ -17,6 +17,7 @@
 
                 aplicarVisibilidadeAcumulado();
                 aplicarVisibilidadeExtrato();
+                aplicarVisibilidadeSelecaoFixas();
 
                 const dataHoje = new Date();
                 const mesString = String(dataHoje.getMonth() + 1).padStart(2, '0');
@@ -29,7 +30,12 @@
                     mesesDisponiveis.sort((a, b) => a.key.localeCompare(b.key));
                 }
 
-                mesAtualKey = anoMesAtualReal;
+                // Retoma o último mês visto neste aparelho (localStorage, não sincronizado entre
+                // dispositivos) em vez de sempre abrir no mês corrente do calendário — só se esse
+                // mês ainda existir na lista (não foi um mês vazio que nunca chegou a ser salvo).
+                const ultimoMesVisto = _lerEstadoUI('ultimoMes', null);
+                mesAtualKey = (ultimoMesVisto && mesesDisponiveis.some(m => m.key === ultimoMesVisto))
+                    ? ultimoMesVisto : anoMesAtualReal;
 
                 renderizarMeses();
                 renderizarListasDeCategorias();

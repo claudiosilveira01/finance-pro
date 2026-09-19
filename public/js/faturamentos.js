@@ -1,16 +1,4 @@
 // Faturamentos/receitas do mês
-        // Mantém o texto do botão de data (ícone + "Hoje"/"dd/mm") em sincronia com o <input
-        // type="date"> real, que fica invisível por cima do botão e recebe o toque diretamente.
-        function atualizarLabelDataFat() {
-            const el = document.getElementById('fatData');
-            const label = document.getElementById('fatDataLabel');
-            if (!el || !label) return;
-            if (!el.value) { label.textContent = 'Hoje'; return; }
-            const [ano, mes, dia] = el.value.split('-');
-            const hojeStr = new Date().toISOString().split('T')[0];
-            label.textContent = el.value === hojeStr ? 'Hoje' : `${dia}/${mes}`;
-        }
-
         function addFaturamento() {
             const nome = document.getElementById('fatNome').value.trim();
             const valor = _parseDinheiro(document.getElementById('fatValor').value);
@@ -47,12 +35,42 @@
             document.getElementById('editFatNome').value = f.nome;
             document.getElementById('editFatValor').value = _formatarDinheiroInput(f.valor);
             document.getElementById('editFatData').value = f.data;
+            _atualizarBotaoCaixaModalFat(f);
             document.getElementById('modalEditarFaturamento').style.display = 'flex';
         }
 
         function fecharModalEditarFaturamento() {
             document.getElementById('modalEditarFaturamento').style.display = 'none';
             idEditandoFaturamento = null;
+        }
+
+        // Reflete se essa receita já foi somada ao Caixa Atual no botão do popup — mesmo texto/cor
+        // que o botão inline de antes tinha.
+        function _atualizarBotaoCaixaModalFat(f) {
+            const btn = document.getElementById('btnToggleCaixaFatModal');
+            if (!btn || !f) return;
+            if (f.noCaixa) {
+                btn.innerHTML = '<i class="ph ph-check-circle"></i> Já somada ao Caixa — clique pra remover';
+                btn.style.background = 'var(--gradient-green)';
+            } else {
+                btn.innerHTML = '<i class="ph ph-plus-circle"></i> Somar ao Caixa Atual';
+                btn.style.background = '';
+            }
+        }
+
+        // Botão "Somar/Remover do Caixa Atual" dentro do popup de editar Receita — mesma lógica de
+        // toggleReceitaNoCaixa, só que sem fechar o popup (o usuário pode seguir editando).
+        function toggleReceitaNoCaixaDoModal() {
+            if (idEditandoFaturamento === null) return;
+            toggleReceitaNoCaixa(idEditandoFaturamento);
+            _atualizarBotaoCaixaModalFat(window.activeFaturamentos.find(x => x.id === idEditandoFaturamento));
+        }
+
+        function excluirFaturamentoDoModal() {
+            if (idEditandoFaturamento === null) return;
+            deletarItemGeral(idEditandoFaturamento, 'faturamento');
+            idEditandoFaturamento = null;
+            fecharModalEditarFaturamento();
         }
 
         function salvarEdicaoFaturamento() {

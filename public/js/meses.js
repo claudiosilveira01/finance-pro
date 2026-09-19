@@ -92,6 +92,9 @@
             flushPendingDelete();
             mesAtualKey = (origemEl || document.getElementById('mesSeletor')).value;
             _seletoresDeMes().forEach(seletor => { seletor.value = mesAtualKey; });
+            // Lembra esse mês neste aparelho — próxima vez que abrir o app, já carrega aqui em vez
+            // de voltar pro mês corrente do calendário. Mobile e desktop (mesma chave de localStorage).
+            _salvarEstadoUI('ultimoMes', mesAtualKey);
             carregarMes(mesAtualKey);
         }
 

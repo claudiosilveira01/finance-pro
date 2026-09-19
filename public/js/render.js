@@ -61,15 +61,13 @@
             if (tbodyFat) tbodyFat.innerHTML = '';
             fatOrdenados.forEach(f => {
                 if (!tbodyFat) return;
+                // Sem botões de ação na linha (o clique na Receita abre um popup com editar/somar
+                // ao caixa/excluir, igual à tabela de Contas Fixas) — o valor ganha o espaço todo.
                 tbodyFat.innerHTML += `
                     <tr>
-                        <td data-label="Data" style="color:var(--text-muted); font-size:0.85rem">${formatarData(f.data)}</td>
-                        <td data-label="Origem"><button class="item-link" onclick="editarFaturamento(${f.id})">${_esc(f.nome)}</button></td>
-                        <td data-label="Valor" style="color:var(--green-success); font-weight:700;">+ R$ ${f.valor.toFixed(2)}</td>
-                        <td data-label="" style="text-align:right; white-space:nowrap;">
-                            <button class="btn-action ${f.noCaixa ? 'btn-no-caixa-ativo' : ''}" onclick="toggleReceitaNoCaixa(${f.id})" title="${f.noCaixa ? 'Já somada ao Caixa Atual — clique pra remover' : 'Somar ao Caixa Atual'}"><i class="ph ${f.noCaixa ? 'ph-check-circle' : 'ph-plus-circle'}"></i></button>
-                            <button class="btn-action btn-delete" onclick="deletarItemGeral(${f.id}, 'faturamento')" title="Excluir"><i class="ph ph-trash"></i></button>
-                        </td>
+                        <td data-label="Data" style="color:var(--text-muted); font-size:0.85rem; white-space:nowrap;">${formatarData(f.data)}</td>
+                        <td data-label="Origem"><button class="item-link" onclick="editarFaturamento(${f.id})">${_esc(f.nome)}${f.noCaixa ? ' <i class="ph ph-check-circle" style="color:var(--green-success); font-size:0.85em;" title="Já somada ao Caixa Atual"></i>' : ''}</button></td>
+                        <td data-label="Valor" class="receita-valor-cel" style="color:var(--green-success);">+ R$ ${f.valor.toFixed(2)}</td>
                     </tr>
                 `;
             });
