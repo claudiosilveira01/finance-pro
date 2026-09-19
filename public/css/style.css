@@ -361,10 +361,10 @@
            (não sobreposta) porque tab-fixas/tab-calendario e tab-dashboard vivem em colunas HTML
            diferentes, então uma sobreposição de verdade exigiria reestruturar o layout inteiro. */
         @media (max-width: 899px) {
-            .tab-content.slide-out-left { animation: tab-sai-esquerda 0.16s ease-in forwards; }
-            .tab-content.slide-out-right { animation: tab-sai-direita 0.16s ease-in forwards; }
-            .tab-content.slide-in-right { animation: tab-entra-direita 0.3s cubic-bezier(0.2, 0.8, 0.3, 1); }
-            .tab-content.slide-in-left { animation: tab-entra-esquerda 0.3s cubic-bezier(0.2, 0.8, 0.3, 1); }
+            .tab-content.slide-out-left { animation: tab-sai-esquerda 0.1s ease-in forwards; }
+            .tab-content.slide-out-right { animation: tab-sai-direita 0.1s ease-in forwards; }
+            .tab-content.slide-in-right { animation: tab-entra-direita 0.22s cubic-bezier(0.2, 0.8, 0.3, 1); }
+            .tab-content.slide-in-left { animation: tab-entra-esquerda 0.22s cubic-bezier(0.2, 0.8, 0.3, 1); }
         }
         @keyframes tab-sai-esquerda { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-24px); opacity: 0; } }
         @keyframes tab-sai-direita { from { transform: translateX(0); opacity: 1; } to { transform: translateX(24px); opacity: 0; } }

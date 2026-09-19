@@ -41,6 +41,11 @@
                     carregarConfigGlobal(() => {
                         loading.style.display = 'none';
                         iniciarAnimacoesDeEntrada();
+                        // Só agora o #mainApp (e a barra inferior dentro dele) deixou de ser
+                        // display:none — antes disso, getBoundingClientRect() do botão ativo
+                        // sempre dava 0, e a pílula do indicador nascia com largura 0 (some).
+                        const navAtivo = document.querySelector('.nav-item.active');
+                        if (navAtivo) moverIndicadorNav(navAtivo);
                     });
                 } else {
                     currentUser = null;
