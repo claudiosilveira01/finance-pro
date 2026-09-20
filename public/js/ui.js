@@ -20,9 +20,21 @@
             if (atual) atual.classList.remove('active');
             alvo.classList.add('active');
 
-            // No mobile, os cards da aba que acabou de aparecer "sobem de baixo pra cima" de novo,
-            // igual ao efeito de quando você loga pela primeira vez — ver _tocarEntradaDaAba abaixo.
-            if (mobile) _tocarEntradaDaAba(alvo);
+            if (mobile) {
+                // Volta o scroll pro topo — cada aba usa o MESMO contêiner de rolagem (#appScroll,
+                // ver PR do PWA), então sem isso a aba nova abria na mesma posição rolada em que a
+                // aba anterior tinha ficado, o que também bagunçava o gatilho de revelar-ao-rolar
+                // logo abaixo (um card já poderia "nascer" fora do topo, sem o usuário ter rolado
+                // nada de verdade).
+                const scroll = document.getElementById('appScroll');
+                if (scroll) scroll.scrollTop = 0;
+
+                // Os cards da aba (e as 3 linhas do Painel de Controle) voltam a "revelar ao
+                // rolar" — igual ao desktop: os que já aparecem na tela na hora da troca sobem
+                // de baixo pra cima na mesma hora, e os que estão mais abaixo só quando o usuário
+                // rolar até eles de verdade (ver rearmarRevelacaoDaAba em anim.js).
+                if (typeof rearmarRevelacaoDaAba === 'function') rearmarRevelacaoDaAba(alvo);
+            }
 
             // Mesmo problema do IntersectionObserver dos cards (ver anim.js), só que pro gráfico
             // "Acumulado por Categoria" — sem isso ele podia nunca desenhar no mobile.
@@ -56,37 +68,6 @@
                 } finally {
                     _trocandoDeAba = false;
                 }
-            });
-        }
-
-        // Faz os cards (e as 3 linhas do Painel de Controle) da aba que acabou de aparecer
-        // "surgirem de baixo pra cima" de novo — mesmo efeito do login, só que a cada troca de aba.
-        //
-        // O truque do "reflow forçado" (void el.offsetWidth) é necessário porque simplesmente tirar
-        // e recolocar a mesma classe no mesmo instante não reinicia uma animação CSS — o navegador
-        // "junta" as duas mudanças num só recálculo e trata como se nada tivesse mudado (a raiz da
-        // "piscada"/animação que não reiniciava relatada pelo usuário, especialmente na aba
-        // Calendário). Ler offsetWidth no meio força o navegador a aplicar a remoção da classe
-        // antes de continuar — só então a re-adição conta como um começo novo de verdade.
-        //
-        // O atraso escalonado (animation-delay) é recalculado aqui, na ordem dos elementos DENTRO
-        // desta aba — não mais um índice fixo da página inteira (calculado uma vez no login), que
-        // embaralhava a ordem visual a cada troca.
-        function _tocarEntradaDaAba(aba) {
-            if (!aba) return;
-            const cards = aba.classList.contains('card') ? [aba] : [...aba.querySelectorAll('.card')];
-            cards.forEach((card, i) => {
-                card.classList.remove('reveal-in');
-                card.style.animationDelay = `${Math.min(i * 0.06, 0.3)}s`;
-                void card.offsetWidth;
-                card.classList.add('reveal-in');
-            });
-            const itens = [...aba.querySelectorAll('.stat-row')];
-            itens.forEach((el, i) => {
-                el.classList.remove('item-anim');
-                el.style.animationDelay = `${Math.min(i * 0.06, 0.3)}s`;
-                void el.offsetWidth;
-                el.classList.add('item-anim');
             });
         }
 
