@@ -132,43 +132,6 @@
             if (ativo) moverIndicadorNav(ativo);
         });
 
-        // Deslizar (swipe) pra trocar de aba no mobile — mesma navegação do bottom-nav, só que
-        // arrastando o dedo pra esquerda/direita em qualquer lugar da tela. Ignorado com um modal
-        // aberto (senão atrapalharia gestos dentro dele) e com pouco deslocamento vertical (senão
-        // um scroll normal da página seria confundido com swipe de aba).
-        (function _configurarSwipeDeAbas() {
-            let inicioX = 0, inicioY = 0, tocando = false;
-            const LIMIAR_PX = 55;
-
-            document.addEventListener('touchstart', e => {
-                if (window.innerWidth >= 900 || e.touches.length !== 1) { tocando = false; return; }
-                const modalAberto = [...document.querySelectorAll('.modal-overlay')].some(o => getComputedStyle(o).display !== 'none');
-                if (modalAberto) { tocando = false; return; }
-                inicioX = e.touches[0].clientX;
-                inicioY = e.touches[0].clientY;
-                tocando = true;
-            }, { passive: true });
-
-            document.addEventListener('touchend', e => {
-                if (!tocando) return;
-                tocando = false;
-                const fimX = e.changedTouches[0].clientX;
-                const fimY = e.changedTouches[0].clientY;
-                const deltaX = fimX - inicioX;
-                const deltaY = fimY - inicioY;
-                if (Math.abs(deltaX) < LIMIAR_PX || Math.abs(deltaX) < Math.abs(deltaY) * 1.5) return;
-
-                const abaAtual = document.querySelector('.tab-content.active');
-                const indiceAtual = abaAtual ? ORDEM_ABAS_MOBILE.indexOf(abaAtual.id) : -1;
-                if (indiceAtual === -1) return;
-
-                // Arrastar pra esquerda avança pra próxima aba (deltaX negativo), pra direita volta.
-                const novoIndice = indiceAtual + (deltaX < 0 ? 1 : -1);
-                if (novoIndice < 0 || novoIndice >= ORDEM_ABAS_MOBILE.length) return;
-                _irParaAba(ORDEM_ABAS_MOBILE[novoIndice], deltaX < 0 ? 1 : -1);
-            }, { passive: true });
-        })();
-
         // Botão "Selecionar Contas" (Contas Fixas): liga/desliga as bolinhas de seleção da tabela
         // e a linha "SOMA SELECIONADA" logo abaixo — por padrão ficam ocultas.
         function toggleMostrarSelecaoFixas() {

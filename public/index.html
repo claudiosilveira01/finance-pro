@@ -37,19 +37,25 @@
 <body>
 
     <div id="loginScreen" style="display:none;">
-        <h2 style="color: var(--text-highlight); margin-bottom: 20px; font-weight: 800; font-size: 1.4rem;"><i class="ph ph-chart-line-up" style="vertical-align: -3px; font-size: 1.3rem;"></i> Planner Financeiro</h2>
-        <p style="color: var(--text-muted); margin-bottom: 20px; font-size: 0.9rem;">Acesse para sincronizar os seus dados</p>
+        <div class="login-card">
+            <div class="login-logo"><i class="ph ph-chart-line-up"></i></div>
+            <h2 class="login-titulo">Planner Financeiro</h2>
 
-        <input type="email" id="emailInput" placeholder="O seu E-mail" style="width: 100%; margin-bottom: 15px;">
-        <input type="password" id="senhaInput" placeholder="A sua Senha" style="width: 100%; margin-bottom: 10px;">
+            <div class="login-campo">
+                <input type="email" id="emailInput" placeholder="O seu E-mail" autocomplete="email">
+            </div>
+            <div class="login-campo">
+                <input type="password" id="senhaInput" placeholder="A sua Senha" autocomplete="current-password">
+            </div>
 
-        <p style="text-align: right; margin-bottom: 15px;">
-            <a href="#" onclick="recuperarSenha(); return false;" style="color: var(--text-muted); font-size: 0.8rem; text-decoration: underline;">Esqueci minha senha</a>
-        </p>
+            <p class="login-esqueci">
+                <a href="#" onclick="recuperarSenha(); return false;">Esqueci minha senha</a>
+            </p>
 
-        <button onclick="fazerLogin()" class="btn-flat" style="width: 100%; margin-bottom: 10px; padding: 13px;">Entrar</button>
+            <button onclick="fazerLogin()" class="btn-flat login-btn-entrar">Entrar</button>
 
-        <p id="authErro" style="color: var(--red-danger); font-size: 0.85rem; margin-top: 15px; display: none;"></p>
+            <p id="authErro" class="login-erro" style="display: none;"></p>
+        </div>
     </div>
 
     <div class="loading-overlay" id="loadingDiv" style="display:flex;"><i class="ph ph-circle-notch girando"></i> Carregando…</div>
@@ -331,13 +337,6 @@
         <div id="appScroll">
         <div class="main-container">
             <div class="col-left">
-                <!-- Seletor de mês duplicado só no mobile, em cima do card de Contas Fixas -->
-                <div class="month-nav month-nav-mobile">
-                    <button onclick="navegarMes(-1)" title="Mês anterior"><i class="ph ph-caret-left"></i></button>
-                    <select id="mesSeletorMobile" onchange="mudarMesOuro(this)"></select>
-                    <button onclick="navegarMes(1)" title="Próximo mês"><i class="ph ph-caret-right"></i></button>
-                </div>
-
                 <!-- ABA: CONTAS FIXAS -->
                 <div id="tab-fixas" class="card tab-content active" data-selecao-fixas="oculta">
                     <div class="card-title">
