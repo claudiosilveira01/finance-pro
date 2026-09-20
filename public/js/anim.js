@@ -27,14 +27,15 @@
 
     window.iniciarAnimacoesDeEntrada = iniciarAnimacoesDeEntrada;
 
-    // Toca a entrada (reveal-in) uma única vez de verdade por card, ao aparecer na rolagem da tela
-    // (uso real: desktop, onde todos os cards ficam visíveis ao mesmo tempo em duas colunas).
-    // Depois de tocar, as duas classes saem do card (reveal-init/reveal-in) — sem elas, não sobra
-    // nada que uma troca de aba no mobile pudesse "reiniciar do zero" depois (ver _revelarCardsDaAba
-    // em ui.js, que pula essa animação de propósito e só torna o card visível na hora). O tempo do
-    // setTimeout (em vez de um "animationend") é de propósito: se o card sair de tela ainda no meio
-    // da entrada, o `animationend` não dispara, mas o setTimeout garante a limpeza mesmo assim —
-    // timers de JS continuam rodando com o elemento escondido, diferente de animação CSS.
+    // Toca a entrada (reveal-in) a primeira vez que um card aparece de verdade — ao rolar a tela
+    // (aqui, via IntersectionObserver) ou, no mobile, na primeira troca pra aba dele (chamado direto
+    // por _tocarEntradaDaAba em ui.js, que também cuida de REPETIR essa animação em toda troca de
+    // aba seguinte, com um reflow forçado pra garantir que reinicia do zero de verdade). Depois de
+    // tocar aqui, as duas classes saem do card — só a próxima troca de aba (ui.js) devolve a
+    // animação, então elas não ficam "penduradas" nele. O tempo do setTimeout (em vez de um
+    // "animationend") é de propósito: se o card sair de tela ainda no meio da entrada, o
+    // `animationend` não dispara, mas o setTimeout garante a limpeza mesmo assim — timers de JS
+    // continuam rodando com o elemento escondido, diferente de animação CSS.
     function _revelarCardUmaVez(card) {
         if (!card || !card.classList.contains('reveal-init')) return; // já revelado antes — nada a fazer
         card.classList.add('reveal-in');

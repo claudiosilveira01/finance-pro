@@ -1,113 +1,93 @@
 // Navegação entre abas e modais de Calculadora/Configurações
 
-        // Ordem visual das abas no bottom-nav — usada tanto pra saber se um swipe deve ir "pra
-        // frente" ou "pra trás" quanto pra animar a pílula do indicador na direção certa.
-        const ORDEM_ABAS_MOBILE = ['tab-fixas', 'tab-calendario', 'tab-dashboard'];
+        // Trava uma troca de aba já em andamento — sem isso, um segundo toque disparado antes do
+        // recálculo terminar podia sobrepor duas trocas.
+        let _trocandoDeAba = false;
 
         function switchTab(event, tabId) {
             if(window.innerWidth >= 900 && event) return;
-            const abaAtual = document.querySelector('.tab-content.active');
-            const indiceAtual = abaAtual ? ORDEM_ABAS_MOBILE.indexOf(abaAtual.id) : -1;
-            const indiceAlvo = ORDEM_ABAS_MOBILE.indexOf(tabId);
-            const direcao = (event && indiceAtual !== -1 && indiceAlvo !== -1) ? Math.sign(indiceAlvo - indiceAtual) : 0;
-            _irParaAba(tabId, direcao);
+            _irParaAba(tabId);
         }
 
-        // direcao: -1 (veio da esquerda / aba anterior), 0 (sem animação — atalho do manifest,
-        // clique não vindo do bottom-nav), 1 (veio da direita / próxima aba).
-        // Trava uma troca de aba já em andamento — sem isso, um segundo swipe/toque disparado
-        // antes da animação anterior terminar (100-240ms) sobrepunha as duas transições e piscava.
-        let _trocandoDeAba = false;
-
-        function _irParaAba(tabId, direcao) {
+        function _irParaAba(tabId) {
             if (_trocandoDeAba) return;
             const atual = document.querySelector('.tab-content.active');
             const alvo = document.getElementById(tabId);
             if (!alvo || atual === alvo) return;
             const mobile = window.innerWidth < 900;
-            if (mobile && direcao !== 0) _trocandoDeAba = true;
+            if (mobile) _trocandoDeAba = true;
 
-            const concluirTroca = () => {
-                if (atual) atual.classList.remove('active');
-                alvo.classList.add('active');
-                // Cards da aba que nunca tinha sido aberta (ex.: "Mês" logo após o login) dependiam
-                // só do IntersectionObserver de anim.js pra sair do reveal-init (opacity:0) — no
-                // Safari/iOS esse observer às vezes não refaz o cálculo quando o elemento sai de
-                // display:none, e o card ficava invisível pra sempre ("nem aparecem"). Trocar de
-                // aba agora revela na marra, sem depender do observer — e só na primeira vez de
-                // cada card (ver _revelarCardUmaVez em anim.js): da segunda troca em diante o card
-                // já está "queimado" (sem reveal-init/reveal-in), então não reinicia a animação
-                // nem embaralha a ordem de entrada.
-                _revelarCardsDaAba(alvo);
-                // Mesmo problema do IntersectionObserver dos cards, só que pro gráfico "Acumulado
-                // por Categoria" — sem isso ele podia nunca desenhar no mobile (ver anim.js).
-                if (tabId === 'tab-dashboard' && typeof forcarRevelarGraficoCategoria === 'function') {
-                    forcarRevelarGraficoCategoria();
-                }
-                if (mobile && direcao !== 0) {
-                    const classeEntrada = direcao > 0 ? 'slide-in-right' : 'slide-in-left';
-                    alvo.classList.add(classeEntrada);
-                    setTimeout(() => alvo.classList.remove(classeEntrada), 240);
-                }
+            if (atual) atual.classList.remove('active');
+            alvo.classList.add('active');
 
-                document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
-                const navBtn = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
-                if (navBtn) { navBtn.classList.add('active'); moverIndicadorNav(navBtn); }
+            // No mobile, os cards da aba que acabou de aparecer "sobem de baixo pra cima" de novo,
+            // igual ao efeito de quando você loga pela primeira vez — ver _tocarEntradaDaAba abaixo.
+            if (mobile) _tocarEntradaDaAba(alvo);
 
-                // O recálculo pesado (tabelas, gráficos, calendário) só roda DEPOIS que o navegador
-                // já pintou o primeiro frame da animação de entrada — rodando tudo síncrono no meio
-                // da troca de classes, o JS travava a pintura da transição inteira até terminar (a
-                // "piscada"/atraso relatado: a tela ficava parada e só then a animação tocava de
-                // uma vez, comprimida). No frame seguinte a aba já está com display:block, então os
-                // gráficos (Chart.js) já enxergam o canvas com o tamanho certo pra desenhar.
-                requestAnimationFrame(() => {
-                    // try/finally: se calcularEAtualizarVisual() (ou renderizarCalendario())
-                    // lançar algum erro no meio do redesenho, a trava _trocandoDeAba precisa soltar
-                    // do mesmo jeito — sem isso, um erro deixava TODA troca de aba seguinte travada
-                    // pra sempre (o toque/swipe passava a não fazer nada, silenciosamente).
-                    try {
-                        // No mobile, trocar de aba reanima os detalhes (badges, listas, odômetro) —
-                        // deixa o app "vivo". calcularEAtualizarVisual() já redesenha o calendário também.
-                        if (tabId === 'tab-calendario' && !mobile) {
-                            renderizarCalendario();
-                        } else {
-                            animarNaCarga = true;
-                            calcularEAtualizarVisual();
-                        }
-                    } finally {
-                        _trocandoDeAba = false;
-                    }
-                });
-            };
-
-            // A aba que sai desliza+esmaece primeiro (rápido), só depois a próxima entra — evitar
-            // sobrepor as duas ao mesmo tempo, já que tab-fixas/tab-calendario e tab-dashboard
-            // vivem em colunas HTML diferentes (não dá pra fazer as duas deslizarem juntas sem
-            // reestruturar o layout inteiro em colunas físicas). Duração curta de propósito — rápida
-            // o bastante pra não parecer um "buraco" entre uma aba e outra.
-            if (mobile && direcao !== 0 && atual) {
-                const classeSaida = direcao > 0 ? 'slide-out-left' : 'slide-out-right';
-                atual.classList.add(classeSaida);
-                setTimeout(() => { atual.classList.remove(classeSaida); concluirTroca(); }, 100);
-            } else {
-                concluirTroca();
+            // Mesmo problema do IntersectionObserver dos cards (ver anim.js), só que pro gráfico
+            // "Acumulado por Categoria" — sem isso ele podia nunca desenhar no mobile.
+            if (tabId === 'tab-dashboard' && typeof forcarRevelarGraficoCategoria === 'function') {
+                forcarRevelarGraficoCategoria();
             }
+
+            document.querySelectorAll('.nav-item').forEach(btn => btn.classList.remove('active'));
+            const navBtn = document.querySelector(`.nav-item[data-tab="${tabId}"]`);
+            if (navBtn) { navBtn.classList.add('active'); moverIndicadorNav(navBtn); }
+
+            // O recálculo pesado (tabelas, gráficos, calendário) só roda DEPOIS que o navegador já
+            // pintou o primeiro frame da animação de entrada — rodando tudo síncrono no meio da
+            // troca de classes, o JS travava a pintura da transição inteira até terminar (a
+            // "piscada"/atraso relatado: a tela ficava parada e só depois a animação tocava de uma
+            // vez, comprimida). No frame seguinte a aba já está com display:block, então os gráficos
+            // (Chart.js) já enxergam o canvas com o tamanho certo pra desenhar.
+            requestAnimationFrame(() => {
+                // try/finally: se calcularEAtualizarVisual() (ou renderizarCalendario()) lançar
+                // algum erro no meio do redesenho, a trava _trocandoDeAba precisa soltar do mesmo
+                // jeito — sem isso, um erro deixava TODA troca de aba seguinte travada pra sempre.
+                try {
+                    // No mobile, trocar de aba reanima os detalhes (badges, listas, odômetro) —
+                    // deixa o app "vivo". calcularEAtualizarVisual() já redesenha o calendário também.
+                    if (tabId === 'tab-calendario' && !mobile) {
+                        renderizarCalendario();
+                    } else {
+                        animarNaCarga = true;
+                        calcularEAtualizarVisual();
+                    }
+                } finally {
+                    _trocandoDeAba = false;
+                }
+            });
         }
 
-        // Torna visíveis na hora (sem tocar a animação de 1.1s) os cards ainda com reveal-init
-        // dentro da aba que acabou de virar visível. A animação lenta de "surgir aos poucos"
-        // (reveal-init/reveal-in, ver anim.js) foi pensada pra rolagem de tela no desktop — currying
-        // ela pra troca de aba no mobile é errado por dois motivos: (1) o usuário já pediu aquela
-        // tela, ela precisa aparecer na hora, não em ~1.5s; (2) por causa da forma como CSS trata
-        // display:none, ela reiniciava do ZERO toda vez que a aba voltava a ficar visível, e como o
-        // atraso escalonado de cada card foi calculado uma vez só (na ordem de todos os cards da
-        // página, no login), o resultado era uma ordem de entrada embaralhada a cada troca. Tirando
-        // as duas classes direto, o card só aparece — a animação de entrada de verdade continua
-        // intacta pra quem rola a tela no desktop (ver _revelarCardUmaVez em anim.js).
-        function _revelarCardsDaAba(aba) {
+        // Faz os cards (e as 3 linhas do Painel de Controle) da aba que acabou de aparecer
+        // "surgirem de baixo pra cima" de novo — mesmo efeito do login, só que a cada troca de aba.
+        //
+        // O truque do "reflow forçado" (void el.offsetWidth) é necessário porque simplesmente tirar
+        // e recolocar a mesma classe no mesmo instante não reinicia uma animação CSS — o navegador
+        // "junta" as duas mudanças num só recálculo e trata como se nada tivesse mudado (a raiz da
+        // "piscada"/animação que não reiniciava relatada pelo usuário, especialmente na aba
+        // Calendário). Ler offsetWidth no meio força o navegador a aplicar a remoção da classe
+        // antes de continuar — só então a re-adição conta como um começo novo de verdade.
+        //
+        // O atraso escalonado (animation-delay) é recalculado aqui, na ordem dos elementos DENTRO
+        // desta aba — não mais um índice fixo da página inteira (calculado uma vez no login), que
+        // embaralhava a ordem visual a cada troca.
+        function _tocarEntradaDaAba(aba) {
             if (!aba) return;
             const cards = aba.classList.contains('card') ? [aba] : [...aba.querySelectorAll('.card')];
-            cards.forEach(c => c.classList.remove('reveal-init', 'reveal-in'));
+            cards.forEach((card, i) => {
+                card.classList.remove('reveal-in');
+                card.style.animationDelay = `${Math.min(i * 0.06, 0.3)}s`;
+                void card.offsetWidth;
+                card.classList.add('reveal-in');
+            });
+            const itens = [...aba.querySelectorAll('.stat-row')];
+            itens.forEach((el, i) => {
+                el.classList.remove('item-anim');
+                el.style.animationDelay = `${Math.min(i * 0.06, 0.3)}s`;
+                void el.offsetWidth;
+                el.classList.add('item-anim');
+            });
         }
 
         // Move a "pílula" do bottom-nav até ficar atrás do botão indicado, com transição suave (CSS).

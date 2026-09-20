@@ -209,7 +209,7 @@
         .extrato-tipo-lista::-webkit-scrollbar { width: 7px; }
         .extrato-tipo-lista::-webkit-scrollbar-track { background: transparent; }
         .extrato-tipo-lista::-webkit-scrollbar-thumb { background: var(--purple-light); border-radius: 999px; }
-        th { background: var(--purple-main); color: white; padding: 10px 6px; font-weight: 600; white-space: nowrap; font-size: 0.8rem; letter-spacing: 0.01em; }
+        th { background: var(--purple-main); color: white; padding: 13px 6px; font-weight: 800; text-align: center; white-space: nowrap; font-size: 0.8rem; letter-spacing: 0.01em; }
         th.sortable { cursor: pointer; user-select: none; transition: filter 0.2s; }
         th.sortable:hover { filter: brightness(1.12); }
         th:first-child { border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
@@ -244,7 +244,7 @@
         @container (max-width: 420px) {
             table { font-size: 0.78rem; }
             th, td { padding: 7px 2px; }
-            th { font-size: 0.66rem; }
+            th { font-size: 0.66rem; padding: 10px 2px; }
             th.th-check, td.td-check { width: 30px; padding-left: 4px; }
             /* O círculo continua compacto, mas a área tocável (td) fica maior — alvo de toque adequado. */
             .row-check { width: 22px; height: 22px; }
@@ -260,7 +260,7 @@
         }
         @container (max-width: 340px) {
             th, td { padding: 6px 1px; }
-            th { font-size: 0.6rem; }
+            th { font-size: 0.6rem; padding: 9px 1px; }
             .status-badge { width: 32px; font-size: 0.54rem; }
             .vencimento-tag { font-size: 0.5rem; padding: 1px 2px; }
             .item-link { font-size: 0.72rem; }
@@ -369,21 +369,6 @@
         .nav-item.active .ph { transform: translateY(-1px); }
 
         @media (max-width: 899px) { .tab-content { display: none; } .tab-content.active { display: block; } }
-
-        /* Troca de aba deslizando (só mobile, ver switchTab em ui.js): a aba que sai desliza+esmaece
-           pro lado de onde veio o gesto, some, e só então a próxima entra do lado oposto — sequencial
-           (não sobreposta) porque tab-fixas/tab-calendario e tab-dashboard vivem em colunas HTML
-           diferentes, então uma sobreposição de verdade exigiria reestruturar o layout inteiro. */
-        @media (max-width: 899px) {
-            .tab-content.slide-out-left { animation: tab-sai-esquerda 0.1s ease-in forwards; }
-            .tab-content.slide-out-right { animation: tab-sai-direita 0.1s ease-in forwards; }
-            .tab-content.slide-in-right { animation: tab-entra-direita 0.22s cubic-bezier(0.2, 0.8, 0.3, 1); }
-            .tab-content.slide-in-left { animation: tab-entra-esquerda 0.22s cubic-bezier(0.2, 0.8, 0.3, 1); }
-        }
-        @keyframes tab-sai-esquerda { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-24px); opacity: 0; } }
-        @keyframes tab-sai-direita { from { transform: translateX(0); opacity: 1; } to { transform: translateX(24px); opacity: 0; } }
-        @keyframes tab-entra-direita { from { transform: translateX(24px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
-        @keyframes tab-entra-esquerda { from { transform: translateX(-24px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
         .charts-wrapper { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; }
         .chart-container { position: relative; margin: auto; height: 180px; flex: 1; min-width: 150px; max-width: 250px; }
@@ -550,7 +535,5 @@
             .modal-overlay, .modal-content, .toast, .loading-overlay { animation: none !important; }
             .girando { animation: none; }
             * { scroll-behavior: auto !important; }
-            .tab-content.slide-out-left, .tab-content.slide-out-right,
-            .tab-content.slide-in-right, .tab-content.slide-in-left { animation: none !important; }
             .nav-indicator { transition: none !important; }
         }
