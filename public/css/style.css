@@ -154,10 +154,18 @@
            tamanho, opacity:0), então o toque abre o seletor nativo do navegador diretamente —
            mais confiável entre navegadores do que chamar showPicker() via JS (no Safari/iOS,
            showPicker() falha em silêncio quando o input não está visível/tem tamanho real). */
-        .data-picker-wrap { position: relative; flex: 0 0 auto; display: flex; }
+        /* overflow:hidden é de propósito: em alguns navegadores (Safari/iOS incluso) o
+           <input type="date"> por baixo (.input-data-overlay) pode querer um controle nativo
+           maior que a própria caixa mesmo com width:100% — sem o corte, essa área "vazava" pro
+           lado e roubava o toque do botão vizinho (o "+" verde de Adicionar Receita, que abria o
+           calendário em vez de somar a receita). Com overflow:hidden, nada fora dessa caixa fica
+           clicável, então o vazamento fica fisicamente impossível. */
+        .data-picker-wrap { position: relative; flex: 0 0 auto; display: flex; overflow: hidden; }
         .btn-data-picker { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 11px 12px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main); cursor: pointer; font-size: 0.85rem; white-space: nowrap; transition: border-color 0.2s, box-shadow 0.2s; pointer-events: none; }
-        .data-picker-wrap:focus-within .btn-data-picker,
-        @media (hover: hover) { .data-picker-wrap:hover .btn-data-picker { border-color: var(--purple-light); } }
+        @media (hover: hover) {
+            .data-picker-wrap:focus-within .btn-data-picker,
+            .data-picker-wrap:hover .btn-data-picker { border-color: var(--purple-light); }
+        }
         .btn-data-picker i { font-size: 18px; color: var(--text-highlight); }
         .input-data-overlay { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; min-width: 0; }
         /* Botão de data só com ícone (Receitas): mesma mecânica do botão com texto, só que
