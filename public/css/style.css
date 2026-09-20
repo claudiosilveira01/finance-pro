@@ -92,6 +92,16 @@
             #appScroll {
                 height: 100%;
                 overflow-y: auto;
+                /* Sem isso, o CSS calcula overflow-x como "auto" na marra (regra da especificação:
+                   se um eixo tem overflow diferente de "visible", o outro eixo nunca fica
+                   "visible" de verdade) — o #appScroll virava rolável também PRA OS LADOS, sem eu
+                   ter pedido isso. Bastava a grade (.main-container) passar alguns pixels do
+                   necessário numa hora de recálculo pra esse scroll horizontal "grudar" numa
+                   posição deslocada — e como nada zerava essa posição, os cards ficavam
+                   permanentemente empurrados pro lado ("soltos"/desalinhados) até recarregar a
+                   página. Essa é a causa raiz de verdade do bug relatado várias vezes.
+                */
+                overflow-x: hidden;
                 -webkit-overflow-scrolling: touch;
                 overscroll-behavior-y: contain;
                 padding-bottom: 78px;
