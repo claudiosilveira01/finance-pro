@@ -32,7 +32,12 @@
                 meuGraficoPizza.update();
             }
             if(meuGraficoBarra) {
-                meuGraficoBarra.data.datasets[0].data = dataArray;
+                // Barras ordenadas da maior pra menor — mais fácil de ver de relance qual categoria
+                // pesa mais no mês, em vez da ordem "de cadastro" das categorias.
+                const indices = dataArray.map((_, i) => i).sort((a, b) => dataArray[b] - dataArray[a]);
+                meuGraficoBarra.data.labels = indices.map(i => categoriasAtuais[i]);
+                meuGraficoBarra.data.datasets[0].data = indices.map(i => dataArray[i]);
+                meuGraficoBarra.data.datasets[0].backgroundColor = indices.map(i => coresCategorias[i]);
                 meuGraficoBarra.update();
             }
         }
