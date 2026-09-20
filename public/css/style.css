@@ -85,7 +85,26 @@
             .bottom-nav { display: none !important; }
             .tab-content { display: block !important; }
         }
-        @media (max-width: 899px) { body { padding-bottom: 78px; } }
+        /* No mobile, a ROLAGEM sai do body e vira exclusiva do #appScroll — a barra inferior (irmã
+           dele, fora dessa área) fica completamente desligada do gesto de arrastar a tela. É a
+           correção de verdade pro bug do PWA instalado no iPhone (WKWebView): o translateZ(0) sozinho
+           (ver .bottom-nav) resolve o Safari em aba normal, mas no app instalado da tela inicial o
+           WKWebView ainda compunha a barra fixa junto com o scroll do body inteiro e ela "se soltava"
+           durante o arrasto. Com o body imóvel, não sobra scroll nenhum pra arrastar a barra junto. */
+        @media (max-width: 899px) {
+            html, body { height: 100%; overflow: hidden; }
+            #mainApp { height: 100%; }
+            #appScroll {
+                height: 100%;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior-y: contain;
+                padding-bottom: 78px;
+            }
+            /* Body imóvel também tira a rolagem da tela de login — dá pra ela rolar sozinha caso o
+               teclado cubra o botão "Entrar" numa tela bem baixa. */
+            #loginScreen { max-height: 100%; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        }
 
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: clamp(16px, 3vw, 22px); margin-bottom: 20px; box-shadow: var(--shadow-sm); transition: box-shadow 0.25s, transform 0.25s, background 0.3s; container-type: inline-size; }
         .card:hover { box-shadow: var(--shadow-md); }
