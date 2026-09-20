@@ -27,7 +27,7 @@
                 // logo abaixo (um card já poderia "nascer" fora do topo, sem o usuário ter rolado
                 // nada de verdade).
                 const scroll = document.getElementById('appScroll');
-                if (scroll) scroll.scrollTop = 0;
+                if (scroll) { scroll.scrollTop = 0; scroll.scrollLeft = 0; }
 
                 // Os cards da aba (e as 3 linhas do Painel de Controle) voltam a "revelar ao
                 // rolar" — igual ao desktop: os que já aparecem na tela na hora da troca sobem
