@@ -50,7 +50,7 @@
                 } else {
                     currentUser = null;
                     loading.style.display = 'none';
-                    document.getElementById('loginScreen').style.display = 'block';
+                    document.getElementById('loginScreen').style.display = 'flex';
                     document.getElementById('mainApp').style.display = 'none';
                 }
             }, 0);

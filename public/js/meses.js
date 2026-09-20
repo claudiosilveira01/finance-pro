@@ -53,10 +53,10 @@
             }).finally(() => { window._saveEmVoo = Math.max(0, (window._saveEmVoo || 1) - 1); });
         }
 
-        // Seletor de mês duplicado (desktop no card "Planner Financeiro" + mobile em cima de
-        // Contas Fixas) — os dois <select> ficam sempre com as mesmas opções e o mesmo valor.
+        // Único seletor de mês do app: card "Planner Financeiro" (topo do dashboard, mobile e
+        // desktop). Retorna array pra manter a mesma assinatura usada pelo resto do arquivo.
         function _seletoresDeMes() {
-            return [document.getElementById('mesSeletor'), document.getElementById('mesSeletorMobile')].filter(Boolean);
+            return [document.getElementById('mesSeletor')].filter(Boolean);
         }
 
         function renderizarMeses() {
