@@ -58,15 +58,15 @@
         /* Botão de navegação de mês — vive dentro de um card normal agora, não num header roxo */
         .month-nav { display: flex; align-items: center; gap: 4px; background: var(--bg-light); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 4px; flex: 1 1 180px; min-width: 0; }
         .month-nav button { background: transparent; border: none; color: var(--text-highlight); width: 30px; height: 30px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s, transform 0.15s; flex-shrink: 0; }
-        .month-nav button:hover { background: var(--border-color); }
+        @media (hover: hover) { .month-nav button:hover { background: var(--border-color); } }
         .month-nav button:active { transform: scale(0.92); }
         .month-nav select { background: transparent; color: var(--text-main); border: none; font-weight: 700; font-size: 0.9rem; outline: none; cursor: pointer; padding: 4px 6px; text-align: center; flex: 1; min-width: 0; }
 
         /* Botão de ação secundária dentro de cards (ex: abrir calculadora/configurações/sair) */
         .card-action-btn { background: var(--bg-light); border: 1px solid var(--border-color); color: var(--text-highlight); width: 38px; height: 38px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; flex-shrink: 0; }
         .card-action-btn-round { border-radius: 50%; width: 32px; height: 32px; font-size: 0.9rem; }
-        .card-action-btn:hover { background: var(--gradient-btn); color: white; border-color: transparent; transform: translateY(-1px); box-shadow: var(--shadow-sm); }
-        .card-action-btn.card-action-btn-danger:hover { background: var(--red-danger); }
+        @media (hover: hover) { .card-action-btn:hover { background: var(--gradient-btn); color: white; border-color: transparent; transform: translateY(-1px); box-shadow: var(--shadow-sm); } }
+        @media (hover: hover) { .card-action-btn.card-action-btn-danger:hover { background: var(--red-danger); } }
 
         /* === GRID PRINCIPAL — fluido, sem breakpoint fixo ===
            repeat(auto-fit, minmax(...)) deixa o navegador decidir quantas colunas cabem a cada instante:
@@ -102,7 +102,7 @@
         }
 
         .card { background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: clamp(16px, 3vw, 22px); margin-bottom: 20px; box-shadow: var(--shadow-sm); transition: box-shadow 0.25s, transform 0.25s, background 0.3s; container-type: inline-size; }
-        .card:hover { box-shadow: var(--shadow-md); }
+        @media (hover: hover) { .card:hover { box-shadow: var(--shadow-md); } }
         .card-title { font-size: 1.1rem; font-weight: 700; margin-bottom: 16px; color: var(--text-highlight); display: flex; align-items: center; justify-content: space-between; gap: 8px; letter-spacing: -0.01em; flex-wrap: wrap; }
         .card-title .card-title-left { display: flex; align-items: center; gap: 8px; }
         .card-title .ph { font-size: 1.2rem; }
@@ -111,12 +111,12 @@
         .stats-list { display: flex; flex-direction: column; border-radius: var(--radius-md); overflow: hidden; border: 1px solid var(--border-color); }
         .stat-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px; background: var(--card-bg); transition: background 0.2s; }
         .stat-row + .stat-row { border-top: 1px solid var(--border-color); }
-        .stat-row:hover { background: var(--bg-light); }
+        @media (hover: hover) { .stat-row:hover { background: var(--bg-light); } }
         .stat-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--bg-light); color: var(--purple-main); display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 18px; }
         .stat-label { flex: 1; font-size: 0.85rem; font-weight: 600; color: var(--text-muted); }
         .stat-value { font-weight: 800; font-size: 1.05rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
         .stat-row.stat-hero { background: var(--gradient-btn); }
-        .stat-row.stat-hero:hover { filter: brightness(1.05); }
+        @media (hover: hover) { .stat-row.stat-hero:hover { filter: brightness(1.05); } }
         .stat-row.stat-hero .stat-label { color: rgba(255, 255, 255, 0.85); }
         .stat-row.stat-hero .stat-value { color: white; font-size: 1.3rem; }
         .stat-row.stat-hero .stat-icon { background: rgba(255, 255, 255, 0.2); color: white; }
@@ -147,7 +147,7 @@
         .data-picker-wrap { position: relative; flex: 0 0 auto; display: flex; }
         .btn-data-picker { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; padding: 11px 12px; border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-light); color: var(--text-main); cursor: pointer; font-size: 0.85rem; white-space: nowrap; transition: border-color 0.2s, box-shadow 0.2s; pointer-events: none; }
         .data-picker-wrap:focus-within .btn-data-picker,
-        .data-picker-wrap:hover .btn-data-picker { border-color: var(--purple-light); }
+        @media (hover: hover) { .data-picker-wrap:hover .btn-data-picker { border-color: var(--purple-light); } }
         .btn-data-picker i { font-size: 18px; color: var(--text-highlight); }
         .input-data-overlay { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; padding: 0; border: 0; opacity: 0; cursor: pointer; min-width: 0; }
         /* Botão de data só com ícone (Receitas): mesma mecânica do botão com texto, só que
@@ -165,7 +165,7 @@
         ::placeholder { color: var(--text-muted); opacity: 0.7; font-weight: 400; }
 
         .btn-flat { background: var(--gradient-btn); color: white; border: none; padding: 11px 18px; border-radius: var(--radius-sm); font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; transition: transform 0.15s, box-shadow 0.15s, filter 0.15s; box-shadow: var(--shadow-sm); }
-        .btn-flat:hover { filter: brightness(1.08); box-shadow: var(--shadow-md); transform: translateY(-1px); }
+        @media (hover: hover) { .btn-flat:hover { filter: brightness(1.08); box-shadow: var(--shadow-md); transform: translateY(-1px); } }
         .btn-flat:active { transform: translateY(0) scale(0.98); }
 
         .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: var(--radius-md); }
@@ -177,7 +177,7 @@
         /* Checkbox de seleção nas linhas (Contas Fixas / Extrato) — soma dos marcados.
            Redondo e no tema do sistema (não usa o checkbox nativo quadrado do navegador). */
         .row-check { appearance: none; -webkit-appearance: none; width: 20px; height: 20px; min-width: 0; padding: 0; border-radius: 50%; border: 2px solid var(--border-color); background: var(--card-bg); cursor: pointer; margin: 0; flex: none; position: relative; transition: 0.15s; }
-        .row-check:hover { border-color: var(--purple-light); }
+        @media (hover: hover) { .row-check:hover { border-color: var(--purple-light); } }
         .row-check:checked { background: var(--gradient-btn); border-color: transparent; }
         .row-check:checked::after { content: ""; position: absolute; top: 50%; left: 50%; width: 5px; height: 9px; border: solid white; border-width: 0 2px 2px 0; transform: translate(-50%, -60%) rotate(45deg); }
         td.td-check { width: 30px; padding-right: 0; }
@@ -211,19 +211,19 @@
         .extrato-tipo-lista::-webkit-scrollbar-thumb { background: var(--purple-light); border-radius: 999px; }
         th { background: var(--purple-main); color: white; padding: 13px 6px; font-weight: 800; text-align: center; white-space: nowrap; font-size: 0.8rem; letter-spacing: 0.01em; }
         th.sortable { cursor: pointer; user-select: none; transition: filter 0.2s; }
-        th.sortable:hover { filter: brightness(1.12); }
+        @media (hover: hover) { th.sortable:hover { filter: brightness(1.12); } }
         th:first-child { border-top-left-radius: var(--radius-sm); border-bottom-left-radius: var(--radius-sm); }
         th:last-child { border-top-right-radius: var(--radius-sm); border-bottom-right-radius: var(--radius-sm); }
         td { padding: 10px 6px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
         tbody tr { transition: background 0.15s; }
-        tbody tr:hover { background: var(--bg-light); }
+        @media (hover: hover) { tbody tr:hover { background: var(--bg-light); } }
 
         /* Nome do item como link — abre o popup de edição */
         .item-link { background: none; border: none; padding: 0; margin: 0; font: inherit; text-align: left; cursor: pointer; color: var(--text-main); font-weight: 700; font-size: 0.95rem; text-decoration: none; transition: color 0.15s; }
-        .item-link:hover { color: var(--text-highlight); text-decoration: underline; }
+        @media (hover: hover) { .item-link:hover { color: var(--text-highlight); text-decoration: underline; } }
 
         .status-badge { padding: 5px 10px; border-radius: 999px; font-weight: 700; font-size: 0.78rem; border: none; cursor: pointer; width: 62px; text-align: center; color: white; transition: transform 0.15s, filter 0.15s; }
-        .status-badge:hover { filter: brightness(1.1); transform: translateY(-1px); }
+        @media (hover: hover) { .status-badge:hover { filter: brightness(1.1); transform: translateY(-1px); } }
         .status-badge.sim { background-color: var(--green-success); }
         .status-badge.nao { background-color: var(--red-danger); }
         /* Variante de largura livre (ex.: badge "Faturado" das Assinaturas) — precisa de mais espaço
@@ -268,10 +268,10 @@
             .receita-valor-cel { font-size: 0.9rem; }
         }
         .btn-action { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display:flex; align-items:center; padding: 6px; border-radius: 8px; transition: background 0.15s, color 0.15s; }
-        .btn-action:hover { color: var(--blue-accent); background: var(--bg-blue-light); }
-        .btn-delete:hover { color: var(--red-danger); background: rgba(239, 68, 68, 0.1); }
+        @media (hover: hover) { .btn-action:hover { color: var(--blue-accent); background: var(--bg-blue-light); } }
+        @media (hover: hover) { .btn-delete:hover { color: var(--red-danger); background: rgba(239, 68, 68, 0.1); } }
         .btn-no-caixa-ativo { color: var(--green-success); }
-        .btn-no-caixa-ativo:hover { color: var(--green-success); background: rgba(16, 185, 129, 0.1); }
+        @media (hover: hover) { .btn-no-caixa-ativo:hover { color: var(--green-success); background: rgba(16, 185, 129, 0.1); } }
 
         /* Card "Sobra / Falta Estimada": resultado em destaque (verde = sobra, vermelho = falta),
            com a base escolhida e o Orçamento Fixo abaixo como detalhe da conta. */
@@ -292,7 +292,7 @@
            original (tem uma opção a mais, "Todas as Receitas", que os botões não têm). */
         .sobra-opcoes-botoes { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
         .sobra-opcao-btn { display: flex; align-items: center; gap: 6px; flex: 1 1 auto; justify-content: center; padding: 10px 12px; border-radius: var(--radius-sm); border: 1.5px solid var(--border-color); background: var(--bg-light); color: var(--text-main); font-weight: 700; font-size: 0.82rem; cursor: pointer; transition: 0.2s; white-space: nowrap; font-family: inherit; }
-        .sobra-opcao-btn:hover { border-color: var(--purple-light); transform: translateY(-1px); }
+        @media (hover: hover) { .sobra-opcao-btn:hover { border-color: var(--purple-light); transform: translateY(-1px); } }
         .sobra-opcao-btn.ativo { background: var(--gradient-btn); border-color: transparent; color: white; box-shadow: var(--shadow-sm); }
         .sobra-opcao-btn .ph { font-size: 16px; }
         .sobra-receita-desktop-el { display: none; }
@@ -303,7 +303,7 @@
 
         .acumulados-list { margin-top: 15px; display: flex; flex-direction: column; gap: 8px; }
         .acumulado-item { display: flex; justify-content: space-between; padding: 10px 14px; background: var(--bg-light); border-radius: var(--radius-sm); font-size: 0.9rem; font-weight: 500; transition: 0.2s; }
-        .acumulado-item:hover { background: var(--bg-blue-light); }
+        @media (hover: hover) { .acumulado-item:hover { background: var(--bg-blue-light); } }
         .sub-item { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; flex-wrap: wrap; gap: 6px; }
         .sub-item:last-child { border-bottom: none; }
 
@@ -311,7 +311,7 @@
            usado também pelo Calendário e pelo Extrato com uma estrutura de filhos diferente). === */
         .assinatura-item { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 12px; padding: 14px 4px; border-bottom: 1px solid var(--border-color); transition: background 0.15s; }
         .assinatura-item:last-child { border-bottom: none; }
-        .assinatura-item:hover { background: var(--bg-light); border-radius: var(--radius-sm); }
+        @media (hover: hover) { .assinatura-item:hover { background: var(--bg-light); border-radius: var(--radius-sm); } }
         .assinatura-item-icon { width: 40px; height: 40px; min-width: 40px; border-radius: 50%; background: var(--bg-blue-light); color: var(--sub-color); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; }
         .assinatura-item-main { min-width: 0; display: flex; flex-direction: column; gap: 7px; }
         .assinatura-item-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
@@ -330,7 +330,7 @@
         .tipo-grupo-label:first-child { margin-top: 0; }
         .tipo-item { position: relative; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 9px 12px; margin-bottom: 6px; background: var(--bg-light); border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 500; overflow: hidden; transition: background 0.2s; }
         .tipo-item:last-child { margin-bottom: 0; }
-        .tipo-item:hover { background: var(--bg-blue-light); }
+        @media (hover: hover) { .tipo-item:hover { background: var(--bg-blue-light); } }
         .tipo-item-bar { position: absolute; left: 0; top: 0; bottom: 0; background: currentColor; opacity: 0.12; transition: width 0.5s cubic-bezier(0.2, 0.8, 0.3, 1); }
         .tipo-item-label, .tipo-item-valor { position: relative; z-index: 1; }
         /* min-width:0 é necessário pro item flex poder encolher/quebrar abaixo da largura intrínseca
@@ -341,13 +341,13 @@
 
         /* Botão compacto de alternância (ex.: ordenar por tipo no Extrato) */
         .mini-toggle-btn { display: flex; align-items: center; gap: 5px; background: var(--bg-light); border: 1px solid var(--border-color); color: var(--text-muted); font-size: 0.72rem; font-weight: 700; padding: 5px 10px; border-radius: 999px; cursor: pointer; transition: 0.2s; white-space: nowrap; }
-        .mini-toggle-btn:hover { background: var(--bg-blue-light); color: var(--blue-accent); border-color: var(--blue-accent); }
+        @media (hover: hover) { .mini-toggle-btn:hover { background: var(--bg-blue-light); color: var(--blue-accent); border-color: var(--blue-accent); } }
         .mini-toggle-btn .ph { font-size: 13px; }
 
         /* === Menu de contexto compacto (kebab) — ex.: ações por assinatura === */
         .kebab-menu { position: fixed; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); z-index: 1500; min-width: 200px; overflow: hidden; animation: modal-subir 0.15s ease-out; }
         .kebab-menu-item { display: flex; align-items: center; gap: 10px; padding: 12px 14px; font-size: 0.85rem; font-weight: 600; color: var(--text-main); cursor: pointer; transition: background 0.15s; }
-        .kebab-menu-item:hover { background: var(--bg-light); }
+        @media (hover: hover) { .kebab-menu-item:hover { background: var(--bg-light); } }
         .kebab-menu-item .ph { font-size: 17px; color: var(--text-muted); flex-shrink: 0; width: 17px; text-align: center; }
         .kebab-menu-item.danger { color: var(--red-danger); }
         .kebab-menu-item.danger .ph { color: var(--red-danger); }
@@ -397,7 +397,7 @@
         .calendario-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 15px; }
         .cal-weekday { text-align: center; font-size: 0.72rem; font-weight: 700; color: var(--text-muted); padding: 4px 0 8px 0; }
         .cal-day { position: relative; text-align: center; padding: 11px 0; border-radius: var(--radius-sm); font-size: 0.85rem; font-weight: 600; cursor: pointer; background: var(--bg-light); transition: transform 0.15s, background 0.15s; }
-        .cal-day:hover { background: var(--border-color); transform: translateY(-1px); }
+        @media (hover: hover) { .cal-day:hover { background: var(--border-color); transform: translateY(-1px); } }
         .cal-day.empty { visibility: hidden; cursor: default; }
         .cal-day.today { box-shadow: inset 0 0 0 2px var(--blue-accent); }
         .cal-day.selected { box-shadow: inset 0 0 0 2px var(--text-highlight); }
@@ -409,7 +409,7 @@
         /* Lista "Todos os eventos do mês" / "Eventos - Dia X" — classe própria (não reaproveita
            .sub-item, que é usado pelo Extrato) pra poder dar mais respiro sem afetar outros cards. */
         .cal-eventos-voltar { display: flex; align-items: center; gap: 6px; background: var(--bg-light); color: var(--text-highlight); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 9px 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; margin-bottom: 14px; width: 100%; justify-content: center; transition: background 0.15s; }
-        .cal-eventos-voltar:hover { background: var(--bg-blue-light); }
+        @media (hover: hover) { .cal-eventos-voltar:hover { background: var(--bg-blue-light); } }
         .cal-eventos-titulo { font-size: 0.85rem; margin-bottom: 10px; color: var(--text-highlight); }
         .cal-evento-item { display: flex; align-items: center; gap: 12px; padding: 13px 6px; border-bottom: 1px solid var(--border-color); }
         .cal-evento-item:last-child { border-bottom: none; }
@@ -427,7 +427,7 @@
            direto por aqui, sem precisar sair da aba Calendário. */
         .calendario-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; background: var(--gradient-btn); border-radius: var(--radius-md); padding: 12px 8px; margin-bottom: 16px; }
         .calendario-header-nav { background: rgba(255,255,255,0.18); border: none; color: white; width: 32px; height: 32px; border-radius: 9px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.15s, transform 0.15s; flex-shrink: 0; }
-        .calendario-header-nav:hover { background: rgba(255,255,255,0.32); }
+        @media (hover: hover) { .calendario-header-nav:hover { background: rgba(255,255,255,0.32); } }
         .calendario-header-nav:active { transform: scale(0.92); }
         .calendario-header-mes { color: white; font-weight: 800; font-size: 1rem; text-transform: capitalize; text-align: center; flex: 1; }
 
@@ -435,8 +435,8 @@
         .calc-visor { background: var(--bg-light); border: 1.5px solid var(--border-color); border-radius: var(--radius-sm); padding: 16px; text-align: right; font-size: 1.8rem; font-weight: 800; margin-bottom: 12px; min-height: 60px; overflow-x: auto; white-space: nowrap; outline: none; width: 100%; color: var(--text-main); font-variant-numeric: tabular-nums; }
         .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .calc-btn { padding: 17px 0; border: none; border-radius: var(--radius-sm); font-size: 1.1rem; font-weight: 700; cursor: pointer; background: var(--bg-light); color: var(--text-main); transition: transform 0.12s, filter 0.12s; }
-        .calc-btn:hover { filter: brightness(0.96); }
-        body.dark-mode .calc-btn:hover { filter: brightness(1.3); }
+        @media (hover: hover) { .calc-btn:hover { filter: brightness(0.96); } }
+        @media (hover: hover) { body.dark-mode .calc-btn:hover { filter: brightness(1.3); } }
         .calc-btn:active { transform: scale(0.94); }
         .calc-btn.op { background: var(--gradient-blue); color: white; }
         .calc-btn.eq { background: var(--gradient-green); color: white; }
@@ -465,14 +465,14 @@
         .modal-content::-webkit-scrollbar { width: 7px; }
         .modal-content::-webkit-scrollbar-track { background: transparent; }
         .modal-content::-webkit-scrollbar-thumb { background: var(--purple-light); border-radius: 999px; }
-        .modal-content::-webkit-scrollbar-thumb:hover { background: var(--purple-main); }
+        @media (hover: hover) { .modal-content::-webkit-scrollbar-thumb:hover { background: var(--purple-main); } }
         .modal-close-x { position: absolute; top: 14px; right: 14px; background: var(--bg-light); border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--text-muted); transition: 0.15s; }
-        .modal-close-x:hover { background: var(--red-danger); color: white; }
+        @media (hover: hover) { .modal-close-x:hover { background: var(--red-danger); color: white; } }
         @keyframes modal-fade { from { opacity: 0; } to { opacity: 1; } }
         @keyframes modal-subir { from { opacity: 0; transform: translateY(16px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
         .modal-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; margin-bottom: 8px; background: var(--bg-light); border: 1.5px solid transparent; border-radius: var(--radius-sm); transition: 0.15s; cursor: pointer; }
-        .modal-item:hover { border-color: var(--purple-light); }
+        @media (hover: hover) { .modal-item:hover { border-color: var(--purple-light); } }
         .modal-item.checked { border-color: var(--purple-main); background: var(--bg-blue-light); }
         .modal-item-check { width: 22px; height: 22px; border-radius: 7px; border: 2px solid var(--border-color); flex-shrink: 0; display: flex; align-items: center; justify-content: center; color: white; transition: 0.15s; background: var(--card-bg); }
         .modal-item.checked .modal-item-check { background: var(--gradient-btn); border-color: transparent; }
@@ -496,7 +496,7 @@
         /* Botão flutuante (FAB) — usado para "+ Nova Conta" */
         .fab-inline { background: var(--gradient-btn); color: white; border: none; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: var(--shadow-md); transition: transform 0.15s, box-shadow 0.15s; flex-shrink: 0; }
         .fab-inline .ph { font-size: 20px; }
-        .fab-inline:hover { transform: scale(1.06) rotate(90deg); box-shadow: var(--shadow-lg); }
+        @media (hover: hover) { .fab-inline:hover { transform: scale(1.06) rotate(90deg); box-shadow: var(--shadow-lg); } }
         .fab-inline:active { transform: scale(0.96) rotate(90deg); }
 
         /* === TOGGLE ESTILO iOS (Repetir todo mês) === */
@@ -517,18 +517,23 @@
         .btn-flat-sm { padding: 8px 11px; font-size: 0.82rem; }
 
         /* === ANIMAÇÕES DE ENTRADA (lentas e suaves de propósito) === */
-        .reveal-init { opacity: 0; transform: translateY(26px); }
-        .reveal-in { animation: card-subir 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-        @keyframes card-subir { from { opacity: 0; transform: translateY(26px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes item-fade-in { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .item-anim { animation: item-fade-in 0.9s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        .reveal-init { opacity: 0; transform: translateY(32px); }
+        /* 1.5s com essa curva (freio suave: acelera rápido e desacelera bem devagar no final,
+           em vez de um ease-out comum) — um pouco mais lenta e perceptível do que antes. */
+        .reveal-in { animation: card-subir 1.5s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+        @keyframes card-subir { from { opacity: 0; transform: translateY(32px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes item-fade-in { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+        .item-anim { animation: item-fade-in 1.1s cubic-bezier(0.16, 1, 0.3, 1) both; }
+        /* Estado "escondido, esperando entrar na tela" das linhas do Painel de Controle — mesmo
+           papel do .reveal-init pros cards, só que pro item-anim (ver anim.js). */
+        .item-anim-init { opacity: 0; transform: translateY(14px); }
 
         /* Pequeno "pop" nos badges de vencimento e status, toda vez que a tabela é redesenhada */
         @keyframes badge-pop { from { opacity: 0; transform: scale(0.7); } to { opacity: 1; transform: scale(1); } }
         .vencimento-tag.anim-pop, .status-badge.anim-pop { animation: badge-pop 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both; }
 
         @media (prefers-reduced-motion: reduce) {
-            .reveal-init { opacity: 1; transform: none; }
+            .reveal-init, .item-anim-init { opacity: 1; transform: none; }
             .reveal-in, .item-anim, .anim-pop { animation: none; }
             /* Zera também as animações de entrada de modais, toasts, chip de sync e o "girando".
                O odômetro (JS) checa a mesma media query em anim.js e vai direto pro valor final. */

@@ -1,48 +1,74 @@
-// Animações de entrada: cards sobem suavemente ao logar e conforme aparecem na tela
+// Animações de entrada: cards (e as linhas do Painel de Controle) sobem suavemente conforme
+// aparecem de verdade na área visível da tela — ao logar, ao rolar a página (desktop) e, no
+// mobile, também ao trocar de aba e rolar dentro dela. O gatilho é sempre o mesmo em qualquer
+// tela: IntersectionObserver, a API do navegador que avisa quando um elemento entra/sai da área
+// visível — nunca um "assim que a aba abre, anima tudo de uma vez", que fazia cards fora da tela
+// já nascerem prontos, sem nenhuma ligação com o gesto de rolar (a sensação de "soltos" relatada).
 (function () {
-    let observer = null;
+    let observerCards = null;
+    let observerItens = null;
 
     function iniciarAnimacoesDeEntrada() {
-        const cards = document.querySelectorAll('#mainApp .card');
-        if (!cards.length) return;
-
-        if (observer) observer.disconnect();
-        observer = new IntersectionObserver((entradas) => {
+        observerCards = new IntersectionObserver((entradas) => {
             entradas.forEach(entrada => {
                 if (entrada.isIntersecting) {
-                    _revelarCardUmaVez(entrada.target);
-                    observer.unobserve(entrada.target);
+                    entrada.target.classList.add('reveal-in');
+                    observerCards.unobserve(entrada.target);
                 }
             });
         }, { threshold: 0.15 });
 
-        cards.forEach((card, i) => {
-            card.classList.add('reveal-init');
-            card.style.animationDelay = `${Math.min(i * 0.06, 0.4)}s`;
-            observer.observe(card);
-        });
+        observerItens = new IntersectionObserver((entradas) => {
+            entradas.forEach(entrada => {
+                if (entrada.isIntersecting) {
+                    entrada.target.classList.remove('item-anim-init');
+                    entrada.target.classList.add('item-anim');
+                    observerItens.unobserve(entrada.target);
+                }
+            });
+        }, { threshold: 0.15 });
+
+        armarCards(document.querySelectorAll('#mainApp .card'));
+        armarItens(document.querySelectorAll('#mainApp .stat-row'));
 
         observarGraficoCategoria();
     }
-
     window.iniciarAnimacoesDeEntrada = iniciarAnimacoesDeEntrada;
 
-    // Toca a entrada (reveal-in) a primeira vez que um card aparece de verdade — ao rolar a tela
-    // (aqui, via IntersectionObserver) ou, no mobile, na primeira troca pra aba dele (chamado direto
-    // por _tocarEntradaDaAba em ui.js, que também cuida de REPETIR essa animação em toda troca de
-    // aba seguinte, com um reflow forçado pra garantir que reinicia do zero de verdade). Depois de
-    // tocar aqui, as duas classes saem do card — só a próxima troca de aba (ui.js) devolve a
-    // animação, então elas não ficam "penduradas" nele. O tempo do setTimeout (em vez de um
-    // "animationend") é de propósito: se o card sair de tela ainda no meio da entrada, o
-    // `animationend` não dispara, mas o setTimeout garante a limpeza mesmo assim — timers de JS
-    // continuam rodando com o elemento escondido, diferente de animação CSS.
-    function _revelarCardUmaVez(card) {
-        if (!card || !card.classList.contains('reveal-init')) return; // já revelado antes — nada a fazer
-        card.classList.add('reveal-in');
-        const atraso = parseFloat(card.style.animationDelay || '0') * 1000;
-        setTimeout(() => card.classList.remove('reveal-init', 'reveal-in'), atraso + 1300);
+    // "Arma" cada card pra revelar quando entrar de vez na área visível: volta ao estado
+    // escondido (reveal-init) e recalcula o atraso escalonado na ordem desses elementos
+    // especificamente — nunca um índice fixo da página inteira, que embaralhava a ordem visual
+    // toda vez que um subconjunto diferente de cards era revelado (ex.: numa troca de aba).
+    function armarCards(cards) {
+        if (!observerCards) return;
+        [...cards].forEach((card, i) => {
+            card.classList.remove('reveal-in');
+            card.classList.add('reveal-init');
+            card.style.animationDelay = `${Math.min(i * 0.07, 0.35)}s`;
+            observerCards.observe(card);
+        });
     }
-    window._revelarCardUmaVez = _revelarCardUmaVez;
+    function armarItens(itens) {
+        if (!observerItens) return;
+        [...itens].forEach((el, i) => {
+            el.classList.remove('item-anim');
+            el.classList.add('item-anim-init');
+            el.style.animationDelay = `${Math.min(i * 0.07, 0.35)}s`;
+            observerItens.observe(el);
+        });
+    }
+
+    // Chamado pelo ui.js sempre que uma aba vira visível no mobile (switchTab): rearma a
+    // revelação por rolagem dos cards (e das 3 linhas do Painel de Controle) dessa aba
+    // especificamente. Cards já visíveis na hora da troca revelam na hora (igual ao login);
+    // os que estão mais abaixo só revelam quando o usuário rolar até eles de verdade.
+    function rearmarRevelacaoDaAba(aba) {
+        if (!aba) return;
+        const cards = aba.classList.contains('card') ? [aba] : aba.querySelectorAll('.card');
+        armarCards(cards);
+        armarItens(aba.querySelectorAll('.stat-row'));
+    }
+    window.rearmarRevelacaoDaAba = rearmarRevelacaoDaAba;
 
     // O gráfico só recebe os dados reais (e portanto só "cresce") quando o card
     // dele realmente aparece na tela — senão a animação acontecia durante o
