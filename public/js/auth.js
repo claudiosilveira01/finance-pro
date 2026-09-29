@@ -77,7 +77,20 @@
             if(!email || !senha) return mostrarErroAuth("Preencha e-mail e senha!");
 
             const { error } = await sb.auth.signInWithPassword({ email, password: senha });
-            if (error) mostrarErroAuth("Erro: E-mail ou senha incorretos.");
+            if (error) {
+                // "invalid_credentials" é o único caso em que o Supabase confirma senha/e-mail
+                // errados de fato. Qualquer outro erro (banco "acordando" de uma pausa, timeout,
+                // falha de rede) não tem nada a ver com a senha digitada — mostrar "senha
+                // incorreta" nesse caso só confundia quem está tentando entrar (ver caso da Carla:
+                // ela tentou logar bem na hora em que o banco estava acordando e viu essa mensagem
+                // errada, com a senha certa).
+                const senhaRealmenteErrada = error.code === 'invalid_credentials'
+                    || /invalid.*credentials/i.test(error.message || '');
+                mostrarErroAuth(senhaRealmenteErrada
+                    ? "Erro: E-mail ou senha incorretos."
+                    : "Não foi possível entrar agora. Se o app ficou muito tempo sem uso, o servidor "
+                    + "pode levar até 1 minuto pra \"acordar\" — aguarde um instante e tente de novo.");
+            }
         }
 
         // Cadastro fechado: contas são criadas manualmente no painel do Supabase. O botão
