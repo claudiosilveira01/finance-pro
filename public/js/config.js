@@ -8,8 +8,28 @@
         // Único ponto de acesso ao banco: toda leitura/escrita passa por uma RPC do Postgres
         // (get_config/salvar_config, get_mes/salvar_mes, get_meses_disponiveis, renomear_categoria,
         // repetir_fixa). Erro vira exceção — os módulos já tratam com toast + "Tentar de novo".
+        //
+        // Timeout de 20s: projeto Supabase do plano free "pausa" sozinho depois de dias sem uso, e
+        // ao acordar pode levar até ~1min pra responder de novo. Sem um limite aqui, sb.rpc() ficava
+        // esperando pra sempre — o app travava no "Carregando..." sem nenhum aviso, com quem estava
+        // usando sem saber se é falta de internet, banco pausado ou o quê. Com o limite, o erro
+        // aparece rápido (com uma mensagem explicando a causa mais provável), e "Tentar de novo"
+        // já dá certo assim que o banco termina de acordar.
+        function _comLimiteDeTempo(promessa, ms) {
+            return new Promise((resolve, reject) => {
+                const cronometro = setTimeout(() => reject(Object.assign(new Error(
+                    'O servidor demorou demais pra responder. Se ele ficou um tempo sem uso, pode levar '
+                    + 'até 1 minuto pra "acordar" — tente de novo em instantes.'
+                ), { isTimeout: true })), ms);
+                promessa.then(
+                    (v) => { clearTimeout(cronometro); resolve(v); },
+                    (e) => { clearTimeout(cronometro); reject(e); }
+                );
+            });
+        }
+
         async function rpc(nome, args, _retry) {
-            const { data, error, status } = await sb.rpc(nome, args || {});
+            const { data, error, status } = await _comLimiteDeTempo(sb.rpc(nome, args || {}), 20000);
             if (error) {
                 // 401 logo após abrir o PWA no iPhone: o Safari acorda a aba, o supabase-js
                 // dispara um refresh de token e, se alguma RPC sai em paralelo nesse instante

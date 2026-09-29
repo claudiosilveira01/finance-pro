@@ -45,7 +45,8 @@
                 carregarMes(mesAtualKey, callback);
             } catch (err) {
                 document.getElementById('loadingDiv').style.display = 'none';
-                mostrarToast('Erro ao carregar seus dados. Verifique sua conexão.', 'error', 6000, {
+                const msg = (err && err.isTimeout) ? err.message : 'Erro ao carregar seus dados. Verifique sua conexão.';
+                mostrarToast(msg, 'error', (err && err.isTimeout) ? 10000 : 6000, {
                     acao: { texto: 'Tentar de novo', callback: () => carregarConfigGlobal(callback) }
                 });
             }
