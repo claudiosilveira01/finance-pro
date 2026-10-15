@@ -11,3 +11,4 @@ firebase-users-map.json
 .dev.vars
 out/
 diarios-backup.json
+.claude/settings.local.json
