@@ -159,6 +159,8 @@
                 textoConfirmar: 'Apagar',
                 onConfirmar: () => {
                     // A conta vinculada (automática) nunca é apagada: fica na lista.
+                    // As contas parceladas apagadas também saem dos meses seguintes.
+                    window.activeFixas.filter(c => !c.vinculoTipo && c.parcelaTotal).forEach(c => apagarParcelasFuturas(c, mesAtualKey));
                     window.activeFixas = window.activeFixas.filter(c => c.vinculoTipo);
                     salvarDadosDoMesAtual();
                     calcularEAtualizarVisual();

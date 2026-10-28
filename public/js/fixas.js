@@ -70,11 +70,11 @@
                 window.activeFixas = window.activeFixas.map(c =>
                     c.id === idEditandoFixa ? { ...c, nome: nome, valor: vinculada ? c.valor : valor, vencimento: venc, categoria: cat, obs: obs, parcelaAtual: parcelaAtual, parcelaTotal: parcelaTotal } : c
                 );
-                // Conta parcelada: as parcelas dos meses seguintes precisam seguir a edição.
-                if (contaAntiga && contaAntiga.parcelaTotal && parcela.ativo && !vinculada) {
+                // Parcelas: se a conta era parcelada OU passou a ser, os meses seguintes seguem a edição.
+                if (contaAntiga && (contaAntiga.parcelaTotal || parcela.ativo) && !vinculada) {
                     propagarParcelas = {
                         nomeAntigo: contaAntiga.nome,
-                        totalAntigo: contaAntiga.parcelaTotal,
+                        totalAntigo: contaAntiga.parcelaTotal ?? null,
                         base: { nome, valor, vencimento: venc, categoria: cat, obs, parcelaAtual, parcelaTotal }
                     };
                 }
@@ -320,6 +320,17 @@
             calcularEAtualizarVisual();
         }
 
+        // Remove do banco as parcelas dos meses seguintes de uma conta parcelada excluída.
+        function apagarParcelasFuturas(conta, mes) {
+            rpc('apagar_parcelas_futuras', {
+                p_ano_mes: mes,
+                p_nome: conta.nome,
+                p_total: conta.parcelaTotal
+            }).catch(() => {
+                mostrarToast('Erro ao apagar as parcelas dos próximos meses. Verifique sua conexão.', 'error', 6000);
+            });
+        }
+
         function deletarItemGeral(id, tipo) {
             const arr = tipo === 'fixa' ? window.activeFixas : window.activeFaturamentos;
             const idx = arr.findIndex(x => x.id === id);
@@ -332,6 +343,7 @@
 
             arr.splice(idx, 1);
             calcularEAtualizarVisual();
+            const mesDaExclusao = mesAtualKey;
 
             excluirComUndo({
                 mensagem: `Item excluído: ${item.nome}`,
@@ -348,6 +360,7 @@
                     } else {
                         salvarDadosDoMesAtual();
                     }
+                    if (tipo === 'fixa' && item.parcelaTotal) apagarParcelasFuturas(item, mesDaExclusao);
                 }
             });
         }
