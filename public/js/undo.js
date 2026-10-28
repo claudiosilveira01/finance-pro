@@ -47,6 +47,9 @@
                 Authorization: `Bearer ${window._sbToken}`
             };
             const saldoEl = document.getElementById('saldoInput');
+            // Vendo a conta de outra pessoa: grava nela. Só manda p_alvo quando necessário (conta
+            // comum não manda, igual sempre foi).
+            const alvo = window.contaAlvoId ? { p_alvo: window.contaAlvoId } : {};
             try {
                 fetch(`${SUPABASE_URL}/rest/v1/rpc/salvar_mes`, {
                     method: 'POST', keepalive: true, headers,
@@ -56,7 +59,7 @@
                         extrato: window.activeExtrato || [],
                         registroPagamentos: window.activeRegistroPagamentos || [],
                         saldo: _arred2(_parseDinheiro(saldoEl ? saldoEl.value : '') || 0)
-                    } })
+                    }, ...alvo })
                 });
                 fetch(`${SUPABASE_URL}/rest/v1/rpc/salvar_config`, {
                     method: 'POST', keepalive: true, headers,
@@ -65,7 +68,7 @@
                         assinaturas: assinaturasConfig,
                         ocultarCardAcumulado: ocultarCardAcumulado,
                         ocultarCardExtrato: ocultarCardExtrato
-                    } })
+                    }, ...alvo })
                 });
             } catch (e) { /* aba fechando — nada a fazer */ }
         }

@@ -38,7 +38,7 @@
                         _graficosIniciados = true;
                     }
                     atualizarBotaoTema();
-                    carregarConfigGlobal(() => {
+                    carregarContasAdministradas().finally(() => carregarConfigGlobal(() => {
                         loading.style.display = 'none';
                         iniciarAnimacoesDeEntrada();
                         // Só agora o #mainApp (e a barra inferior dentro dele) deixou de ser
@@ -46,9 +46,10 @@
                         // sempre dava 0, e a pílula do indicador nascia com largura 0 (some).
                         const navAtivo = document.querySelector('.nav-item.active');
                         if (navAtivo) moverIndicadorNav(navAtivo);
-                    });
+                    }));
                 } else {
                     currentUser = null;
+                    limparContaAdmin();
                     loading.style.display = 'none';
                     document.getElementById('loginScreen').style.display = 'flex';
                     document.getElementById('mainApp').style.display = 'none';
