@@ -158,7 +158,8 @@
                 mensagem: `Tem certeza que deseja apagar TODAS as contas fixas de ${mesAtualKey}?\nEsta ação não pode ser desfeita.`,
                 textoConfirmar: 'Apagar',
                 onConfirmar: () => {
-                    window.activeFixas = [];
+                    // A conta vinculada (automática) nunca é apagada: fica na lista.
+                    window.activeFixas = window.activeFixas.filter(c => c.vinculoTipo);
                     salvarDadosDoMesAtual();
                     calcularEAtualizarVisual();
                 }
