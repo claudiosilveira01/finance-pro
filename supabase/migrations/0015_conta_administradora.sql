@@ -19,6 +19,7 @@
 create table public.admin_acessos (
     admin_user_id uuid not null references auth.users(id) on delete cascade,
     alvo_user_id uuid not null references auth.users(id) on delete cascade,
+    apelido text,  -- nome mostrado no seletor do app (ex.: 'Carla')
     criado_em timestamptz not null default now(),
     aceito_em timestamptz,
     primary key (admin_user_id, alvo_user_id),

@@ -335,6 +335,12 @@
 
     <div id="mainApp">
         <div id="appScroll">
+        <!-- Faixa de aviso: só aparece quando a conta administradora está vendo a conta de outra pessoa -->
+        <div id="faixaContaAlvo" class="faixa-conta-alvo" style="display:none;" role="status">
+            <i class="ph ph-eye"></i>
+            <span>Vendo a conta de <strong id="faixaContaAlvoNome"></strong></span>
+            <button type="button" onclick="trocarConta('')">Voltar para a minha</button>
+        </div>
         <div class="main-container">
             <div class="col-left">
                 <!-- ABA: CONTAS FIXAS -->
@@ -392,6 +398,11 @@
                             <i class="ph ph-chart-line-up"></i> Planner Financeiro
                         </span>
                         <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                            <!-- Seletor de conta: só aparece para contas administradoras (ver contaAdmin.js) -->
+                            <div class="conta-seletor" id="contaSeletorBox" style="display:none;">
+                                <i class="ph ph-users"></i>
+                                <select id="contaSeletor" onchange="trocarConta(this.value)" aria-label="Escolher conta"></select>
+                            </div>
                             <div class="month-nav">
                                 <button onclick="navegarMes(-1)" title="Mês anterior"><i class="ph ph-caret-left"></i></button>
                                 <select id="mesSeletor" onchange="mudarMesOuro(this)"></select>
@@ -572,6 +583,7 @@
     <script src="js/undo.js"></script>
     <script src="js/config.js"></script>
     <script src="js/theme.js"></script>
+    <script src="js/contaAdmin.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/config-global.js"></script>
     <script src="js/meses.js"></script>

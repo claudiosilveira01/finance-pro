@@ -29,6 +29,9 @@
         }
 
         async function rpc(nome, args, _retry) {
+            // Conta administradora (contaAdmin.js): vendo a conta de outra pessoa, toda chamada leva o
+            // id dela. Fora disso, args segue intacto (o banco usa a própria conta).
+            if (window.contaAlvoId) args = Object.assign({}, args, { p_alvo: window.contaAlvoId });
             const { data, error, status } = await _comLimiteDeTempo(sb.rpc(nome, args || {}), 20000);
             if (error) {
                 // 401 logo após abrir o PWA no iPhone: o Safari acorda a aba, o supabase-js
