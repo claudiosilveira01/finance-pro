@@ -66,7 +66,7 @@
 
             const opcoesHtml = mesesDisponiveis.map(m => `<option value="${m.key}">${m.label}</option>`).join('');
             _seletoresDeMes().forEach(seletor => { seletor.innerHTML = opcoesHtml; });
-            if(copiaSeletor) mesesDisponiveis.forEach(m => { copiaSeletor.innerHTML += `<option value="${m.key}">${m.label}</option>`; });
+            if(copiaSeletor) mesesDisponiveis.forEach(m => { copiaSeletor.innerHTML += `<option value="${_esc(m.key)}">${_esc(m.label)}</option>`; });
         }
 
         function addNovoMes() {
