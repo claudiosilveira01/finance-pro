@@ -64,8 +64,10 @@
                 if (contaAntiga && contaAntiga.pago && contaAntiga.valor !== valor) {
                     ajusteCaixaPendente = contaAntiga.valor - valor;
                 }
+                // Conta vinculada: o valor é calculado pelo banco (falta do orçamento), não pelo app.
+                const vinculada = !!(contaAntiga && contaAntiga.vinculoTipo);
                 window.activeFixas = window.activeFixas.map(c =>
-                    c.id === idEditandoFixa ? { ...c, nome: nome, valor: valor, vencimento: venc, categoria: cat, obs: obs, parcelaAtual: parcelaAtual, parcelaTotal: parcelaTotal } : c
+                    c.id === idEditandoFixa ? { ...c, nome: nome, valor: vinculada ? c.valor : valor, vencimento: venc, categoria: cat, obs: obs, parcelaAtual: parcelaAtual, parcelaTotal: parcelaTotal } : c
                 );
                 idEditandoFixa = null;
             } else {
@@ -172,7 +174,10 @@
             document.getElementById('fixaParcelaTotal').value = conta.parcelaTotal || 12;
 
             idEditandoFixa = id;
-            document.getElementById('btnExcluirFixaModal').style.display = 'flex';
+            // Conta vinculada: não pode ser excluída nem ter o valor alterado (o banco calcula).
+            const vinculada = !!conta.vinculoTipo;
+            document.getElementById('fixaValor').disabled = vinculada;
+            document.getElementById('btnExcluirFixaModal').style.display = vinculada ? 'none' : 'flex';
             document.getElementById('modalNovaFixaTitulo').innerHTML = '<span class="card-title-left"><i class="ph ph-pencil-simple"></i> Editar Conta Fixa</span>';
             document.getElementById('btnSalvarFixa').innerHTML = '<i class="ph ph-check"></i> Salvar Alteração';
             atualizarCamposParcela();
@@ -296,6 +301,10 @@
             const idx = arr.findIndex(x => x.id === id);
             if(idx === -1) return;
             const item = arr[idx];
+            if (tipo === 'fixa' && item.vinculoTipo) {
+                mostrarToast('Esta conta é automática (vinculada) e não pode ser excluída.', 'warning');
+                return;
+            }
 
             arr.splice(idx, 1);
             calcularEAtualizarVisual();
