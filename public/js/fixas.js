@@ -57,6 +57,7 @@
             const parcelaTotal = parcela.ativo ? parcela.total : null;
 
             let ajusteCaixaPendente = 0;
+            let propagarParcelas = null;
             if (idEditandoFixa !== null) {
                 const contaAntiga = window.activeFixas.find(c => c.id === idEditandoFixa);
                 // Se a conta já estava paga, o valor antigo já tinha saído do Caixa Atual — corrige
@@ -69,6 +70,14 @@
                 window.activeFixas = window.activeFixas.map(c =>
                     c.id === idEditandoFixa ? { ...c, nome: nome, valor: vinculada ? c.valor : valor, vencimento: venc, categoria: cat, obs: obs, parcelaAtual: parcelaAtual, parcelaTotal: parcelaTotal } : c
                 );
+                // Conta parcelada: as parcelas dos meses seguintes precisam seguir a edição.
+                if (contaAntiga && contaAntiga.parcelaTotal && parcela.ativo && !vinculada) {
+                    propagarParcelas = {
+                        nomeAntigo: contaAntiga.nome,
+                        totalAntigo: contaAntiga.parcelaTotal,
+                        base: { nome, valor, vencimento: venc, categoria: cat, obs, parcelaAtual, parcelaTotal }
+                    };
+                }
                 idEditandoFixa = null;
             } else {
                 const novaConta = { id: Date.now() + Math.floor(Math.random() * 1000), nome, valor, vencimento: venc, categoria: cat, obs: obs, pago: false, parcelaAtual, parcelaTotal };
@@ -95,7 +104,22 @@
             } else {
                 salvarDadosDoMesAtual();
             }
+            if (propagarParcelas) _propagarParcelasFuturas(propagarParcelas);
             calcularEAtualizarVisual();
+        }
+
+        // Atualiza, no banco, as parcelas dos meses seguintes de uma conta parcelada editada.
+        function _propagarParcelasFuturas(p) {
+            rpc('atualizar_parcelas_futuras', {
+                p_ano_mes: mesAtualKey,
+                p_nome_antigo: p.nomeAntigo,
+                p_total_antigo: p.totalAntigo,
+                p_base: p.base
+            }).then(() => {
+                mostrarToast('Parcelas dos próximos meses atualizadas.', 'success');
+            }).catch(() => {
+                mostrarToast('Erro ao atualizar as parcelas dos próximos meses. Verifique sua conexão.', 'error', 6000);
+            });
         }
 
         // Copia a conta fixa para todos os meses entre o mês atual (exclusive) e mesFinal ("AAAA-MM", inclusive).
