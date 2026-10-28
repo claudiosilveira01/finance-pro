@@ -563,14 +563,17 @@
 
 /* ===== Conta administradora (contaAdmin.js) ===== */
 .conta-seletor {
-    display: flex; align-items: center; gap: 6px;
-    background: var(--card-bg); border: 1px solid var(--border-color);
-    border-radius: var(--radius-sm); padding: 0 8px; height: 38px;
-    color: var(--text-highlight);
+    align-items: center; justify-content: space-between; gap: 12px;
+}
+.conta-seletor-rotulo {
+    display: flex; align-items: center; gap: 8px; white-space: nowrap;
+    font-weight: 800; color: var(--text-highlight); font-size: 1.05rem;
 }
 .conta-seletor select {
-    border: none; background: transparent; color: var(--text-main);
-    font: inherit; font-weight: 600; max-width: 140px; padding: 6px 2px; cursor: pointer;
+    flex: 1; min-width: 0; max-width: 220px; height: 44px; padding: 0 12px;
+    background: var(--bg-light); color: var(--text-main);
+    border: 1px solid var(--border-color); border-radius: var(--radius-sm);
+    font: inherit; font-weight: 600; cursor: pointer;
 }
 .faixa-conta-alvo {
     position: sticky; top: 0; z-index: 60;
