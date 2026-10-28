@@ -288,8 +288,6 @@
         .btn-action { background: transparent; border: none; color: var(--text-muted); cursor: pointer; display:flex; align-items:center; padding: 6px; border-radius: 8px; transition: background 0.15s, color 0.15s; }
         @media (hover: hover) { .btn-action:hover { color: var(--blue-accent); background: var(--bg-blue-light); } }
         @media (hover: hover) { .btn-delete:hover { color: var(--red-danger); background: rgba(239, 68, 68, 0.1); } }
-        .btn-no-caixa-ativo { color: var(--green-success); }
-        @media (hover: hover) { .btn-no-caixa-ativo:hover { color: var(--green-success); background: rgba(16, 185, 129, 0.1); } }
 
         /* Card "Sobra / Falta Estimada": resultado em destaque (verde = sobra, vermelho = falta),
            com a base escolhida e o Orçamento Fixo abaixo como detalhe da conta. */
@@ -532,7 +530,6 @@
         input[type=number].no-spin::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
         input[type=number].no-spin { -moz-appearance: textfield; }
 
-        .btn-flat-sm { padding: 8px 11px; font-size: 0.82rem; }
 
         /* === ANIMAÇÕES DE ENTRADA (lentas e suaves de propósito) === */
         .reveal-init { opacity: 0; transform: translateY(32px); }
