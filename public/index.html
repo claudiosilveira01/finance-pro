@@ -122,24 +122,61 @@
         <div class="modal-content modal-form-lg" style="position: relative;">
             <button class="modal-close-x" onclick="fecharModalNovaFixa()"><i class="ph ph-x"></i></button>
             <div class="card-title" id="modalNovaFixaTitulo"><span class="card-title-left"><i class="ph ph-plus"></i> Nova Conta Fixa</span></div>
-            <div class="input-inline">
-                <input type="text" id="fixaNome" style="flex:2;" placeholder="Item (Ex: Energia, Mensalidades)" oninput="this.classList.remove('campo-invalido')">
-                <input type="text" inputmode="decimal" data-dinheiro id="fixaValor" style="flex:1;" placeholder="R$" oninput="this.classList.remove('campo-invalido')">
+            <div class="form-card">
+                <div class="form-card-titulo"><i class="ph ph-receipt"></i> Dados da conta</div>
+                <div class="input-inline">
+                    <input type="text" id="fixaNome" style="flex:2;" placeholder="Item (Ex: Energia, Mensalidades)" oninput="this.classList.remove('campo-invalido')">
+                    <input type="text" inputmode="decimal" data-dinheiro id="fixaValor" style="flex:1;" placeholder="R$" oninput="this.classList.remove('campo-invalido')">
+                </div>
+                <div class="input-inline">
+                    <input type="number" inputmode="numeric" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31" oninput="this.classList.remove('campo-invalido')">
+                    <select id="fixaCategoria" style="flex:1.5;"></select>
+                </div>
+                <div class="input-inline">
+                    <input type="text" id="fixaObs" style="flex:1;" placeholder="Observações (opcional)">
+                </div>
             </div>
-            <div class="input-inline">
-                <input type="number" inputmode="numeric" id="fixaVenc" style="flex:1;" placeholder="Dia Venc." min="1" max="31" oninput="this.classList.remove('campo-invalido')">
-                <select id="fixaCategoria" style="flex:1.5;"></select>
+
+            <div class="form-card">
+                <div class="form-card-titulo"><i class="ph ph-stack"></i> Parcelamento</div>
+                <label class="toggle-row">
+                    <span class="ios-toggle">
+                        <input type="checkbox" id="fixaParcelado" onchange="atualizarCamposParcela()">
+                        <span class="ios-toggle-track"></span>
+                    </span>
+                    Conta parcelada (ex.: empréstimo)
+                </label>
+                <div id="fixaParcelaCampos" style="display:none;">
+                    <div class="parcela-grid">
+                        <div class="parcela-campo">
+                            <span class="parcela-rotulo">Parcela atual</span>
+                            <div class="stepper">
+                                <button type="button" onclick="ajustarParcela('fixaParcelaAtual', -1)" aria-label="Diminuir parcela atual">−</button>
+                                <input type="number" inputmode="numeric" id="fixaParcelaAtual" min="1" value="1" aria-label="Parcela atual" oninput="atualizarCamposParcela()">
+                                <button type="button" onclick="ajustarParcela('fixaParcelaAtual', 1)" aria-label="Aumentar parcela atual">+</button>
+                            </div>
+                        </div>
+                        <div class="parcela-campo">
+                            <span class="parcela-rotulo">Total de parcelas</span>
+                            <div class="stepper">
+                                <button type="button" onclick="ajustarParcela('fixaParcelaTotal', -1)" aria-label="Diminuir total de parcelas">−</button>
+                                <input type="number" inputmode="numeric" id="fixaParcelaTotal" min="1" value="12" aria-label="Total de parcelas" oninput="atualizarCamposParcela()">
+                                <button type="button" onclick="ajustarParcela('fixaParcelaTotal', 1)" aria-label="Aumentar total de parcelas">+</button>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="parcela-resumo" id="fixaParcelaResumo"></p>
+                    <p class="parcela-aviso" id="fixaParcelaAviso" style="display:none;"></p>
+                </div>
             </div>
-            <div class="input-inline">
-                <input type="text" id="fixaObs" style="flex:1;" placeholder="Observações (opcional)">
-            </div>
-            <div id="fixaRecorrenteSection">
+
+            <div class="form-card" id="fixaRecorrenteSection">
+                <div class="form-card-titulo"><i class="ph ph-arrows-clockwise"></i> Repetição</div>
                 <label class="toggle-row">
                     <span class="ios-toggle">
                         <input type="checkbox" id="fixaRecorrente" onchange="document.getElementById('fixaRecorrenteAte').disabled = !this.checked;">
                         <span class="ios-toggle-track"></span>
                     </span>
-                    <i class="ph ph-arrows-clockwise" style="font-size:16px; color:var(--text-highlight);"></i>
                     Repetir todo mês até
                 </label>
                 <div class="input-inline">
