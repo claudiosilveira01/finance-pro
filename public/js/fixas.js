@@ -48,6 +48,14 @@
                 return;
             }
 
+            const parcela = _lerParcelasDoForm();
+            if (!parcela.valido) {
+                mostrarToast('Confira as parcelas: a parcela atual não pode passar do total.', 'warning');
+                return;
+            }
+            const parcelaAtual = parcela.ativo ? parcela.atual : null;
+            const parcelaTotal = parcela.ativo ? parcela.total : null;
+
             let ajusteCaixaPendente = 0;
             if (idEditandoFixa !== null) {
                 const contaAntiga = window.activeFixas.find(c => c.id === idEditandoFixa);
@@ -57,17 +65,23 @@
                     ajusteCaixaPendente = contaAntiga.valor - valor;
                 }
                 window.activeFixas = window.activeFixas.map(c =>
-                    c.id === idEditandoFixa ? { ...c, nome: nome, valor: valor, vencimento: venc, categoria: cat, obs: obs } : c
+                    c.id === idEditandoFixa ? { ...c, nome: nome, valor: valor, vencimento: venc, categoria: cat, obs: obs, parcelaAtual: parcelaAtual, parcelaTotal: parcelaTotal } : c
                 );
                 idEditandoFixa = null;
             } else {
-                const novaConta = { id: Date.now() + Math.floor(Math.random() * 1000), nome, valor, vencimento: venc, categoria: cat, obs: obs, pago: false };
+                const novaConta = { id: Date.now() + Math.floor(Math.random() * 1000), nome, valor, vencimento: venc, categoria: cat, obs: obs, pago: false, parcelaAtual, parcelaTotal };
                 window.activeFixas.push(novaConta);
 
-                const recorrente = document.getElementById('fixaRecorrente').checked;
-                const mesFinal = document.getElementById('fixaRecorrenteAte').value;
-                if (recorrente && mesFinal) {
-                    _duplicarContaEmMesesFuturos(novaConta, mesFinal);
+                if (parcela.ativo) {
+                    // Conta parcelada repete sozinha até a última parcela (ex.: 3 de 5 → mais 2 meses).
+                    const restantes = parcela.total - parcela.atual;
+                    if (restantes > 0) _duplicarContaEmMesesFuturos(novaConta, _somarMesKey(mesAtualKey, restantes));
+                } else {
+                    const recorrente = document.getElementById('fixaRecorrente').checked;
+                    const mesFinal = document.getElementById('fixaRecorrenteAte').value;
+                    if (recorrente && mesFinal) {
+                        _duplicarContaEmMesesFuturos(novaConta, mesFinal);
+                    }
                 }
             }
 
@@ -93,7 +107,8 @@
             rpc('repetir_fixa', {
                 p_base: {
                     nome: contaBase.nome, valor: contaBase.valor, vencimento: contaBase.vencimento,
-                    categoria: contaBase.categoria, obs: contaBase.obs || ''
+                    categoria: contaBase.categoria, obs: contaBase.obs || '',
+                    parcelaAtual: contaBase.parcelaAtual ?? null, parcelaTotal: contaBase.parcelaTotal ?? null
                 },
                 p_de: mesAtualKey,
                 p_ate: mesFinal
@@ -110,10 +125,10 @@
         function abrirModalNovaFixa() {
             idEditandoFixa = null;
             _resetarFormFixa();
-            document.getElementById('fixaRecorrenteSection').style.display = 'block';
             document.getElementById('btnExcluirFixaModal').style.display = 'none';
             document.getElementById('fixaRecorrenteAte').min = mesAtualKey;
             document.getElementById('modalNovaFixa').style.display = 'flex';
+            atualizarCamposParcela();
         }
 
         function fecharModalNovaFixa() {
@@ -134,6 +149,9 @@
             document.getElementById('fixaRecorrente').checked = false;
             document.getElementById('fixaRecorrenteAte').value = '';
             document.getElementById('fixaRecorrenteAte').disabled = true;
+            document.getElementById('fixaParcelado').checked = false;
+            document.getElementById('fixaParcelaAtual').value = 1;
+            document.getElementById('fixaParcelaTotal').value = 12;
             document.getElementById('modalNovaFixaTitulo').innerHTML = '<span class="card-title-left"><i class="ph ph-plus"></i> Nova Conta Fixa</span>';
             document.getElementById('btnSalvarFixa').innerHTML = '<i class="ph ph-plus"></i> Salvar';
         }
@@ -149,12 +167,67 @@
             document.getElementById('fixaVenc').value = conta.vencimento;
             document.getElementById('fixaCategoria').value = conta.categoria;
             document.getElementById('fixaObs').value = conta.obs || '';
+            document.getElementById('fixaParcelado').checked = !!conta.parcelaTotal;
+            document.getElementById('fixaParcelaAtual').value = conta.parcelaAtual || 1;
+            document.getElementById('fixaParcelaTotal').value = conta.parcelaTotal || 12;
 
             idEditandoFixa = id;
-            document.getElementById('fixaRecorrenteSection').style.display = 'none';
             document.getElementById('btnExcluirFixaModal').style.display = 'flex';
             document.getElementById('modalNovaFixaTitulo').innerHTML = '<span class="card-title-left"><i class="ph ph-pencil-simple"></i> Editar Conta Fixa</span>';
             document.getElementById('btnSalvarFixa').innerHTML = '<i class="ph ph-check"></i> Salvar Alteração';
+            atualizarCamposParcela();
+        }
+
+        // ---------- Parcelamento ----------
+        const _MESES_CURTOS = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
+
+        // "2026-10" + 3 -> "2027-01"
+        function _somarMesKey(anoMes, n) {
+            const [ano, mes] = anoMes.split('-').map(Number);
+            const d = new Date(ano, mes - 1 + n, 1);
+            return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        }
+
+        // "2027-01" -> "jan/2027"
+        function _mesCurto(anoMes) {
+            const [ano, mes] = anoMes.split('-');
+            return `${_MESES_CURTOS[parseInt(mes, 10) - 1]}/${ano}`;
+        }
+
+        function _lerParcelasDoForm() {
+            const ativo = document.getElementById('fixaParcelado').checked;
+            const atual = parseInt(document.getElementById('fixaParcelaAtual').value, 10);
+            const total = parseInt(document.getElementById('fixaParcelaTotal').value, 10);
+            const valido = !ativo || (atual >= 1 && total >= atual);
+            return { ativo, atual, total, valido };
+        }
+
+        // Mostra/esconde os campos de parcela, escreve o resumo e decide se a repetição manual aparece.
+        function atualizarCamposParcela() {
+            const p = _lerParcelasDoForm();
+            const emEdicao = idEditandoFixa !== null;
+            document.getElementById('fixaParcelaCampos').style.display = p.ativo ? 'block' : 'none';
+            // Conta parcelada já se repete até a última parcela; a repetição manual só vale para conta comum.
+            document.getElementById('fixaRecorrenteSection').style.display = (p.ativo || emEdicao) ? 'none' : 'block';
+
+            const aviso = document.getElementById('fixaParcelaAviso');
+            const resumo = document.getElementById('fixaParcelaResumo');
+            aviso.style.display = (p.ativo && !p.valido) ? 'block' : 'none';
+            resumo.textContent = '';
+            if (!p.ativo || !p.valido) return;
+
+            const faltam = p.total - p.atual;
+            resumo.textContent = faltam > 0
+                ? `Aparece por mais ${faltam} ${faltam === 1 ? 'mês' : 'meses'}, até ${_mesCurto(_somarMesKey(mesAtualKey, faltam))}.`
+                : 'Esta é a última parcela. A conta não se repete.';
+            if (emEdicao) resumo.textContent += ' Na edição, a mudança vale só para este mês.';
+        }
+
+        function ajustarParcela(campoId, delta) {
+            const campo = document.getElementById(campoId);
+            const atualValor = parseInt(campo.value, 10) || 1;
+            campo.value = Math.max(1, Math.min(120, atualValor + delta));
+            atualizarCamposParcela();
         }
 
         function excluirFixaDoModal() {

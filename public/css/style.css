@@ -585,3 +585,43 @@
     background: rgba(255,255,255,0.25); color: #fff; border: 1px solid rgba(255,255,255,0.6);
     border-radius: 999px; padding: 4px 12px; font: inherit; font-size: 0.8rem; cursor: pointer;
 }
+
+/* ===== Pop-up de conta fixa em cards (parcelamento e repetição) ===== */
+.form-card {
+    background: var(--bg-light); border: 1px solid var(--border-color);
+    border-radius: var(--radius-md); padding: 14px 14px 6px; margin-bottom: 14px;
+}
+.form-card .input-inline { margin-bottom: 10px; }
+.form-card .input-inline:last-child { margin-bottom: 8px; }
+.form-card-titulo {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    font-size: 0.9rem; font-weight: 800; color: var(--text-highlight);
+}
+.form-card .toggle-row { margin: 0 0 12px; }
+.parcela-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
+@media (max-width: 360px) { .parcela-grid { grid-template-columns: 1fr; } }
+.parcela-campo { min-width: 0; }
+.parcela-rotulo {
+    display: block; margin-bottom: 6px; font-size: 0.78rem; font-weight: 700;
+    color: var(--text-muted); white-space: nowrap;
+}
+.stepper { display: flex; align-items: stretch; gap: 6px; height: 44px; }
+.stepper button {
+    flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 12px;
+    background: rgba(139, 124, 246, 0.14); color: var(--text-highlight);
+    font: inherit; font-size: 1.25rem; font-weight: 800; line-height: 1; cursor: pointer;
+}
+.stepper input {
+    flex: 1 1 auto; min-width: 0; height: 44px; padding: 0 6px; margin: 0;
+    text-align: center; font-size: 1rem; font-weight: 800; border-radius: 12px;
+    -moz-appearance: textfield;
+}
+.stepper input::-webkit-outer-spin-button,
+.stepper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.parcela-resumo { margin: 12px 0 6px; font-size: 0.85rem; line-height: 1.4; color: var(--text-muted); }
+.parcela-aviso { margin: 8px 0 6px; font-size: 0.82rem; font-weight: 600; color: var(--red-danger); }
+.parcela-selo {
+    display: inline-block; margin-left: 8px; padding: 2px 8px; border-radius: 999px; vertical-align: middle;
+    background: rgba(139, 124, 246, 0.16); color: var(--text-highlight);
+    font-size: 0.72rem; font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums;
+}

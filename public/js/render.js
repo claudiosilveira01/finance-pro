@@ -41,7 +41,7 @@
                     <tr>
                         <td class="td-check"><input type="checkbox" class="row-check" ${marcado ? 'checked' : ''} onchange="toggleSelecaoFixa(${c.id})"></td>
                         <td data-label="Item">
-                            <button class="item-link" onclick="editarContaFixa(${c.id})">${_esc(c.nome)}</button>
+                            <button class="item-link" onclick="editarContaFixa(${c.id})">${_esc(c.nome)}</button>${c.parcelaTotal ? `<span class="parcela-selo" title="Parcela atual de ${c.parcelaTotal}">${c.parcelaAtual}/${c.parcelaTotal}</span>` : ''}
                             <div class="fixa-sub">${_esc(c.categoria)}${c.obs ? ' · ' + _esc(c.obs) : ''}</div>
                         </td>
                         <td data-label="Venc."><span class="vencimento-tag${classeAnimBadge}" style="color:${alerta.cor}; background-color:${alerta.bg}">${alerta.texto}</span></td>
